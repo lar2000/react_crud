@@ -1,0 +1,185 @@
+SELECT village_id,tbl_district.district_id,tbl_province.province_id,name, district_name,province_name FROM tbl_village LEFT JOIN tbl_district ON tbl_village.district_id=tbl_district.district_id left JOIN tbl_province on tbl_district.province_id_fk=tbl_province.province_id  
+WHERE province_id_fk=1001 AND tbl_village.district_id=10008
+
+--------------add_user------modal popup--------
+<template>
+  <div class="users-container">
+    <h1 class="title">Users List Page</h1>
+    <div class="add-user">
+      <ul>
+        <router-link to="/add_user" class="btn">
+          <span><i class="menu-icon bx bx-user-plus"></i> Add User</span>
+        </router-link>
+      </ul>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table-users">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Village</th>
+            <th>District</th>
+            <th>Province</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in Users" :key="user.id">
+            <td>{{ user.user_id }}</td>
+            <td>{{ user.user_name }}</td>
+            <td>{{ user.user_surname }}</td>
+            <td>{{ user.village }}</td>
+            <td>{{ user.district }}</td>
+            <td>{{ user.province }}</td>
+            <td>
+              <button @click="editUser(user)" class="btn-edit">
+                <i class="bx bx-edit"></i>
+              </button>
+              <button @click="deleteUser(user.user_id)" class="btn-delete">
+                <i class="bx bx-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr v-if="Users.length === 0">
+            <td colspan="8" class="text-center">No users found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal for Adding/Editing a User -->
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <h3>{{ modalTitle }}</h3>
+        <form @submit.prevent="submitUser">
+          <div>
+            <label for="name">Name:</label>
+            <input type="text" v-model="currentUser.user_name" required />
+          </div>
+          <div>
+            <label for="surname">Surname:</label>
+            <input type="text" v-model="currentUser.user_surname" required />
+          </div>
+          <div>
+            <label for="village">Village:</label>
+            <input type="text" v-model="currentUser.village" required />
+          </div>
+          <div>
+            <label for="district">District:</label>
+            <input type="text" v-model="currentUser.district" required />
+          </div>
+          <div>
+            <label for="province">Province:</label>
+            <input type="text" v-model="currentUser.province" required />
+          </div>
+          <button type="submit">{{ modalAction }}</button>
+          <button @click="closeModal">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "Users",
+  data() {
+    return {
+      Users: [],
+      showModal: false,
+      currentUser: {
+        user_id: null,
+        user_name: "",
+        user_surname: "",
+        village: "",
+        district: "",
+        province: "",
+      },
+      modalTitle: "",
+      modalAction: "",
+    };
+  },
+  mounted() {
+    this.fetchUsers();
+  },
+  methods: {
+    // Fetch all users
+    async fetchUsers() {
+      try {
+        const res = await axios.get("http://localhost:5000/users");
+        this.Users = res.data;
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    },
+
+    // Open modal to add or edit user
+    openModal(action, user = null) {
+      this.showModal = true;
+      if (action === "Add") {
+        this.modalTitle = "Add User";
+        this.modalAction = "Save";
+        this.currentUser = {
+          user_id: null,
+          user_name: "",
+          user_surname: "",
+          village: "",
+          district: "",
+          province: "",
+        };
+      } else if (action === "Edit" && user) {
+        this.modalTitle = "Edit User";
+        this.modalAction = "Update";
+        this.currentUser = { ...user };
+      }
+    },
+
+    closeModal() {
+      this.showModal = false;
+    },
+
+    async submitUser() {
+      try {
+        if (this.modalAction === "Save") {
+          await axios.post("http://localhost:5000/users", this.currentUser);
+        } else if (this.modalAction === "Update") {
+          await axios.put(
+            `http://localhost:5000/users/${this.currentUser.user_id}`,
+            this.currentUser
+          );
+        }
+        this.fetchUsers();
+        this.closeModal();
+      } catch (err) {
+        console.error("Error submitting user:", err);
+      }
+    },
+
+    // Open edit modal
+    editUser(user) {
+      this.openModal("Edit", user);
+    },
+
+    // Delete a user
+    async deleteUser(user_id) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        try {
+          await axios.delete(`http://localhost:5000/users/${user_id}`);
+          this.fetchUsers();
+        } catch (err) {
+          console.error("Error deleting user:", err);
+        }
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+/* Add modal and button styles */
+</style>
