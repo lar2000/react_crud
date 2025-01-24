@@ -1,3 +1,4 @@
+// eslint-disable-next-line react/prop-types
 const SearchQuery = ({ searchTerm, setSearchTerm }) => {
     const handleChange = (e) => {
       setSearchTerm(e.target.value);

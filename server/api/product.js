@@ -7,7 +7,6 @@ const path = require('path');
 const fs = require('fs');
 const db = require('./db_connection');
 const router = express.Router();
-
 router.post('/create', function (req, res) {
   let image = null;
   const storage = multer.diskStorage({
@@ -17,35 +16,33 @@ router.post('/create', function (req, res) {
     filename: function (req, file, cb) {
       const ext = path.extname(file.originalname);
       image = `pd-${Date.now()}${ext}`;
-      cb(null, image)
+      cb(null, image);
     }
   });
   const upload = multer({ storage }).single('image');
-  
-  upload(req, res, function (err) {
 
-   // const productPass = bcrypt.hashSync(req.body.productPass);
-    const {_id, pro_name, size, amount, protype_id_fk, price, total } = req.body;
+  upload(req, res, function (err) {
+    const {_id, pro_name, size, amount, protype_id_fk, price } = req.body;
+    const total = amount * price; // Calculate total
     const table = 'product';
-    if(!_id) {
-     
+    
+    if (!_id) {
       db.autoId(table, 'id', (err, id) => {
         const code = id.toString().slice(-4).padStart(4, '0');
-        const productId = 'ST-' + code;
-        const Fields = 'id, pro_id, pro_name, size, amount, protype_id_fk, price, total, image, state';
-        const dataValue = [id, productId, pro_name, size, amount, protype_id_fk, price, total,  image, 1];
+        const proId = 'ST-' + code;
+        const Fields = 'id, pro_id, pro_name, size, amount, protype_id_fk, price, total, image';
+        const dataValue = [id, proId, pro_name, size, amount, protype_id_fk, price, total, image];
 
         db.insertData(table, Fields, dataValue, (err, results) => {
           if (err) {
-            console.error('Error Inerting Data: ', err);
-            return res.status(500).json({ error: `ການບັນທຶກຂໍ້ມູນຫລົ້ມເຫຼວ` });
+            console.error('Error Inserting Data: ', err);
+            return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນຫລົ້ມເຫຼວ' });
           }
-          console.log( 'Data inserted successfully!', results);
-          return res.status(200).json({ message: 'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ: ',dataValue}); 
-        })
-      })
+          console.log('Data inserted successfully!', results);
+          return res.status(200).json({ message: 'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ: ', dataValue });
+        });
+      });
     } else {
-
       const where = `id = '${_id}'`;
 
       db.selectWhere(table, '*', where, (err, results) => {
@@ -63,9 +60,11 @@ router.post('/create', function (req, res) {
             }
           });
         }
+
         const updatedimage = image || results[0].image;
+        const updatedTotal = amount * price; // Recalculate total
         const fields = 'pro_name, size, amount, protype_id_fk, price, total, image';
-        const newData = [pro_name, size, amount, protype_id_fk, price, total, updatedimage, _id];
+        const newData = [pro_name, size, amount, protype_id_fk, price, updatedTotal, updatedimage, _id];
         const condition = 'id=?';
 
         db.updateData(table, fields, newData, condition, (err, results) => {
@@ -73,24 +72,10 @@ router.post('/create', function (req, res) {
             console.error('Error updating data:', err);
             return res.status(500).json({ error: 'Failed to update product' });
           }
-          res.status(200).json({ message: 'product updated successfully', data: results });
+          res.status(200).json({ message: 'Product updated successfully', data: results });
         });
       });
-    } 
-  })
-});
-
-router.patch('/:id', function (req, res, next) {
-  const id = req.params.id;
-  const fields = 'state';
-  const newData = [0, id];
-  const condition = 'id=?';
-
-  db.updateData('product', fields, newData, condition, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to deactivate product' });
     }
-    res.status(200).json({ message: 'product deactivated successfully', data: results });
   });
 });
 // router.post('/edituse', function (req, res) {

@@ -1,103 +1,116 @@
 const express = require('express');
 const db = require('./db_connection');
+const router = express.Router();
 
-const imp = express.Router();
-const insertFields = ['imp_id', 'pro_id_fk', 'amount', 'date'];
+// Handle importproduct creation (without profile upload)
+router.post('/create', function (req, res) {
+  const {_id, pro_id_fk, amount, price, total, date } = req.body;
+  const table = 'importproduct';
+  
+  // Auto-generate importproduct ID if it doesn't exist
+  if (!_id) {
+    db.autoId(table, 'id', (err, id) => {
+      // const code = id.toString().slice(-4).padStart(4, '0');
+      // const impId = 'IMPD-' + code;
+      const fields = 'id, pro_id_fk, amount, price, total, date';
+      const dataValue = [id, pro_id_fk, amount, price, total, date];
 
-// Get all imps
-imp.get('/imp', (req, res) => {
-  const query = `
-    SELECT 
-      importproduct.imp_id,
-      importproduct.pro_id_fk,
-      product.pro_id,
-      product.pro_code,
-      product.pro_name, 
-      importproduct.amount,
-      product_type.protype_name, 
-      importproduct.date
-    FROM 
-      importproduct
-    LEFT JOIN 
-      product ON importproduct.pro_id_fk = product.pro_id 
-    LEFT JOIN 
-      product_type ON product.protype_id_fk = product_type.protype_id;
-  `;
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'Failed to retrieve import products.' });
-    }
-    res.json(results);
-  });
-});
-
-// Add a new imp
-imp.post('/imp', (req, res) => {
-  const { pro_id_fk, amount, date } = req.body;
-
-  if (!pro_id_fk || !amount || !date) {
-    return res.status(400).json({ error: 'pro_id_fk, amount, and date are required.' });
-  }
-
-  const getMaxIdQuery = 'SELECT MAX(imp_id) AS maxId FROM importproduct';
-
-  db.query(getMaxIdQuery, (err, result) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'Failed to retrieve the maximum imp_id.' });
-    }
-
-    const nextImpId = (result[0].maxId ? result[0].maxId : 999) + 1;
-    const insertQuery = `INSERT INTO importproduct (${insertFields.join(', ')}) VALUES (?, ?, ?, ?)`;
-    const values = [nextImpId, pro_id_fk, amount, date];
-
-    db.query(insertQuery, values, (err) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: 'Failed to add import product.' });
-      }
-      res.status(201).json({ id: nextImpId, pro_id_fk, amount, date });
+      db.insertData(table, fields, dataValue, (err, results) => {
+        if (err) {
+          console.error('Error inserting importproduct:', err);
+          return res.status(500).json({ error: 'Failed to add importproduct.' });
+        }
+        console.log('importproduct added successfully!');
+        return res.status(200).json({ message: 'importproduct added successfully.'});
+      });
     });
-  });
-});
+  } else {
+    // Update existing importproduct
+    const where = `id = '${_id}'`;
 
-// Update an existing imp
-imp.put('/imp/:id', (req, res) => {
-  const {pro_id_fk, amount, date } = req.body;
+    db.selectWhere(table, '*', where, (err, results) => {
+      if (err || !results.length) {
+        console.error('importproduct not found:', err);
+        return res.status(500).json({ error: 'Failed to fetch importproduct data.' });
+      }
 
-  if (!pro_id_fk || !amount || !date) {
-    return res.status(400).json({ error: 'amount and date are required.' });
+      const fields = 'pro_id_fk, amount, price, total, date';
+      const newData = [pro_id_fk, amount, price, total, date, _id];
+      const condition = 'id=?';
+
+      db.updateData(table, fields, newData, condition, (err, results) => {
+        if (err) {
+          console.error('Error updating importproduct:', err);
+          return res.status(500).json({ error: 'Failed to update importproduct.' });
+        }
+        res.status(200).json({ message: 'importproduct updated successfully', data: results });
+      });
+    });
   }
+});
 
-  const query = `UPDATE importproduct SET pro_id_fk = ?, amount = ?, date = ? WHERE imp_id = ?`;
-  const values = [pro_id_fk, amount, date, req.params.id];
+// Deactivate importproduct (soft delete)
+// router.patch('/:id', function (req, res, next) {
+//   const id = req.params.id;
+//   const fields = 'total';
+//   const newData = [0, id];
+//   const condition = 'id=?';
 
-  db.query(query, values, (err, result) => {
+//   db.updateData('importproduct', fields, newData, condition, (err, results) => {
+//     if (err) {
+//       return res.status(500).json({ error: 'Failed to deactivate importproduct' });
+//     }
+//     res.status(200).json({ message: 'importproduct deactivated successfully', data: results });
+//   });
+// });
+
+// Delete importproduct
+router.delete("/:id", function (req, res, next) {
+  const id = req.params.id;
+  const where = `id='${id}'`;
+  db.deleteData('importproduct', where, (err, results) => {
     if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'Failed to update import product.' });
+      return res.status(500).json({ error: 'Failed to delete importproduct.' });
     }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Import product not found.' });
-    }
-    res.status(200).json({ message: 'Import product updated successfully.', id: req.params.id, amount, date });
+    res.status(200).json({ message: 'importproduct deleted successfully', data: results });
   });
 });
 
-// Delete an imp (hard delete)
-imp.delete('/imp/:id', (req, res) => {
-  const query = 'DELETE FROM importproduct WHERE imp_id = ?';
-  const values = [req.params.id];
-
-  db.query(query, values, (err) => {
+// Get single importproduct by ID
+router.get("/single/:id", function (req, res, next) {
+  const id = req.params.id;
+  const where = `id='${id}'`;
+  const tables = 'importproduct';
+  db.singleAll(tables, where, (err, results) => {
     if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'Failed to delete import product.' });
+      return res.status(400).send();
     }
-    res.status(204).send();
+    res.price(200).json(results);
   });
 });
 
-module.exports = imp;
+// Get all active importproducts
+router.get("/", function (req, res, next) {
+  const tables = `importproduct
+       LEFT JOIN product ON importproduct.pro_id_fk=product.id`;
+
+  const fields = `
+      importproduct.id,
+      importproduct.pro_id_fk, 
+      importproduct.amount, 
+      importproduct.price, 
+      importproduct.total, 
+      importproduct.date,
+      product.pro_id,
+      product.pro_name,
+      product.size`;
+
+  db.selectData(tables, fields, (err, results) => {
+      if (err) {
+          return res.status(400).send();
+      }
+      res.status(200).json(results);
+  });
+});
+
+module.exports = router;

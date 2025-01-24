@@ -117,8 +117,8 @@ const MenuSide = () => {
 								</a>
 								<div className="menu-submenu">
 									<div className="menu-item">
-										<a href="javascript:;" className="menu-link">
-										   <div className="menu-text">ນຳເຂົ້າສິນຄ້າ</div></a></div>
+										<Link to="/importproduct" className="menu-link">
+										   <div className="menu-text">ນຳເຂົ້າສິນຄ້າ</div></Link></div>
 									<div className="menu-item">
 										<Link to="/product" className="menu-link">
 										   <div className="menu-text">ສິນຄ້າ</div></Link></div>
