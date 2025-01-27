@@ -22,7 +22,7 @@ router.post('/create', function (req, res) {
   const upload = multer({ storage }).single('image');
 
   upload(req, res, function (err) {
-    const {_id, pro_name, size, amount, protype_id_fk, price } = req.body;
+    const {_id, pro_name, size, amount, unit_fk, protype_id_fk, price } = req.body;
     const total = amount * price; // Calculate total
     const table = 'product';
     
@@ -30,8 +30,8 @@ router.post('/create', function (req, res) {
       db.autoId(table, 'id', (err, id) => {
         const code = id.toString().slice(-4).padStart(4, '0');
         const proId = 'ST-' + code;
-        const Fields = 'id, pro_id, pro_name, size, amount, protype_id_fk, price, total, image';
-        const dataValue = [id, proId, pro_name, size, amount, protype_id_fk, price, total, image];
+        const Fields = 'id, pro_id, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image';
+        const dataValue = [id, proId, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image];
 
         db.insertData(table, Fields, dataValue, (err, results) => {
           if (err) {
@@ -63,8 +63,8 @@ router.post('/create', function (req, res) {
 
         const updatedimage = image || results[0].image;
         const updatedTotal = amount * price; // Recalculate total
-        const fields = 'pro_name, size, amount, protype_id_fk, price, total, image';
-        const newData = [pro_name, size, amount, protype_id_fk, price, updatedTotal, updatedimage, _id];
+        const fields = 'pro_name, size, amount, unit_fk, protype_id_fk, price, total, image';
+        const newData = [pro_name, size, amount, unit_fk, protype_id_fk, price, updatedTotal, updatedimage, _id];
         const condition = 'id=?';
 
         db.updateData(table, fields, newData, condition, (err, results) => {
@@ -117,7 +117,8 @@ router.get("/single/:id", function (req, res, next) {
 });
 router.get("/", function (req, res, next) {
   const tables = `product
-       LEFT JOIN product_type ON product.protype_id_fk=product_type.id`;
+       LEFT JOIN product_type ON product.protype_id_fk=product_type.id 
+       LEFT JOIN unit ON product.unit_fk=unit.id`;
 
   const fields = `
       product.id,
@@ -126,10 +127,12 @@ router.get("/", function (req, res, next) {
       product.size, 
       product.amount, 
       product.protype_id_fk, 
+      product.unit_fk, 
       product.image, 
       product.price,  
       product.total,
-      product_type.protype_name`;
+      product_type.protype_name,
+      unit.name`;
 
   db.selectData(tables, fields, (err, results) => {
       if (err) {

@@ -39,3 +39,9 @@ export const useProduct = () =>
     label: pro_name,
     value: id,
   }));
+
+  export const useCategories = () =>
+    useFetchData("categories").map(({ name, id }) => ({
+      label: name,
+      value: id,
+    }));

@@ -7,14 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // To parse JSON bodie
 
-const routes = ['service',
-   'staff', 
-   'province',
-    'district',
-     'customer',
-      'imp',
-       'product',
-        'protype'];
+const routes = [
+  'service',
+  'staff', 
+  'province',
+  'district',
+  'customer',
+  'imp',
+  'product',
+  'protype',
+  'unit',
+  'set_product'
+];
 
 routes.forEach(route => {
   app.use(`/${route}`, require(`./api/${route}`));

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+//import { Link } from "react-router-dom";
 import axios from "axios";
 import proImage from '../../../../assets/imges.jpg';
 import { Modal, Button, SelectPicker, Input } from "rsuite";
@@ -7,7 +8,7 @@ import { Config, Urlimage } from "../../../../config/connection";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { useProduct_Type } from "../../../../config/selectOption";
+import { useProduct_Type, useCategories } from "../../../../config/selectOption";
 
 const Product = () => {
   const api = Config.ApiURL;
@@ -26,12 +27,14 @@ const Product = () => {
     pro_name: "",
     size: "",
     amount: "",
+    unit_fk: "",
     protype_id_fk: "",
     image: null,
     price: "",
   });
 
   const prodtypes = useProduct_Type();
+  const category = useCategories();
 
   useEffect(() => {
     fetchgetData();
@@ -49,11 +52,12 @@ const Product = () => {
     setProductData({
       id: null,
       pro_name: "",
-      size: 0,
-      amount: 0,
+      size: "",
+      amount: "",
+      unit_fk: null,
       protype_id_fk: "",
       image: null,
-      price: 0,
+      price: "",
     });
     setOpen(false);
     setImageUrl(proImage); // Reset image URL
@@ -81,6 +85,7 @@ const Product = () => {
       pro_name: data.pro_name,
       size: data.size,
       amount: data.amount,
+      unit_fk: data.unit_fk,
       protype_id_fk: data.protype_id_fk,
       image: null,
       price: data.price,
@@ -144,13 +149,11 @@ const Product = () => {
         alert(`product ${productData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
-        resetForm();
     } catch (err) {
       console.error("Failed to submit product data", err);
     }
   };
   const handleDeleteClick = async (id) => {
-    alert(id);
     try {
       await axios.delete(`${api}/product/${id}`);
       alert("product member soft deleted successfully!");
@@ -194,34 +197,30 @@ const Product = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
             </div>
-
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
-              <SearchQuery
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
+              <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+              {/* <div className="actions mb-2">
+                <Link to="/importproduct" className="btn btn-sm btn-success ms-2">
+                  <i className="fas fa-upload"></i> ນຳເຂົ້າ
+                </Link>
+              </div> */}
               <div className="actions mb-2">
-                <a href="javarscript:;"
-                  className="btn btn-sm btn-success ms-2"
-                  onClick={handleAddClick}
-                >
+                <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
+                  onClick={handleAddClick}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
 
-          <table
-            id="data-table-default"
-            className="table table-striped table-bordered align-middle text-nowrap"
-          >
+          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ສິນຄ້າ</th>
-                <th className="text-nowrap">ຂະໜາດ(ml)</th>
+                <th className="text-nowrap">ຂະໜາດ</th>
                 <th className="text-nowrap">ຈຳນວນ</th>
                 <th className="text-nowrap">ລາຄາຊື້</th>
                 <th className="text-nowrap">ລາຄາລວມ</th>
@@ -244,8 +243,10 @@ const Product = () => {
                   <td>{product.pro_id}</td>
                   <td>{product.pro_name}</td>
                   <td> {product.size}</td>
-                  <td>{product.amount}</td>
-                  <td> {product.price}</td>
+                  <td style={{ color: product.amount < 10 ? "red" : "inherit" }}>
+                      {product.amount} {product.name}
+                  </td>
+                  <td> {product.price}/{product.name}</td>
                   <td> {product.total}</td>
                   <td>{product.protype_name}</td>
                   <td>
@@ -312,11 +313,12 @@ const Product = () => {
               <Input className="form-label" value={productData.pro_name} onChange={(value) => handleChange("pro_name", value)}
               placeholder="ຊື່ສິນຄ້າ..." required />
             </div>
-            <div className="col-md-6">
-              <label className="form-label">ຂະໜາດ(ml)</label>
-              <Input className="form-label" value={productData.size} onChange={(value) => handleChange("size", value.replace(/[^0-9]/g, ""))}
-             placeholder="ຂະໜາດ(ml)..." required/>
+            <div className="row col-md-6">
+                <label className="form-label">ຂະໜາດ</label>
+              <Input className="form-label" value={productData.size} onChange={(value) => handleChange("size", value)}
+             placeholder="ຂະໜາດ..." required/>
             </div>
+            
             <div className="col-md-6">
               <label className="form-label">ຈຳນວນ</label>
               <Input className="form-label" value={productData.amount}
@@ -324,12 +326,18 @@ const Product = () => {
                 placeholder="ຈຳນວນ..." required/>
             </div>
             <div className="col-md-6">
+              <label className="form-label">ໜ່ວຍ</label>
+              <SelectPicker className="form-label" data={category} value={productData.unit_fk}
+                onChange={(value) => handleSelectChange(value, "unit_fk")}
+                placeholder="..." required block/>
+            </div>
+            <div className="col-md-6">
               <label className="form-label">ລາຄາຊື້</label>
               <Input className="form-label" value={productData.price}
                 onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
                 placeholder="ລາຄາຊື້..." required/>
             </div>
-            <div className="col-md-12">
+            <div className="col-md-6">
               <label className="form-label">ປະເພດ</label>
               <SelectPicker className="form-label" data={prodtypes} value={productData.protype_id_fk}
                 onChange={(value) => handleSelectChange(value, "protype_id_fk")}

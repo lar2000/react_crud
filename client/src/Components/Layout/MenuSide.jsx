@@ -123,9 +123,9 @@ const MenuSide = () => {
 										<Link to="/product" className="menu-link">
 										   <div className="menu-text">ສິນຄ້າ</div></Link></div>
 									<div className="menu-item">
-										<a href="javascript:;" className="menu-link">
+										<Link to="/set_product" className="menu-link">
 										   <div className="menu-text">ເຊັດສິນຄ້າ</div>
-                                        </a>
+                                        </Link>
                                     </div>
 								</div>
 							</div>

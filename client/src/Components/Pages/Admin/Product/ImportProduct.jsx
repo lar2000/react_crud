@@ -23,7 +23,6 @@ const Importproduct = () => {
     pro_id_fk: "",
     amount: "",
     price: "",
-    total: 0,
     date: null,
   });
 
@@ -32,16 +31,6 @@ const Importproduct = () => {
   useEffect(() => {
     fetchgetImpData();
   }, []);
-  
-  useEffect(() => {
-  const amount = parseFloat(importproductData.amount) || 0; // Handle non-numeric or empty inputs
-  const price = parseFloat(importproductData.price) || 0;   // Handle non-numeric or empty inputs
-  setImportProductData((prevState) => ({
-    ...prevState,
-    total: amount * price, // Update the total
-  }));
-}, [importproductData.amount, importproductData.price]);
-
 
   const fetchgetImpData = async () => {
     try {
@@ -57,7 +46,6 @@ const Importproduct = () => {
       pro_id_fk: "",
       amount: 0,
       price: 0,
-      total: 0,
       date: null,
     });
     setOpen(false);
@@ -83,13 +71,12 @@ const Importproduct = () => {
       pro_id_fk: data.pro_id_fk,
       amount: data.amount,
       price: data.price,
-      total: data.total,
-      date: data.date,
+      date: new Date(data.date)
     });
   };
 
   const handleChange = (name, value) => {
-    setSearchDate(value);
+  
     setImportProductData({
       ...importproductData,
       [name]: value,
@@ -121,7 +108,6 @@ const Importproduct = () => {
         alert(`importproduct ${importproductData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetImpData();
-        resetForm();
     } catch (err) {
       console.error("Failed to submit importproduct data", err);
     }
@@ -130,7 +116,7 @@ const Importproduct = () => {
     alert(id);
     try {
       await axios.delete(`${api}/imp/${id}`);
-      alert("importproduct member soft deleted successfully!");
+      alert("importproduct deleted successfully!");
       fetchgetImpData();
     } catch (err) {
       console.error("Failed to delete importproduct", err);
@@ -173,7 +159,6 @@ const Importproduct = () => {
         <div className="panel-heading">
           <h4 className="panel-title">importproduct Panel</h4>
         </div>
-
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -209,7 +194,7 @@ const Importproduct = () => {
                 {/* <th width="1%" data-orderable="false">#</th> */}
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ສິນຄ້າ</th>
-                <th className="text-nowrap">ຂະໜາດ(ml)</th>
+                <th className="text-nowrap">ຂະໜາດ</th>
                 <th className="text-nowrap">ຈຳນວນ</th>
                 <th className="text-nowrap">ລາຄານຳເຂົ້າ</th>
                 <th className="text-nowrap">ລາຄາລວມ</th>
@@ -296,7 +281,7 @@ const Importproduct = () => {
             )}
             </div> */}
             <div className="col-md-6">
-              <label className="form-label">ຊື່ສິນຄ້າ-{importproductData.pro_id_fk}</label>
+              <label className="form-label">ຊື່ສິນຄ້າ</label>
               <SelectPicker className="form-label" data={products} value={importproductData.pro_id_fk}
               onChange={(value) => handleSelectChange(value, 'pro_id_fk')}
               placeholder="ເລືອກຊື່ສິນຄ້າ" required block/>
@@ -312,12 +297,6 @@ const Importproduct = () => {
               <Input className="form-label" value={importproductData.price}
                 onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
                 placeholder="ລາຄາຊື້..." required/>
-            </div>
-
-            <div className="col-md-6">
-              <label className="form-label">ລາຄາລວມ</label>
-              <Input className="form-label" value={importproductData.total}
-                placeholder="ລາຄາລວມ..." readOnly/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ວ.ດ.ປ</label>
