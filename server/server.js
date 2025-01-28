@@ -17,6 +17,8 @@ const routes = [
   'product',
   'protype',
   'unit',
+  'service',
+  'service_type',
   'set_product'
 ];
 

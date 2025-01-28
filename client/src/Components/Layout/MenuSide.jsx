@@ -55,33 +55,32 @@ const MenuSide = () => {
 					</Link>
 					</div>
 					<div className="menu-item fs-5">
-					 <a href="javascript:;" className="menu-link">
-					 <div className="menu-icon">
-					 <i className="fas fa-bookmark"></i>
-					 </div>
-					 <div className="menu-text">ຈອງບໍລິການ</div>
-					 </a>
+						<Link to="/booking" className="menu-link">
+							<div className="menu-icon"><i className="fas fa-bookmark"></i></div>
+							<div className="menu-text">ຈອງບໍລິການ</div>
+						</Link>
 					 </div>
 					 <div className="menu-item fs-5">
-					 <a href="javascript:;" className="menu-link">
-					 <div className="menu-icon">
-					 <i className="fas fa-bed"></i>
-					 </div>
-					 <div className="menu-text">ເຂົ້າໃຊ້ບໍລິການ</div>
-					 </a>
+					    <a href="javascript:;" className="menu-link">
+					        <div className="menu-icon"><i className="fas fa-bed"></i></div>
+					        <div className="menu-text">ເຂົ້າໃຊ້ບໍລິການ</div>
+					    </a>
 					 </div>
 					 <div className="menu-item has-sub fs-5">
 						<a href="javascript:void(0);" className="menu-link">
 							<div className="menu-icon"><i className="fa-solid fa-star"></i></div>
 							<div className="menu-text">ບໍລິການ</div>
-							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
 							<div className="menu-item">
-								<a href="javascript:;" className="menu-link"><div className="menu-text">ປະເພດບໍລິການ</div></a>
+								<Link to="/service_type" className="menu-link">
+									<div className="menu-text">ປະເພດບໍລິການ</div>
+								</Link>
 							</div>
 							<div className="menu-item">
-								<a href="javascript:;" className="menu-link"><div className="menu-text">ລາຍການບໍລິການ</div></a>
+								<Link to="/service" className="menu-link">
+									<div className="menu-text">ລາຍການບໍລິການ</div>
+								</Link>
 							</div>
 						</div>
 					</div>
@@ -89,7 +88,6 @@ const MenuSide = () => {
 						<a href="javascript:void(0);" className="menu-link">
 							<div className="menu-icon"><i className="fa-solid fa-file-lines"></i></div>
 							<div className="menu-text">ລາຍງານ</div>
-							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
 							<div className="menu-item">

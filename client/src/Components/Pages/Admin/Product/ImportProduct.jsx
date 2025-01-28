@@ -208,12 +208,6 @@ const Importproduct = () => {
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  {/* <td width="1%" className="with-img">
-                    {importproduct.image && (
-                      <img src={`${img}${importproduct.image}`}
-                        className="rounded h-30px my-n1 mx-n1" alt="image"/>
-                    )}
-                  </td> */}
                   <td>{importproduct.pro_id}</td>
                   <td>{importproduct.pro_name}</td>
                   <td> {importproduct.size}</td>
@@ -269,17 +263,6 @@ const Importproduct = () => {
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
-            {/* <div className="mb-3 d-flex justify-content-center align-items-center">
-            <label role='button'>
-              <input type="file" id="fileInput" accept="image/*" className='hide' onChange={handleFileChange}/>
-                <img src={imageUrl} className="w-150px rounded-3" />
-            </label>
-            {selectedFile && ( 
-              <span role='button' onClick={handleClearImage} 
-              className=" d-flex align-items-center justify-content-center badge bg-danger text-white position-absolute end-40 top-0 rounded-pill mt-n2 me-n5">
-                <i className="fa-solid fa-xmark"></i></span>
-            )}
-            </div> */}
             <div className="col-md-6">
               <label className="form-label">ຊື່ສິນຄ້າ</label>
               <SelectPicker className="form-label" data={products} value={importproductData.pro_id_fk}
@@ -288,13 +271,13 @@ const Importproduct = () => {
             </div>
             <div className="col-md-6">
               <label className="form-label">ຈຳນວນ</label>
-              <Input className="form-label" value={importproductData.amount}
+              <Input className="form-label" name="amount" value={importproductData.amount}
                 onChange={(value) => handleChange("amount", value.replace(/[^0-9]/g, ""))}
                 placeholder="ຈຳນວນ..." required/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ລາຄາຊື້ມື້ນີ້</label>
-              <Input className="form-label" value={importproductData.price}
+              <Input className="form-label" name="price" value={importproductData.price}
                 onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
                 placeholder="ລາຄາຊື້..." required/>
             </div>

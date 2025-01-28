@@ -40,8 +40,20 @@ export const useProduct = () =>
     value: id,
   }));
 
-  export const useCategories = () =>
-    useFetchData("categories").map(({ name, id }) => ({
+  export const useSetProduct = () =>
+    useFetchData("set_product").map(({ set_name, id }) => ({
+      label: set_name,
+      value: id,
+    }));
+
+    export const useServiceType = () =>
+      useFetchData("service_type").map(({ servicetype_name, id }) => ({
+        label: servicetype_name,
+        value: id,
+      }));
+
+  export const useUnit = () =>
+    useFetchData("unit").map(({ name, id }) => ({
       label: name,
       value: id,
     }));

@@ -4,42 +4,49 @@ const router = express.Router();
 
 // Handle set_product creation (without profile upload)
 router.post('/create', function (req, res) {
-  const { _id, pro_id_fk, set_name, detail } = req.body;
+  const { _id, pro_id_fk = [], set_name, detail } = req.body;
   const table = 'set_product';
-  
-  // Auto-generate set_product ID if it doesn't exist
+
+  if (!Array.isArray(pro_id_fk)) {
+    return res.status(400).json({ error: 'pro_id_fk must be an array.' });
+  }
+
   if (!_id) {
     db.autoId(table, 'id', (err, id) => {
+      if (err) {
+        console.error('Error generating ID:', err);
+        return res.status(500).json({ error: 'Failed to generate ID.' });
+      }
+
       const code = id.toString().slice(-4).padStart(4, '0');
       const setId = 'SET-' + code;
       const fields = 'id, set_id, set_name, detail';
       const dataValue = [id, setId, set_name, detail];
 
-      // Insert into set_product table
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
           console.error('Error inserting set_product:', err);
           return res.status(500).json({ error: 'Failed to add set_product.' });
         }
 
-        // Insert associations into set_product_association table
-        pro_id_fk.forEach(pro_id => {
-          const associationFields = 'set_fk, pro_id_fk';
-          const associationData = [id, pro_id];
+        if (pro_id_fk.length > 0) {
+          pro_id_fk.forEach(pro_id => {
+            const associationFields = 'set_fk, pro_id_fk';
+            const associationData = [id, pro_id];
 
-          db.insertData('set_prod_association', associationFields, associationData, (err, results) => {
-            if (err) {
-              console.error('Error inserting set_product_association:', err);
-            }
+            db.insertData('set_prod_association', associationFields, associationData, (err, results) => {
+              if (err) {
+                console.error('Error inserting set_product_association:', err);
+              }
+            });
           });
-        });
+        }
 
         console.log('set_product and associations added successfully!');
         return res.status(200).json({ message: 'set_product added successfully.', set_product: dataValue });
       });
     });
   } else {
-    // Update existing set_product
     const where = `id = '${_id}'`;
 
     db.selectWhere(table, '*', where, (err, results) => {
@@ -58,8 +65,7 @@ router.post('/create', function (req, res) {
           return res.status(500).json({ error: 'Failed to update set_product.' });
         }
 
-        // Delete old associations and insert new ones
-        const deleteCondition = `id = (SELECT id FROM ${table} WHERE id = '${_id}')`;
+        const deleteCondition = `set_fk = (SELECT id FROM ${table} WHERE id = '${_id}')`;
 
         db.deleteData('set_prod_association', deleteCondition, (err, results) => {
           if (err) {
@@ -67,17 +73,18 @@ router.post('/create', function (req, res) {
             return res.status(500).json({ error: 'Failed to delete associations.' });
           }
 
-          // Insert new associations
-          pro_id_fk.forEach(pro_id => {
-            const associationFields = 'set_fk, pro_id_fk';
-            const associationData = [id, pro_id]; // Use the existing set_id
+          if (pro_id_fk.length > 0) {
+            pro_id_fk.forEach(pro_id => {
+              const associationFields = 'set_fk, pro_id_fk';
+              const associationData = [_id, pro_id];
 
-            db.insertData('set_product_association', associationFields, associationData, (err, results) => {
-              if (err) {
-                console.error('Error inserting set_product_association:', err);
-              }
+              db.insertData('set_prod_association', associationFields, associationData, (err, results) => {
+                if (err) {
+                  console.error('Error inserting set_product_association:', err);
+                }
+              });
             });
-          });
+          }
 
           console.log('set_product and associations updated successfully!');
           res.status(200).json({ message: 'set_product updated successfully.' });
@@ -107,7 +114,7 @@ router.delete('/:id', function (req, res, next) {
   const id = req.params.id;
 
   // First, delete the associations from the set_product_association table
-  const deleteAssociationsCondition = `id = (SELECT id FROM set_product WHERE id = '${id}')`;
+  const deleteAssociationsCondition = `set_fk = (SELECT id FROM set_product WHERE id = '${id}')`;
 
   db.deleteData('set_prod_association', deleteAssociationsCondition, (err, results) => {
     if (err) {
@@ -172,6 +179,9 @@ router.get('/', function (req, res, next) {
     set_product.set_id,
     set_product.set_name,
     set_product.detail,
+    set_prod_association.spa_id,
+    set_prod_association.set_fk,
+    GROUP_CONCAT(set_prod_association.pro_id_fk) AS pro_id_fk,
     GROUP_CONCAT(product.pro_name) AS pro_names `;
 
   db.selectData(tables, fields, (err, results) => {
@@ -179,6 +189,9 @@ router.get('/', function (req, res, next) {
       console.error('Error fetching set_products:', err);
       return res.status(400).send();
     }
+    results.forEach(row => {
+      row.pro_id_fk = row.pro_id_fk.split(','); // Split the string into an array
+    });
     res.status(200).json(results);
   });
 });

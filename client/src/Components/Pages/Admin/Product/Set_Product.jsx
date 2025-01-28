@@ -63,14 +63,15 @@ const Set_Product = () => {
   };
 
   const handleEditClick = (data) => {
+    console.log(data.pro_id_fk)
     setModalType("edit");
     handleOpen();
     setProductData({
       _id: data.id,
-      pro_id_fk: data.pro_id_fk,
+      pro_id_fk: data.pro_id_fk, // An array
       set_id: data.set_id,
       set_name: data.set_name,
-      detail: data.pro_name,
+      detail: data.detail,
     });
   };
 
@@ -89,7 +90,6 @@ const Set_Product = () => {
         alert(`set_product ${productData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
-        resetForm();
     } catch (err) {
       console.error("Failed to submit set_product data", err);
     }
@@ -130,7 +130,7 @@ const Set_Product = () => {
         <li className="breadcrumb-item active">set_product</li>
       </ol>
       <h1 className="page-header">
-        Manage set_product  ຕໍ່ id ໃນ set_product.js<small>header small text goes here...</small>
+        Manage set_product<small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
@@ -228,18 +228,19 @@ const Set_Product = () => {
           <div className="row mb-3">
             <div className="col-md-12">
               <label className="form-label">ຊື່ເຊັັດສິນຄ້າ</label>
-              <Input className="form-label" value={productData.set_name} onChange={(value) => handleChange("set_name", value)}
+              <Input className="form-label" name="set_name" value={productData.set_name} 
+              onChange={(value) => handleChange("set_name", value)}
               placeholder="ຊື່..." required />
             </div>
             <div className="col-md-12">
             <label className="form-label">ເລຶອກສິນຄ້າ</label>
             <CheckPicker className="form-label" data={products} value={productData.pro_id_fk}
-                onChange={(value) => handleChange("pro_id_fk", value)} 
+                onChange={(value) => handleChange("pro_id_fk", value)}  
                 placeholder="ເລືອກສິນຄ້າ" required block/>
             </div>
             <div className="col-md-12">
               <label className="form-label">ລາຍລະອຽດ</label>
-              <Input as="textarea" rows={3} className="form-label" value={productData.detail} onChange={(value) => handleChange("detail", value)}
+              <Input as="textarea" rows={3} name="textarea" className="form-label" value={productData.detail} onChange={(value) => handleChange("detail", value)}
              placeholder="Textarea" required/>
             </div>
             </div>

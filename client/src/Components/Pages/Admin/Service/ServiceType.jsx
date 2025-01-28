@@ -7,21 +7,18 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 
-const Customer = () => {
+const ServiceType = () => {
   const api = Config.ApiURL;
   const [getData, setData] = useState([]);
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [modalType, setModalType] = useState("add"); // Add or edit
 
-  const [customerData, setCustomerData] = useState({
+  const [serviceTypeData, setserviceTypeData] = useState({
     id: null,
-    cust_name: "",
-    cust_surname: "",
-    email: "",
-    status: "",
+    servicetype_name: "",
+    detail: "",
   });
 
   useEffect(() => {
@@ -30,18 +27,17 @@ const Customer = () => {
 
   const fetchgetData = async () => {
     try {
-      const res = await axios.get(`${api}/customer`);
+      const res = await axios.get(`${api}/service_type`);
       setData(res.data);
     } catch (err) {
-      console.error("Failed to fetch customer data", err);
+      console.error("Failed to fetch service_type data", err);
     }
   };
   const resetForm = () => {
-    setCustomerData({
+    setserviceTypeData({
       id: null,
-      cust_name: "",
-      cust_surname: "",
-      email: "",
+      servicetype_name: "",
+      detail: "",
     });
     setOpen(false);
   };
@@ -61,54 +57,48 @@ const Customer = () => {
   const handleEditClick = (data) => {
     setModalType("edit");
     handleOpen();
-    setCustomerData({
+    setserviceTypeData({
       _id: data.id,
-      cust_name: data.cust_name,
-      cust_surname: data.cust_surname,
-      email: data.email,
+      servicetype_name: data.servicetype_name,
+      detail: data.detail,
     });
   };
 
   const handleChange = (name, value) => {
-    setCustomerData({
-      ...customerData,
+    setserviceTypeData({
+      ...serviceTypeData,
       [name]: value,
     });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        console.log(customerData)
-        await axios.post(`${api}/customer/create`, customerData);
-        alert(`Customer ${customerData._id ? "updated" : "added"} successfully!`);
+        console.log(serviceTypeData)
+        await axios.post(`${api}/service_type/create`, serviceTypeData);
+        alert(`service_type ${serviceTypeData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
         resetForm();
     } catch (err) {
-      console.error("Failed to submit customer data", err);
+      console.error("Failed to submit service_type data", err);
     }
   };
   const handleDeleteClick = async (id) => {
-    alert(id);
     try {
-      await axios.patch(`${api}/customer/${id}`);
-      alert("Customer member soft deleted successfully!");
+      await axios.delete(`${api}/service_type/${id}`);
+      alert("service_type member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
-      console.error("Failed to delete customer", err);
+      console.error("Failed to delete service_type", err);
     }
   };
   
-  const filteredData = getData.filter((customer) => {
+  const filteredData = getData.filter((service_type) => {
     const matchesSearch =
-      customer.cust_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.cust_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.cust_surname.toLowerCase().includes(searchTerm.toLowerCase());
+      service_type.servicetype_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service_type.servicetype_name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      selectedStatus === "" || customer.status === parseInt(selectedStatus);
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const startIndex = (currentPage - 1) * length;
@@ -123,29 +113,20 @@ const Customer = () => {
         <li className="breadcrumb-item">
           <a href="javascript:;">Page Options</a>
         </li>
-        <li className="breadcrumb-item active">Customer</li>
+        <li className="breadcrumb-item active">service_type</li>
       </ol>
       <h1 className="page-header">
-        Manage Customer <small>header small text goes here...</small>
+        Manage service_type <small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
         <div className="panel-heading">
-          <h4 className="panel-title">Customer Panel</h4>
+          <h4 className="panel-title">service_type Panel</h4>
         </div>
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
-              <div className="ms-2 mb-2">
-                <select className="form-select form-select-sm" value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="">All</option>
-                  <option value="0">Booking</option>
-                  <option value="1">In progress</option>
-                  <option value="2">Done</option>
-                </select>
-              </div>
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
@@ -163,34 +144,20 @@ const Customer = () => {
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
-                <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ອີດມວ໌</th>
-                <th className="text-nowrap">ສະຖານະ</th>
+                <th className="text-nowrap">ຊື່ປະເພດບໍລິການ</th>
+                <th className="text-nowrap">ລາຍລະອຽດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((customer, index) => (
-                <tr key={customer.id}>
+              {paginatedData.map((service_type, index) => (
+                <tr key={service_type.id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{customer.cust_id}</td>
-                  <td>{customer.cust_name} {customer.cust_surname}</td>
-                  <td>{customer.email}</td>
-                  <td>
-                    {customer.status === 2 ? (
-                        <span className="badge border border-success text-success px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Done</span>) 
-                        : customer.status === 1 ? (
-                        <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>In progress</span>) 
-                        : (
-                        <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Booking
-                        </span>
-                    )}
-                    </td>
+                  <td>{service_type.servicetype_id}</td>
+                  <td>{service_type.servicetype_name}</td>
+                  <td>{service_type.detail}</td>
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
@@ -198,10 +165,10 @@ const Customer = () => {
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(customer)}><i className="fas fa-pen-to-square"></i>
+                            onClick={() => handleEditClick(service_type)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(customer.id)}>
+                          onClick={() => handleDeleteClick(service_type.id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>
@@ -228,33 +195,27 @@ const Customer = () => {
       <Modal size={"xs"} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
-            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນລູກຄ້າ" : "ແກ້ໄຂ ຂໍ້ມູນລູກຄ້າ"}
+            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນປະເພດບໍລິການ" : "ແກ້ໄຂ ຂໍ້ມູນປະເພດບໍລິການ"}
           </Modal.Title>
         </Modal.Header>
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
             <div className="col-md-12">
-              <label className="form-label">ຊື່</label>
-              <Input className="form-label" name="name" value={customerData.cust_name} 
-              onChange={(value) => handleChange("cust_name", value)}
-              placeholder="ຊື່..." required />
+              <label className="form-label">ຊື່ປະເພດບໍລິການ</label>
+              <Input className="form-label" name="name" value={serviceTypeData.servicetype_name} onChange={(value) => handleChange("servicetype_name", value)}
+              placeholder="ຊື່ປະເພດບໍລິການ..." required />
             </div>
             <div className="col-md-12">
-              <label className="form-label">ນາມສະກຸນ</label>
-              <Input className="form-label" name="surname" value={customerData.cust_surname} onChange={(value) => handleChange("cust_surname", value)}
-             placeholder="ນາມສະກຸນ..." required/>
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={customerData.email} onChange={(value) => handleChange("email", value)}
-                placeholder="ອີເມວ໌..."/>
+              <label className="form-label">ລາຍລະອຽດ</label>
+              <Input as="textarea" rows={3} name="textarea" className="form-label" value={serviceTypeData.detail} onChange={(value) => handleChange("detail", value)}
+                placeholder="ລາຍລະອຽດ..."/>
             </div>
             </div>
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Add" : "Update"}
+            {modalType === "add" ? "ບັນທຶກ" : "Update"}
           </Button>
           <Button onClick={resetForm} appearance="subtle">
             Cancel
@@ -266,4 +227,4 @@ const Customer = () => {
   );
 };
 
-export default Customer;
+export default ServiceType;

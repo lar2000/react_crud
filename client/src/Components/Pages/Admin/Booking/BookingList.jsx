@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import userImage from '../../../../assets/user.png';
 import { Modal, Button, SelectPicker, Input } from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
@@ -9,7 +8,7 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { useProvince, useDistrict } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
-const Staff = () => {
+const Booking = () => {
   const api = Config.ApiURL;
   const img = `${Urlimage.ImgURL}/profiles/`;
   const [getData, setData] = useState([]);
@@ -17,25 +16,22 @@ const Staff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState("add"); // Add or edit
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState(userImage);
 
-
-  const [staffData, setStaffData] = useState({
+  const [bookData, setbookData] = useState({
     id: null,
-    staff_id: "",
-    staff_name: "",
-    staff_surname: "",
+    cust_id: "",
+    date: "",
+    cust_name: "",
+    cust_surname: "",
     email: "",
     tell: "",
-    profile: null,
     village: "",
     district_fk: "",
     province: "",
   });
 
   const provinces = useProvince(); // Fetch province data
-  const districts = useDistrict(staffData.province); // Fetch districts based on selected province
+  const districts = useDistrict(bookData.province); // Fetch districts based on selected province
 
   useEffect(() => {
     fetchgetData();
@@ -43,27 +39,25 @@ const Staff = () => {
 
   const fetchgetData = async () => {
     try {
-      const res = await axios.get(`${api}/staff`);
+      const res = await axios.get(`${api}/booking`);
       setData(res.data);
     } catch (err) {
-      console.error("Failed to fetch staff data", err);
+      console.error("Failed to fetch booking data", err);
     }
   };
   const resetForm = () => {
-    setStaffData({
+    setbookData({
       id: null,
-      staff_name: "",
-      staff_surname: "",
+      date: "",
+      cust_name: "",
+      cust_surname: "",
       email: "",
       tell: "",
-      profile: null,
       village: "",
       district_fk: "",
       province: "",
     });
     setOpen(false);
-    setImageUrl(userImage); // Reset image URL
-    setSelectedFile(null); // Reset selected file
   };
 
   const [open, setOpen] = useState(false);
@@ -81,56 +75,28 @@ const Staff = () => {
   const handleEditClick = (data) => {
     setModalType("edit");
     handleOpen();
-    setStaffData({
+    setbookData({
       _id: data.id,
-      staff_id: data.staff_id,
-      staff_name: data.staff_name,
-      staff_surname: data.staff_surname,
+      date: data.date,
+      cust_name: data.cust_name,
+      cust_surname: data.cust_surname,
       email: data.email,
       tell: data.tell,
-      profile: null,
       village: data.village,
       district_fk: data.district_fk,
       province: data.province_id_fk,
     });
-    setImageUrl(data.profile ? `${img}${data.profile}` : userImage);
   };
 
   const handleChange = (name, value) => {
-    setStaffData({
-      ...staffData,
+    setbookData({
+      ...bookData,
       [name]: value,
     });
   };
-  const handleClearImage = () => {
-    setSelectedFile(null);
-    document.getElementById('fileInput').value = '';
-    setStaffData({
-      ...staffData, profile: null
-    })
-    setImageUrl(userImage)
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImageUrl(event.target.result);
-      };
-      setStaffData({
-        ...staffData, profile:file
-      })
-      reader.readAsDataURL(file);
-    } else {
-    setImageUrl(userImage);
-    }
-  };
-  
   const handleSelectChange = (event, field) => {
-    setStaffData({
-      ...staffData,
+    setbookData({
+      ...bookData,
       [field]: event,
     });
   };
@@ -138,40 +104,41 @@ const Staff = () => {
     e.preventDefault();
    
     const formData = new FormData();
-    // Append staff data to FormData
-    for (const key in staffData) {
-      formData.append(key, staffData[key]);
+    // Append booking data to FormData
+    for (const key in bookData) {
+      formData.append(key, bookData[key]);
     }
     try {
-        await axios.post(`${api}/staff/create`, formData, {
+        await axios.post(`${api}/booking/create`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        alert(`Staff ${staffData._id ? "updated" : "added"} successfully!`);
+        alert(`booking ${bookData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
         resetForm();
     } catch (err) {
-      console.error("Failed to submit staff data", err);
+      console.error("Failed to submit booking data", err);
     }
   };
   const handleDeleteClick = async (id) => {
     alert(id);
     try {
-      await axios.patch(`${api}/staff/${id}`);
-      alert("Staff member soft deleted successfully!");
+      await axios.patch(`${api}/booking/${id}`);
+      alert("booking member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
-      console.error("Failed to delete staff", err);
+      console.error("Failed to delete booking", err);
     }
   };
   
   const filteredData = getData.filter(
-    (staff) =>
-      staff.staff_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.staff_surname.toLowerCase().includes(searchTerm.toLowerCase())
+    (booking) =>
+      booking.book_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.cust_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.cust_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.cust_surname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const startIndex = (currentPage - 1) * length;
@@ -186,15 +153,15 @@ const Staff = () => {
         <li className="breadcrumb-item">
           <a href="javascript:;">Page Options</a>
         </li>
-        <li className="breadcrumb-item active">Staff</li>
+        <li className="breadcrumb-item active">booking</li>
       </ol>
       <h1 className="page-header">
-        Manage Staff <small>header small text goes here...</small>
+        Manage booking <small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
         <div className="panel-heading">
-          <h4 className="panel-title">Staff Panel</h4>
+          <h4 className="panel-title">booking Panel</h4>
         </div>
 
         <div className="panel-body">
@@ -227,34 +194,36 @@ const Staff = () => {
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th width="1%" data-orderable="false">#</th>
-                <th className="text-nowrap">ລະຫັດ</th>
+                <th className="text-nowrap">ລະຫັດຈອງ</th>
+                <th className="text-nowrap">ລະຫັດລູກຄ້າ</th>
+                <th className="text-nowrap">date</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ອີດມວ໌</th>
+                <th className="text-nowrap">ອີເມວ໌</th>
                 <th className="text-nowrap">ເບີໂທະສັບ</th>
                 <th className="text-nowrap">ທີຢູ່</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((staff, index) => (
-                <tr key={staff.id}>
+              {paginatedData.map((booking, index) => (
+                <tr key={booking.id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
                   <td width="1%" className="with-img">
-                    {staff.profile && (
+                    {booking.profile && (
                       <img
-                        src={`${img}${staff.profile}`}
+                        src={`${img}${booking.profile}`}
                         className="rounded h-30px my-n1 mx-n1"
                         alt="profile"
                       />
                     )}
                   </td>
-                  <td>{staff.staff_id}</td>
-                  <td>{staff.staff_name} {staff.staff_surname}</td>
-                  <td>{staff.email}</td>
-                  <td>{staff.tell}</td>
-                  <td> {staff.village}, {staff.district_name}, {staff.province_name}
+                  <td>{booking.cust_id}</td>
+                  <td>{booking.cust_name} {booking.cust_surname}</td>
+                  <td>{booking.email}</td>
+                  <td>{booking.tell}</td>
+                  <td> {booking.village}, {booking.district_name}, {booking.province_name}
                   </td>
                   <td>
                     <div className="panel-heading">
@@ -268,10 +237,10 @@ const Staff = () => {
                         </a>
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(staff)}><i className="fas fa-pen-to-square"></i>
+                            onClick={() => handleEditClick(booking)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(staff.id)}>
+                          onClick={() => handleDeleteClick(booking.id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>
@@ -298,58 +267,47 @@ const Staff = () => {
       <Modal size={"sm"} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
-            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນພະນັກງານ" : "ແກ້ໄຂ ຂໍ້ມູນພະນັກງານ"}
+            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນການຈອງ" : "ແກ້ໄຂ ຂໍ້ມູນການຈອງ"}
           </Modal.Title>
         </Modal.Header>
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
-            <div className="mb-3 d-flex justify-content-center align-items-center">
-            <label role='button'>
-              <input type="file" id="fileInput" accept="image/*" className='hide' onChange={handleFileChange}/>
-                <img src={imageUrl} className="w-150px rounded-3" />
-            </label>
-            {selectedFile && ( 
-              <span role='button' onClick={handleClearImage} 
-              className=" d-flex align-items-center justify-content-center badge bg-danger text-white position-absolute end-40 top-0 rounded-pill mt-n2 me-n5">
-                <i className="fa-solid fa-xmark"></i></span>
-            )}
-            </div>
             <div className="col-md-6">
               <label className="form-label">ຊື່</label>
-              <Input className="form-label" name="name" value={staffData.staff_name} onChange={(value) => handleChange("staff_name", value)}
+              <Input className="form-label" name="name" value={bookData.cust_name} onChange={(value) => handleChange("cust_name", value)}
               placeholder="ຊື່..." required />
             </div>
             <div className="col-md-6">
               <label className="form-label">ນາມສະກຸນ</label>
-              <Input className="form-label" name="surname" value={staffData.staff_surname} onChange={(value) => handleChange("staff_surname", value)}
+              <Input className="form-label" name="surname" value={bookData.cust_surname} onChange={(value) => handleChange("cust_surname", value)}
              placeholder="ນາມສະກຸນ..." required/>
             </div>
             <div className="col-md-12">
               <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={staffData.email} onChange={(value) => handleChange("email", value)}
+              <Input className="form-label" name="email" value={bookData.email} onChange={(value) => handleChange("email", value)}
                 placeholder="ອີເມວ໌..."/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ເບີໂທ</label>
-              <Input className="form-label" name="tell" value={staffData.tell} onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
+              <Input className="form-label" name="tell" value={bookData.tell} onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
                 placeholder="020xxxxxxxx/030xxxxxxx" required/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ແຂວງ</label>
-              <SelectPicker className="form-label" data={provinces} value={staffData.province}
+              <SelectPicker className="form-label" data={provinces} value={bookData.province}
                 onChange={(value) => handleSelectChange(value, "province")}
                 placeholder="ເລືອກແຂວງ" required block/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ເມືອງ</label>
-              <SelectPicker className="form-label" data={districts} value={staffData.district_fk}
+              <SelectPicker className="form-label" data={districts} value={bookData.district_fk}
                 onChange={(value) => handleSelectChange(value, "district_fk")}
                 placeholder="ເລືອກເມືອງ" required block/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ບ້ານ</label>
-              <Input className="form-label" value={staffData.village} onChange={(value) => handleChange("village", value)}
+              <Input className="form-label" value={bookData.village} onChange={(value) => handleChange("village", value)}
                 placeholder="ບ້ານ..." required/>
             </div>
             </div>
@@ -368,4 +326,4 @@ const Staff = () => {
   );
 };
 
-export default Staff;
+export default Booking;

@@ -1,9 +1,12 @@
 import { Routes, Route,Navigate } from 'react-router-dom';
+import Booking from '../Components/Pages/Admin/Booking/BookingList';
 import Staff from '../Components/Pages/Admin/Staff/Staff';
 import Customer from '../Components/Pages/Admin/Customer/Customer';
 import ImportProd from '../Components/Pages/Admin/Product/ImportProduct';
 import Product from '../Components/Pages/Admin/Product/Product';
 import Set_Product from '../Components/Pages/Admin/Product/Set_Product';
+import ServiceType from '../Components/Pages/Admin/Service/ServiceType';
+import Service from '../Components/Pages/Admin/Service/Service';
 import HomePage from '../Components/Pages/Home/Home';
 
 export default function Content() {
@@ -11,11 +14,14 @@ export default function Content() {
             <Routes>
             <Route path="/" element={<Navigate replace to={'home'} />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/booking" element={<Booking />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/customer" element={<Customer />} />
             <Route path="/importproduct" element={<ImportProd />} />
             <Route path="/product" element={<Product />} />
             <Route path="/set_product" element={<Set_Product />} />
+            <Route path="/service_type" element={<ServiceType />} />
+            <Route path="/service" element={<Service />} />
             </Routes>
     );
 }

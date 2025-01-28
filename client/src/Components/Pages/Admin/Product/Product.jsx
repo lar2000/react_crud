@@ -8,7 +8,7 @@ import { Config, Urlimage } from "../../../../config/connection";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { useProduct_Type, useCategories } from "../../../../config/selectOption";
+import { useProduct_Type, useUnit} from "../../../../config/selectOption";
 
 const Product = () => {
   const api = Config.ApiURL;
@@ -34,7 +34,7 @@ const Product = () => {
   });
 
   const prodtypes = useProduct_Type();
-  const category = useCategories();
+  const unit = useUnit();
 
   useEffect(() => {
     fetchgetData();
@@ -310,30 +310,31 @@ const Product = () => {
             </div>
             <div className="col-md-6">
               <label className="form-label">ຊື່ສິນຄ້າ</label>
-              <Input className="form-label" value={productData.pro_name} onChange={(value) => handleChange("pro_name", value)}
+              <Input className="form-label" name="pro_name" value={productData.pro_name} 
+              onChange={(value) => handleChange("pro_name", value)}
               placeholder="ຊື່ສິນຄ້າ..." required />
             </div>
             <div className="row col-md-6">
                 <label className="form-label">ຂະໜາດ</label>
-              <Input className="form-label" value={productData.size} onChange={(value) => handleChange("size", value)}
+              <Input className="form-label" name="size" value={productData.size} onChange={(value) => handleChange("size", value)}
              placeholder="ຂະໜາດ..." required/>
             </div>
             
             <div className="col-md-6">
               <label className="form-label">ຈຳນວນ</label>
-              <Input className="form-label" value={productData.amount}
+              <Input className="form-label" name="amount" value={productData.amount}
                 onChange={(value) => handleChange("amount", value.replace(/[^0-9]/g, ""))}
                 placeholder="ຈຳນວນ..." required/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ໜ່ວຍ</label>
-              <SelectPicker className="form-label" data={category} value={productData.unit_fk}
+              <SelectPicker className="form-label" data={unit} value={productData.unit_fk}
                 onChange={(value) => handleSelectChange(value, "unit_fk")}
                 placeholder="..." required block/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ລາຄາຊື້</label>
-              <Input className="form-label" value={productData.price}
+              <Input className="form-label" name="price" value={productData.price}
                 onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
                 placeholder="ລາຄາຊື້..." required/>
             </div>
