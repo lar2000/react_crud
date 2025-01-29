@@ -57,3 +57,16 @@ export const useProduct = () =>
       label: name,
       value: id,
     }));
+
+    export const useCustomer = () =>
+      useFetchData("customer").map(({ cust_name, cust_surname, id }) => ({
+        label: `${cust_name} ${cust_surname}`,
+        value: id,
+      }));
+
+      export const useTime = () =>
+        useFetchData("time").map(({ time, id }) => ({
+          label: time,
+          value: id,
+        }));
+    

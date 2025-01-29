@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, SelectPicker, Input } from "rsuite";
+import { Modal, Button, SelectPicker, Input, DateRangePicker, TimePicker } 
+from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { useProvince, useDistrict } from "../../../../config/selectOption"; // Assuming hooks are in this location
+import { useServiceType, useCustomer  } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
 const Booking = () => {
   const api = Config.ApiURL;
@@ -19,19 +20,22 @@ const Booking = () => {
 
   const [bookData, setbookData] = useState({
     id: null,
-    cust_id: "",
-    date: "",
-    cust_name: "",
-    cust_surname: "",
+    group_type: "",
+    cust_id_fk: null,
+    date: [null, null],
+    time: null,
+    service_id_fk: null,
+    group_size: "",
     email: "",
     tell: "",
-    village: "",
-    district_fk: "",
-    province: "",
+    note: "",
   });
 
-  const provinces = useProvince(); // Fetch province data
-  const districts = useDistrict(bookData.province); // Fetch districts based on selected province
+  const serviceType = useServiceType();
+  const customers = useCustomer();
+  const groupData = ['ກຸ່ມ', 'ລາຍບຸກຄົນ'].map(
+    item => ({ label: item, value: item })
+  );
 
   useEffect(() => {
     fetchgetData();
@@ -48,14 +52,15 @@ const Booking = () => {
   const resetForm = () => {
     setbookData({
       id: null,
-      date: "",
-      cust_name: "",
-      cust_surname: "",
+      group_type: "",
+      date: [null, null],
+      time: null,
+      cust_id_fk: null,
+      service_id_fk: null,
+      group_size: "",
       email: "",
       tell: "",
-      village: "",
-      district_fk: "",
-      province: "",
+      note:""
     });
     setOpen(false);
   };
@@ -66,10 +71,22 @@ const Booking = () => {
     setOpen(false);
     resetForm();
   }
-
   const handleAddClick = () => {
     handleOpen();
     setModalType("add");
+  };
+
+  const handleDateSelect = (range) => {
+    if (range && range.length === 2) {
+      setbookData({ ...bookData, date: range });
+    }
+  };
+
+  const handleTimeChange = (field, time) => {
+    setbookData({
+      ...bookData,
+      [field]: time,
+    });
   };
 
   const handleEditClick = (data) => {
@@ -77,14 +94,15 @@ const Booking = () => {
     handleOpen();
     setbookData({
       _id: data.id,
-      date: data.date,
-      cust_name: data.cust_name,
-      cust_surname: data.cust_surname,
+      group_type: data.group_type,
+      date: [new Date(data.date[0]), new Date(data.date[1])],
+      time: null,
+      cust_id_fk: data.cust_id_fk,
+      service_id_fk: data.service_id_fk,
+      group_size: data.group_size,
       email: data.email,
       tell: data.tell,
-      village: data.village,
-      district_fk: data.district_fk,
-      province: data.province_id_fk,
+      note: data.note,
     });
   };
 
@@ -171,36 +189,28 @@ const Booking = () => {
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
-              <SearchQuery
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
+              <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;"
-                  className="btn btn-sm btn-success ms-2"
-                  onClick={handleAddClick}
-                >
+                <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
+                  onClick={handleAddClick}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
 
-          <table
-            id="data-table-default"
-            className="table table-striped table-bordered align-middle text-nowrap"
-          >
+          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ລະຫັດຈອງ</th>
+                <th className="text-nowrap">ປະເພດຈອງ</th>
                 <th className="text-nowrap">ລະຫັດລູກຄ້າ</th>
                 <th className="text-nowrap">date</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ອີເມວ໌</th>
-                <th className="text-nowrap">ເບີໂທະສັບ</th>
-                <th className="text-nowrap">ທີຢູ່</th>
+                <th className="text-nowrap">ຂໍ້ມູນຕິດຕໍ່</th>
+                <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
@@ -219,12 +229,15 @@ const Booking = () => {
                       />
                     )}
                   </td>
+                  <td>{booking.book_id}</td>
+                  <td>{booking.group_type}</td>
                   <td>{booking.cust_id}</td>
+                  <td>{booking.date}</td>
                   <td>{booking.cust_name} {booking.cust_surname}</td>
+                  <td>{booking.group_size}</td>
                   <td>{booking.email}</td>
                   <td>{booking.tell}</td>
-                  <td> {booking.village}, {booking.district_name}, {booking.province_name}
-                  </td>
+                  <td>{booking.note}</td>
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
@@ -264,7 +277,7 @@ const Booking = () => {
 
       {/*---------- Modal Component ---------------*/}
 
-      <Modal size={"sm"} open={open} onClose={handleClose}>
+      <Modal size={"md"} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
             {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນການຈອງ" : "ແກ້ໄຂ ຂໍ້ມູນການຈອງ"}
@@ -273,42 +286,60 @@ const Booking = () => {
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
-            <div className="col-md-6">
-              <label className="form-label">ຊື່</label>
-              <Input className="form-label" name="name" value={bookData.cust_name} onChange={(value) => handleChange("cust_name", value)}
-              placeholder="ຊື່..." required />
+          <div className="col-md-6">
+              <label className="form-label">ປະເພດຈອງ</label>
+              <SelectPicker className="form-label" data={groupData} searchable={false}
+                value={bookData.group_type}
+                onChange={(value) => handleSelectChange(value, "group_type")}
+                placeholder="ເລືອກ" required block/>
             </div>
             <div className="col-md-6">
-              <label className="form-label">ນາມສະກຸນ</label>
-              <Input className="form-label" name="surname" value={bookData.cust_surname} onChange={(value) => handleChange("cust_surname", value)}
-             placeholder="ນາມສະກຸນ..." required/>
+              <label className="form-label">ຈຳນວນຄົນ</label>
+              <Input className="form-label" name="amount" value={bookData.group_size} 
+              onChange={(value) => handleChange("group_size", value.replace(/[^0-9]/g, ""))}
+              placeholder="" required />
             </div>
-            <div className="col-md-12">
+            <div className="col-md-6">
+              <label className="form-label">ວັນທີ</label>
+              <DateRangePicker className="form-label" name="date" value={bookData.date} 
+              onChange={(date) => handleDateSelect(date)}
+              placeholder="" required style={{ width: "100%" }}/>
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">ເວລາ</label>
+              <TimePicker className="form-label" value={bookData.time}
+              onChange={(time) => handleTimeChange("time", time)}
+              placeholder="" required style={{ width: "100%" }}/>
+          </div>
+            <div className="col-md-6">
+              <label className="form-label">ປະເພດບໍລິການ</label>
+              <SelectPicker className="form-label" data={serviceType} value={bookData.service_id_fk}
+                onChange={(value) => handleSelectChange(value, "service_id_fk")}
+                placeholder="ເລືອກປະເພດບໍລິການ" required block/>
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">ຊື່ ແລະ ນາມສະກຸນ</label>
+              <SelectPicker className="form-label" data={customers} value={bookData.cust_id_fk}
+                onChange={(value) => handleSelectChange(value, "cust_id_fk")}
+                placeholder="ເລືອກຊື່..." required block/>
+            </div>
+            <div className="col-md-6">
               <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={bookData.email} onChange={(value) => handleChange("email", value)}
+              <Input className="form-label" name="email" value={bookData.email} 
+              onChange={(value) => handleChange("email", value)}
                 placeholder="ອີເມວ໌..."/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ເບີໂທ</label>
-              <Input className="form-label" name="tell" value={bookData.tell} onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
+              <Input className="form-label" name="tell" value={bookData.tell} 
+              onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
                 placeholder="020xxxxxxxx/030xxxxxxx" required/>
             </div>
-            <div className="col-md-6">
-              <label className="form-label">ແຂວງ</label>
-              <SelectPicker className="form-label" data={provinces} value={bookData.province}
-                onChange={(value) => handleSelectChange(value, "province")}
-                placeholder="ເລືອກແຂວງ" required block/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ເມືອງ</label>
-              <SelectPicker className="form-label" data={districts} value={bookData.district_fk}
-                onChange={(value) => handleSelectChange(value, "district_fk")}
-                placeholder="ເລືອກເມືອງ" required block/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ບ້ານ</label>
-              <Input className="form-label" value={bookData.village} onChange={(value) => handleChange("village", value)}
-                placeholder="ບ້ານ..." required/>
+            <div className="col-md-12">
+              <label className="form-label">ໝາຍເຫດ</label>
+              <Input as="textarea" rows={3} name="textarea" className="form-label" value={bookData.note} 
+              onChange={(value) => handleChange("note", value.replace(/[^0-9]/g, ""))}
+                placeholder="textarea..." required/>
             </div>
             </div>
         </Modal.Body>

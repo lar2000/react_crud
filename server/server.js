@@ -19,6 +19,8 @@ const routes = [
   'unit',
   'service',
   'service_type',
+  'booking',
+  'time',
   'set_product'
 ];
 
