@@ -22,8 +22,7 @@ const Staff = () => {
 
 
   const [staffData, setStaffData] = useState({
-    id: null,
-    staff_id: "",
+    staff_id: null,
     staff_name: "",
     staff_surname: "",
     email: "",
@@ -51,7 +50,7 @@ const Staff = () => {
   };
   const resetForm = () => {
     setStaffData({
-      id: null,
+      staff_id: null,
       staff_name: "",
       staff_surname: "",
       email: "",
@@ -82,8 +81,7 @@ const Staff = () => {
     setModalType("edit");
     handleOpen();
     setStaffData({
-      _id: data.id,
-      staff_id: data.staff_id,
+      _id: data.staff_id,
       staff_name: data.staff_name,
       staff_surname: data.staff_surname,
       email: data.email,
@@ -169,7 +167,7 @@ const Staff = () => {
   
   const filteredData = getData.filter(
     (staff) =>
-      staff.staff_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.staff_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.staff_surname.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -250,7 +248,7 @@ const Staff = () => {
                       />
                     )}
                   </td>
-                  <td>{staff.staff_id}</td>
+                  <td>{staff.staff_code}</td>
                   <td>{staff.staff_name} {staff.staff_surname}</td>
                   <td>{staff.email}</td>
                   <td>{staff.tell}</td>
@@ -271,7 +269,7 @@ const Staff = () => {
                             onClick={() => handleEditClick(staff)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(staff.id)}>
+                          onClick={() => handleDeleteClick(staff.staff_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>

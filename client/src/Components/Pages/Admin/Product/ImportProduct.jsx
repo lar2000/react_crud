@@ -19,7 +19,7 @@ const Importproduct = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [importproductData, setImportProductData] = useState({
-    id: null,
+    imp_id: null,
     pro_id_fk: "",
     amount: "",
     price: "",
@@ -42,7 +42,7 @@ const Importproduct = () => {
   };
   const resetForm = () => {
     setImportProductData({
-      id: null,
+      imp_id: null,
       pro_id_fk: "",
       amount: 0,
       price: 0,
@@ -64,10 +64,11 @@ const Importproduct = () => {
   };
 
   const handleEditClick = (data) => {
+    alert(data.imp_id)
     setModalType("edit");
     handleOpen();
     setImportProductData({
-      _id: data.id,
+      imp_id: data.imp_id,
       pro_id_fk: data.pro_id_fk,
       amount: data.amount,
       price: data.price,
@@ -112,10 +113,9 @@ const Importproduct = () => {
       console.error("Failed to submit importproduct data", err);
     }
   };
-  const handleDeleteClick = async (id) => {
-    alert(id);
+  const handleDeleteClick = async (imp_id) => {
     try {
-      await axios.delete(`${api}/imp/${id}`);
+      await axios.delete(`${api}/imp/${imp_id}`);
       alert("importproduct deleted successfully!");
       fetchgetImpData();
     } catch (err) {
@@ -130,7 +130,7 @@ const Importproduct = () => {
         : true; // If no searchDate is set, this condition is true
   
     const searchTermMatch =
-      importproduct.pro_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      importproduct.pro_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       importproduct.pro_name.toLowerCase().includes(searchTerm.toLowerCase());
   
     return searchTermMatch && searchDateMatch; // Combine both filters
@@ -166,13 +166,9 @@ const Importproduct = () => {
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
-              <SearchQuery
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
+              <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="mb-2 ms-2">
               <DatePicker size="sm" format="yyyy-MM-dd" value={searchDate}  style={{ width: 180 }}
-
                 onChange={handleDateSearch} placeholder="Select Date"/>
               </div>
               <div className="actions mb-2">
@@ -204,11 +200,11 @@ const Importproduct = () => {
             </thead>
             <tbody>
               {paginatedData.map((importproduct, index) => (
-                <tr key={importproduct.id}>
+                <tr key={importproduct.imp_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{importproduct.pro_id}</td>
+                  <td>{importproduct.pro_code}</td>
                   <td>{importproduct.pro_name}</td>
                   <td> {importproduct.size}</td>
                   <td>{importproduct.amount}</td>
@@ -230,7 +226,7 @@ const Importproduct = () => {
                             onClick={() => handleEditClick(importproduct)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(importproduct.id)}>
+                          onClick={() => handleDeleteClick(importproduct.imp_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>

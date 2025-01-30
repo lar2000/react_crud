@@ -3,6 +3,7 @@ const db = require('./db_connection');
 const router = express.Router();
 
 // Handle set_product creation (without profile upload)
+// Handle set_product creation (without profile upload)
 router.post('/create', function (req, res) {
   const { _id, pro_id_fk = [], set_name, detail } = req.body;
   const table = 'set_product';
@@ -12,16 +13,16 @@ router.post('/create', function (req, res) {
   }
 
   if (!_id) {
-    db.autoId(table, 'id', (err, id) => {
+    db.autoId(table, 'set_id', (err, id) => {
       if (err) {
         console.error('Error generating ID:', err);
         return res.status(500).json({ error: 'Failed to generate ID.' });
       }
 
       const code = id.toString().slice(-4).padStart(4, '0');
-      const setId = 'SET-' + code;
-      const fields = 'id, set_id, set_name, detail';
-      const dataValue = [id, setId, set_name, detail];
+      const setCode = 'SET-' + code; // Changed set_id to set_code
+      const fields = 'set_id, set_code, set_name, detail'; // Changed set_id to set_code
+      const dataValue = [id, setCode, set_name, detail];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -47,7 +48,7 @@ router.post('/create', function (req, res) {
       });
     });
   } else {
-    const where = `id = '${_id}'`;
+    const where = `set_id = '${_id}'`; // Changed id to set_id
 
     db.selectWhere(table, '*', where, (err, results) => {
       if (err || !results.length) {
@@ -57,7 +58,7 @@ router.post('/create', function (req, res) {
 
       const fields = 'set_name, detail';
       const newData = [set_name, detail, _id];
-      const condition = 'id=?';
+      const condition = 'set_id=?'; // Changed id to set_id
 
       db.updateData(table, fields, newData, condition, (err, results) => {
         if (err) {
@@ -65,7 +66,7 @@ router.post('/create', function (req, res) {
           return res.status(500).json({ error: 'Failed to update set_product.' });
         }
 
-        const deleteCondition = `set_fk = (SELECT id FROM ${table} WHERE id = '${_id}')`;
+        const deleteCondition = `set_fk = (SELECT set_id FROM ${table} WHERE set_id = '${_id}')`; // Changed id to set_id
 
         db.deleteData('set_prod_association', deleteCondition, (err, results) => {
           if (err) {
@@ -99,7 +100,7 @@ router.patch('/:id', function (req, res, next) {
   const id = req.params.id;
   const fields = 'state';
   const newData = [0, id];
-  const condition = 'id=?';
+  const condition = 'set_id=?'; // Changed id to set_id
 
   db.updateData('set_product', fields, newData, condition, (err, results) => {
     if (err) {
@@ -114,7 +115,7 @@ router.delete('/:id', function (req, res, next) {
   const id = req.params.id;
 
   // First, delete the associations from the set_product_association table
-  const deleteAssociationsCondition = `set_fk = (SELECT id FROM set_product WHERE id = '${id}')`;
+  const deleteAssociationsCondition = `set_fk = (SELECT set_id FROM set_product WHERE set_id = '${id}')`; // Changed id to set_id
 
   db.deleteData('set_prod_association', deleteAssociationsCondition, (err, results) => {
     if (err) {
@@ -123,7 +124,7 @@ router.delete('/:id', function (req, res, next) {
     }
 
     // Now delete the set_product
-    const deleteSetCondition = `id = '${id}'`;
+    const deleteSetCondition = `set_id = '${id}'`; // Changed id to set_id
 
     db.deleteData('set_product', deleteSetCondition, (err, results) => {
       if (err) {
@@ -140,16 +141,16 @@ router.delete('/:id', function (req, res, next) {
 // Get single set_product by ID
 router.get('/single/:id', function (req, res, next) {
   const id = req.params.id;
-  const where = `set_product.id='${id}'`;
+  const where = `set_product.set_id='${id}'`; // Changed id to set_id
 
   const tables = `
     set_product
-    LEFT JOIN set_prod_association ON set_product.id = set_prod_association.set_fk
-    LEFT JOIN product ON set_prod_association.pro_id_fk = product.id
+    LEFT JOIN set_prod_association ON set_product.set_id = set_prod_association.set_fk
+    LEFT JOIN product ON set_prod_association.pro_id_fk = product.pro_id
   `;
   const fields = `
-    set_product.id,
     set_product.set_id,
+    set_product.set_code,
     set_product.set_name,
     set_product.detail,
     GROUP_CONCAT(product.pro_name) AS product_names
@@ -165,24 +166,24 @@ router.get('/single/:id', function (req, res, next) {
   });
 });
 
-
 // Get all active set_products
 router.get('/', function (req, res, next) {
   const tables = `
     set_product
-    LEFT JOIN set_prod_association ON set_product.id = set_prod_association.set_fk
-    LEFT JOIN product ON set_prod_association.pro_id_fk = product.id 
-    GROUP BY set_product.id`;
+    LEFT JOIN set_prod_association ON set_product.set_id = set_prod_association.set_fk 
+    LEFT JOIN product ON set_prod_association.pro_id_fk = product.pro_id 
+    GROUP BY set_product.set_id` 
 
   const fields = `
-    set_product.id,
     set_product.set_id,
+    set_product.set_code,
     set_product.set_name,
     set_product.detail,
     set_prod_association.spa_id,
     set_prod_association.set_fk,
     GROUP_CONCAT(set_prod_association.pro_id_fk) AS pro_id_fk,
-    GROUP_CONCAT(product.pro_name) AS pro_names `;
+    GROUP_CONCAT(product.pro_name) AS pro_names
+  `;
 
   db.selectData(tables, fields, (err, results) => {
     if (err) {
@@ -195,6 +196,5 @@ router.get('/', function (req, res, next) {
     res.status(200).json(results);
   });
 });
-
 
 module.exports = router;

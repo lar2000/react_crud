@@ -18,9 +18,9 @@ const Set_Product = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [productData, setProductData] = useState({
-    id: null,
+    set_id: null,
     pro_id_fk: [],
-    set_id: "",
+    set_code: "",
     set_name: "",
     detail: "",
   });
@@ -41,9 +41,9 @@ const Set_Product = () => {
   };
   const resetForm = () => {
     setProductData({
-        id: null,
+      set_id: null,
         pro_id_fk: [],
-        set_id: "",
+        set_code: "",
         set_name: "",
         detail: "",
     });
@@ -67,9 +67,9 @@ const Set_Product = () => {
     setModalType("edit");
     handleOpen();
     setProductData({
-      _id: data.id,
+      _id: data.set_id,
       pro_id_fk: data.pro_id_fk, // An array
-      set_id: data.set_id,
+      set_code: data.set_code,
       set_name: data.set_name,
       detail: data.detail,
     });
@@ -106,7 +106,7 @@ const Set_Product = () => {
   
   const filteredData = getData.filter((set_product) => {
     const matchesSearch =
-      set_product.set_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      set_product.set_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       set_product.set_name.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
@@ -174,11 +174,11 @@ const Set_Product = () => {
             </thead>
             <tbody>
               {paginatedData.map((set_product, index) => (
-                <tr key={set_product.id}>
+                <tr key={set_product.set_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{set_product.set_id}</td>
+                  <td>{set_product.set_code}</td>
                   <td>{set_product.set_name}</td>
                   <td>{set_product.pro_names} <h6>ຄຸນປະໂຫຍດ: </h6>
                     {set_product.detail}
@@ -193,7 +193,7 @@ const Set_Product = () => {
                             onClick={() => handleEditClick(set_product)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(set_product.id)}>
+                          onClick={() => handleDeleteClick(set_product.set_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>

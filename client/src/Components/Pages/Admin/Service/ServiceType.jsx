@@ -16,7 +16,7 @@ const ServiceType = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [serviceTypeData, setserviceTypeData] = useState({
-    id: null,
+    servicetype_id: null,
     servicetype_name: "",
     detail: "",
   });
@@ -35,7 +35,7 @@ const ServiceType = () => {
   };
   const resetForm = () => {
     setserviceTypeData({
-      id: null,
+      servicetype_id: null,
       servicetype_name: "",
       detail: "",
     });
@@ -58,7 +58,7 @@ const ServiceType = () => {
     setModalType("edit");
     handleOpen();
     setserviceTypeData({
-      _id: data.id,
+      servicetype_id: data.servicetype_id,
       servicetype_name: data.servicetype_name,
       detail: data.detail,
     });
@@ -83,9 +83,9 @@ const ServiceType = () => {
       console.error("Failed to submit service_type data", err);
     }
   };
-  const handleDeleteClick = async (id) => {
+  const handleDeleteClick = async (servicetype_id) => {
     try {
-      await axios.delete(`${api}/service_type/${id}`);
+      await axios.delete(`${api}/service_type/${servicetype_id}`);
       alert("service_type member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
@@ -95,7 +95,7 @@ const ServiceType = () => {
   
   const filteredData = getData.filter((service_type) => {
     const matchesSearch =
-      service_type.servicetype_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service_type.servicetype_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       service_type.servicetype_name.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
@@ -151,11 +151,11 @@ const ServiceType = () => {
             </thead>
             <tbody>
               {paginatedData.map((service_type, index) => (
-                <tr key={service_type.id}>
+                <tr key={service_type.servicetype_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{service_type.servicetype_id}</td>
+                  <td>{service_type.servicetype_code}</td>
                   <td>{service_type.servicetype_name}</td>
                   <td>{service_type.detail}</td>
                   <td>
@@ -168,7 +168,7 @@ const ServiceType = () => {
                             onClick={() => handleEditClick(service_type)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(service_type.id)}>
+                          onClick={() => handleDeleteClick(service_type.servicetype_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>

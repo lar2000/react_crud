@@ -1,12 +1,10 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-//const bcrypt = require('bcryptjs');
-//const currentDatetime = moment();
-//const dateNow = currentDatetime.format('YYYY-MM-DD');
 const fs = require('fs');
 const db = require('./db_connection');
 const router = express.Router();
+
 router.post('/create', function (req, res) {
   let image = null;
   const storage = multer.diskStorage({
@@ -23,15 +21,15 @@ router.post('/create', function (req, res) {
 
   upload(req, res, function (err) {
     const {_id, pro_name, size, amount, unit_fk, protype_id_fk, price } = req.body;
-    const total = amount * price; // Calculate total
+    const total = amount * price;
     const table = 'product';
     
     if (!_id) {
-      db.autoId(table, 'id', (err, id) => {
-        const code = id.toString().slice(-4).padStart(4, '0');
-        const proId = 'ST-' + code;
-        const Fields = 'id, pro_id, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image';
-        const dataValue = [id, proId, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image];
+      db.autoId(table, 'pro_id', (err, pro_id) => {
+        const code = pro_id.toString().slice(-4).padStart(4, '0');
+        const pro_code = 'ST-' + code;
+        const Fields = 'pro_id, pro_code, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image';
+        const dataValue = [pro_id, pro_code, pro_name, size, amount, unit_fk, protype_id_fk, price, total, image];
 
         db.insertData(table, Fields, dataValue, (err, results) => {
           if (err) {
@@ -43,7 +41,7 @@ router.post('/create', function (req, res) {
         });
       });
     } else {
-      const where = `id = '${_id}'`;
+      const where = `pro_id = '${_id}'`;
 
       db.selectWhere(table, '*', where, (err, results) => {
         if (err || !results.length) {
@@ -51,7 +49,6 @@ router.post('/create', function (req, res) {
           return res.status(500).json({ error: 'Failed to fetch existing record' });
         }
 
-        // Delete old image if a new one is uploaded
         if (results[0].image && image) {
           const filePath = path.resolve('./uploads/images', results[0].image);
           fs.unlink(filePath, (err) => {
@@ -62,10 +59,10 @@ router.post('/create', function (req, res) {
         }
 
         const updatedimage = image || results[0].image;
-        const updatedTotal = amount * price; // Recalculate total
+        const updatedTotal = amount * price;
         const fields = 'pro_name, size, amount, unit_fk, protype_id_fk, price, total, image';
         const newData = [pro_name, size, amount, unit_fk, protype_id_fk, price, updatedTotal, updatedimage, _id];
-        const condition = 'id=?';
+        const condition = 'pro_id=?';
 
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
@@ -78,22 +75,10 @@ router.post('/create', function (req, res) {
     }
   });
 });
-// router.post('/edituse', function (req, res) {
-//   const userPassword = bcrypt.hashSync(req.body.userPassword);
-//   const { productId, building_id_fk, statusUse, useramount, typeUser } = req.body;
-//   const filedEdit = `building_id_fk,statusUse,useramount,userPassword,typeUser`;
-//   const newData = [building_id_fk, statusUse, useramount,userPassword, typeUser, productId];
-//   const condition = 'pro_id=?';
-//   db.updateData('tbl_product', filedEdit, newData, condition, (err, results) => {
-//       if (err) {
-//           return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດແລ້ວ' });
-//       }
-//       res.status(200).json({ message: 'ການແກ້ໄຂລະຫັດຜ່ານສຳເລັດແລ້ວ'});
-//   });
-// })
-router.delete("/:id", function (req, res, next) {
-  const id = req.params.id;
-  const where = `id='${id}'`;
+
+router.delete('/:pro_id', function (req, res, next) {
+  const pro_id = req.params.pro_id;
+  const where = `pro_id='${pro_id}'`;
   db.deleteData('product', where, (err, results) => {
       if (err) {
           return res.status(500).json({ error: 'ຂໍອະໄພການລືບຂໍ້ມູນບໍ່ສຳເລັດ' });
@@ -102,11 +87,9 @@ router.delete("/:id", function (req, res, next) {
   });
 });
 
-
-
-router.get("/single/:id", function (req, res, next) {
-  const id = req.params.id;
-  const where = `id='${id}'`;
+router.get('/single/:pro_id', function (req, res, next) {
+  const pro_id = req.params.pro_id;
+  const where = `pro_id='${pro_id}'`;
   const tables = `product`;
   db.singleAll(tables, where, (err, results) => {
       if (err) {
@@ -115,14 +98,15 @@ router.get("/single/:id", function (req, res, next) {
       res.status(200).json(results);
   });
 });
-router.get("/", function (req, res, next) {
+
+router.get('/', function (req, res, next) {
   const tables = `product
-       LEFT JOIN product_type ON product.protype_id_fk=product_type.id 
+       LEFT JOIN product_type ON product.protype_id_fk=product_type.protype_id 
        LEFT JOIN unit ON product.unit_fk=unit.id`;
 
   const fields = `
-      product.id,
-      product.pro_id, 
+      product.pro_id,
+      product.pro_code, 
       product.pro_name, 
       product.size, 
       product.amount, 
@@ -141,4 +125,5 @@ router.get("/", function (req, res, next) {
       res.status(200).json(results);
   });
 });
+
 module.exports = router;

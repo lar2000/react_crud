@@ -29,27 +29,27 @@ export const useDistrict = (provinceId) =>
   );
 
 export const useProduct_Type = () =>
-  useFetchData("protype").map(({ protype_name, id }) => ({
+  useFetchData("protype").map(({ protype_name, protype_id }) => ({
     label: protype_name,
-    value: id,
+    value: protype_id,
   }));
 
 export const useProduct = () =>
-  useFetchData("product").map(({ pro_name, id }) => ({
+  useFetchData("product").map(({ pro_name, pro_id }) => ({
     label: pro_name,
-    value: id,
+    value: pro_id,
   }));
 
   export const useSetProduct = () =>
-    useFetchData("set_product").map(({ set_name, id }) => ({
+    useFetchData("set_product").map(({ set_name, set_id }) => ({
       label: set_name,
-      value: id,
+      value: set_id,
     }));
 
     export const useServiceType = () =>
-      useFetchData("service_type").map(({ servicetype_name, id }) => ({
+      useFetchData("service_type").map(({ servicetype_name, servicetype_id }) => ({
         label: servicetype_name,
-        value: id,
+        value: servicetype_id,
       }));
 
   export const useUnit = () =>
@@ -59,9 +59,9 @@ export const useProduct = () =>
     }));
 
     export const useCustomer = () =>
-      useFetchData("customer").map(({ cust_name, cust_surname, id }) => ({
+      useFetchData("customer").map(({ cust_name, cust_surname, cust_id }) => ({
         label: `${cust_name} ${cust_surname}`,
-        value: id,
+        value: cust_id,
       }));
 
       export const useTime = () =>

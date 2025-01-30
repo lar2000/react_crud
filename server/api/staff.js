@@ -1,9 +1,6 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-//const bcrypt = require('bcryptjs');
-//const currentDatetime = moment();
-//const dateNow = currentDatetime.format('YYYY-MM-DD');
 const fs = require('fs');
 const db = require('./db_connection');
 const router = express.Router();
@@ -23,30 +20,26 @@ router.post('/create', function (req, res) {
   const upload = multer({ storage }).single('profile');
   
   upload(req, res, function (err) {
-
-   // const staffPass = bcrypt.hashSync(req.body.staffPass);
-    const {_id, staff_name, staff_surname, email, tell, village, district_fk } = req.body;
+    const { _id, staff_name, staff_surname, email, tell, village, district_fk } = req.body;
     const table = 'staff';
     if(!_id) {
-     
-      db.autoId(table, 'id', (err, id) => {
+      db.autoId(table, 'staff_id', (err, id) => { // Changed from 'id' to 'staff_id'
         const code = id.toString().slice(-4).padStart(4, '0');
-        const staffId = 'ST-' + code;
-        const Fields = 'id, staff_id, staff_name, staff_surname, email, tell, village, district_fk, profile, state';
-        const dataValue = [id, staffId, staff_name, staff_surname, email, tell, village, district_fk,  profile, 1];
+        const staffCode = 'ST-' + code; // Changed 'staff_id' to 'staff_code'
+        const Fields = 'staff_id, staff_code, staff_name, staff_surname, email, tell, village, district_fk, profile, state'; // Changed 'id' to 'staff_id' and 'staff_id' to 'staff_code'
+        const dataValue = [id, staffCode, staff_name, staff_surname, email, tell, village, district_fk, profile, 1]; // Changed 'staff_id' to 'staff_code'
 
         db.insertData(table, Fields, dataValue, (err, results) => {
           if (err) {
-            console.error('Error Inerting Data: ', err);
+            console.error('Error Inserting Data: ', err);
             return res.status(500).json({ error: `ການບັນທຶກຂໍ້ມູນຫລົ້ມເຫຼວ` });
           }
-          console.log( 'Data inserted successfully!', results);
-          return res.status(200).json({ message: 'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ: ',dataValue}); 
+          console.log('Data inserted successfully!', results);
+          return res.status(200).json({ message: 'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ: ', dataValue });
         })
       })
     } else {
-
-      const where = `id = '${_id}'`;
+      const where = `staff_id = '${_id}'`; // Changed from 'id' to 'staff_id'
 
       db.selectWhere(table, '*', where, (err, results) => {
         if (err || !results.length) {
@@ -66,7 +59,7 @@ router.post('/create', function (req, res) {
         const updatedProfile = profile || results[0].profile;
         const fields = 'staff_name, staff_surname, email, tell, village, district_fk, profile';
         const newData = [staff_name, staff_surname, email, tell, village, district_fk, updatedProfile, _id];
-        const condition = 'id=?';
+        const condition = 'staff_id=?'; // Changed from 'id' to 'staff_id'
 
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
@@ -84,7 +77,7 @@ router.patch('/:id', function (req, res, next) {
   const id = req.params.id;
   const fields = 'state';
   const newData = [0, id];
-  const condition = 'id=?';
+  const condition = 'staff_id=?'; // Changed from 'id' to 'staff_id'
 
   db.updateData('staff', fields, newData, condition, (err, results) => {
     if (err) {
@@ -93,22 +86,10 @@ router.patch('/:id', function (req, res, next) {
     res.status(200).json({ message: 'Staff deactivated successfully', data: results });
   });
 });
-// router.post('/edituse', function (req, res) {
-//   const userPassword = bcrypt.hashSync(req.body.userPassword);
-//   const { staffId, building_id_fk, statusUse, userEmail, typeUser } = req.body;
-//   const filedEdit = `building_id_fk,statusUse,userEmail,userPassword,typeUser`;
-//   const newData = [building_id_fk, statusUse, userEmail,userPassword, typeUser, staffId];
-//   const condition = 'staff_id=?';
-//   db.updateData('tbl_staff', filedEdit, newData, condition, (err, results) => {
-//       if (err) {
-//           return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດແລ້ວ' });
-//       }
-//       res.status(200).json({ message: 'ການແກ້ໄຂລະຫັດຜ່ານສຳເລັດແລ້ວ'});
-//   });
-// })
+
 router.delete("/:id", function (req, res, next) {
   const id = req.params.id;
-  const where = `id='${id}'`;
+  const where = `staff_id='${id}'`; // Changed from 'id' to 'staff_id'
   db.deleteData('staff', where, (err, results) => {
       if (err) {
           return res.status(500).json({ error: 'ຂໍອະໄພການລືບຂໍ້ມູນບໍ່ສຳເລັດ' });
@@ -117,11 +98,9 @@ router.delete("/:id", function (req, res, next) {
   });
 });
 
-
-
 router.get("/single/:id", function (req, res, next) {
   const id = req.params.id;
-  const where = `id='${id}'`;
+  const where = `staff_id='${id}'`; // Changed from 'id' to 'staff_id'
   const tables = `staff`;
   db.singleAll(tables, where, (err, results) => {
       if (err) {
@@ -130,14 +109,15 @@ router.get("/single/:id", function (req, res, next) {
       res.status(200).json(results);
   });
 });
+
 router.get("/", function (req, res, next) {
   const tables = `staff
        LEFT JOIN tbl_district ON staff.district_fk=tbl_district.district_id 
        LEFT JOIN tbl_province ON tbl_district.province_id_fk=tbl_province.province_id `;
 
   const fields = `
-      staff.id,
-      staff.staff_id, 
+      staff.staff_id,
+      staff.staff_code,
       staff.staff_name, 
       staff.staff_surname, 
       staff.email, 
@@ -148,7 +128,8 @@ router.get("/", function (req, res, next) {
       tbl_district.province_id_fk,
       tbl_district.district_name, 
       tbl_province.province_name`;
-      const wheres=`staff.state = 1`;
+
+  const wheres = `staff.state = 1`;
 
   db.selectWhere(tables, fields, wheres, (err, results) => {
       if (err) {
@@ -157,4 +138,5 @@ router.get("/", function (req, res, next) {
       res.status(200).json(results);
   });
 });
+
 module.exports = router;

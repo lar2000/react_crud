@@ -17,7 +17,7 @@ const Customer = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [customerData, setCustomerData] = useState({
-    id: null,
+    cust_id: null,
     cust_name: "",
     cust_surname: "",
     email: "",
@@ -38,7 +38,7 @@ const Customer = () => {
   };
   const resetForm = () => {
     setCustomerData({
-      id: null,
+      cust_id: null,
       cust_name: "",
       cust_surname: "",
       email: "",
@@ -62,7 +62,7 @@ const Customer = () => {
     setModalType("edit");
     handleOpen();
     setCustomerData({
-      _id: data.id,
+      _id: data.cust_id,
       cust_name: data.cust_name,
       cust_surname: data.cust_surname,
       email: data.email,
@@ -88,10 +88,9 @@ const Customer = () => {
       console.error("Failed to submit customer data", err);
     }
   };
-  const handleDeleteClick = async (id) => {
-    alert(id);
+  const handleDeleteClick = async (cust_id) => {
     try {
-      await axios.patch(`${api}/customer/${id}`);
+      await axios.patch(`${api}/customer/${cust_id}`);
       alert("Customer member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
@@ -101,7 +100,7 @@ const Customer = () => {
   
   const filteredData = getData.filter((customer) => {
     const matchesSearch =
-      customer.cust_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.cust_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.cust_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.cust_surname.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -171,11 +170,11 @@ const Customer = () => {
             </thead>
             <tbody>
               {paginatedData.map((customer, index) => (
-                <tr key={customer.id}>
+                <tr key={customer.cust_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{customer.cust_id}</td>
+                  <td>{customer.cust_code}</td>
                   <td>{customer.cust_name} {customer.cust_surname}</td>
                   <td>{customer.email}</td>
                   <td>
@@ -201,7 +200,7 @@ const Customer = () => {
                             onClick={() => handleEditClick(customer)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(customer.id)}>
+                          onClick={() => handleDeleteClick(customer.cust_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>

@@ -19,7 +19,7 @@ const Service = () => {
   const setProducts = useSetProduct();
 
   const [serviceData, setserviceData] = useState({
-    id: null,
+    service_id: null,
     service_name: "",
     servicetype_id_fk: "",
     set_id_fk: "",
@@ -39,7 +39,7 @@ const Service = () => {
   };
   const resetForm = () => {
     setserviceData({
-        id: null,
+      service_id: null,
         service_name: "",
         servicetype_id_fk: "",
         set_id_fk: "",
@@ -63,7 +63,7 @@ const Service = () => {
     setModalType("edit");
     handleOpen();
     setserviceData({
-      _id: data.id,
+      _id: data.service_id,
       service_name: data.service_name,
       servicetype_id_fk: data.servicetype_id_fk,
       set_id_fk: data.set_id_fk,
@@ -108,7 +108,7 @@ const Service = () => {
   
   const filteredData = getData.filter((service) => {
     const matchesSearch =
-      service.service_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.service_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       service.service_name.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
@@ -159,19 +159,21 @@ const Service = () => {
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່</th>
                 <th className="text-nowrap">ປະເພດ</th>
+                <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">ເຊັດສິນຄ້າ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {paginatedData.map((service, index) => (
-                <tr key={service.id}>
+                <tr key={service.service_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{service.service_id}</td>
+                  <td>{service.service_code}</td>
                   <td>{service.service_name}</td>
                   <td>{service.servicetype_name}</td>
+                  <td>{service.price}</td>
                   <td>{service.set_name}</td>
                   <td>
                     <div className="panel-heading">
@@ -183,7 +185,7 @@ const Service = () => {
                             onClick={() => handleEditClick(service)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(service.id)}>
+                          onClick={() => handleDeleteClick(service.service_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>
@@ -227,6 +229,12 @@ const Service = () => {
               <SelectPicker className="form-label" data={serviceType} value={serviceData.servicetype_id_fk}
                 onChange={(value) => handleSelectChange(value, "servicetype_id_fk")}
                 placeholder="ເລືອກປະເພດ" required block/>
+            </div>
+            <div className="col-md-12">
+              <label className="form-label">ລາຄາ</label>
+              <Input className="form-label" name="price" value={serviceData.price} 
+              onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
+              placeholder="ລາຄາ..." required />
             </div>
             <div className="col-md-12">
               <label className="form-label">ເຊັດສິນຄ້າ</label>

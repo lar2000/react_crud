@@ -22,8 +22,8 @@ const Product = () => {
   const [imageUrl, setImageUrl] = useState(proImage);
 
   const [productData, setProductData] = useState({
-    id: null,
-    pro_id: "",
+    pro_id: null,
+    pro_code: "",
     pro_name: "",
     size: "",
     amount: "",
@@ -50,7 +50,7 @@ const Product = () => {
   };
   const resetForm = () => {
     setProductData({
-      id: null,
+      pro_id: null,
       pro_name: "",
       size: "",
       amount: "",
@@ -80,8 +80,8 @@ const Product = () => {
     setModalType("edit");
     handleOpen();
     setProductData({
-      _id: data.id,
-      pro_id: data.pro_id,
+      _id: data.pro_id,
+      pro_code: data.pro_code,
       pro_name: data.pro_name,
       size: data.size,
       amount: data.amount,
@@ -153,9 +153,9 @@ const Product = () => {
       console.error("Failed to submit product data", err);
     }
   };
-  const handleDeleteClick = async (id) => {
+  const handleDeleteClick = async (pro_id) => {
     try {
-      await axios.delete(`${api}/product/${id}`);
+      await axios.delete(`${api}/product/${pro_id}`);
       alert("product member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
@@ -165,7 +165,7 @@ const Product = () => {
   
   const filteredData = getData.filter(
     (product) =>
-      product.pro_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.pro_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.pro_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -230,7 +230,7 @@ const Product = () => {
             </thead>
             <tbody>
               {paginatedData.map((product, index) => (
-                <tr key={product.id}>
+                <tr key={product.pro_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
@@ -240,7 +240,7 @@ const Product = () => {
                         className="rounded h-30px my-n1 mx-n1" alt="image"/>
                     )}
                   </td>
-                  <td>{product.pro_id}</td>
+                  <td>{product.pro_code}</td>
                   <td>{product.pro_name}</td>
                   <td> {product.size}</td>
                   <td style={{ color: product.amount < 10 ? "red" : "inherit" }}>
