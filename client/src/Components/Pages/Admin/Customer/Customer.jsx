@@ -21,7 +21,6 @@ const Customer = () => {
     cust_name: "",
     cust_surname: "",
     email: "",
-    status: "",
   });
 
   useEffect(() => {
@@ -178,15 +177,18 @@ const Customer = () => {
                   <td>{customer.cust_name} {customer.cust_surname}</td>
                   <td>{customer.email}</td>
                   <td>
-                    {customer.status === 2 ? (
+                    {   customer.status === 3 ? (
                         <span className="badge border border-success text-success px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
                         <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Done</span>) 
-                        : customer.status === 1 ? (
+                        : customer.status === 2 ? (
                         <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
                         <i className="fa fa-circle fs-9px fa-fw me-5px"></i>In progress</span>) 
-                        : (
+                        : customer.status === 1 ? (
                         <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Booking
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Booking</span>) 
+                        : (
+                        <span className="badge border border-secondary text-secondary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Normal
                         </span>
                     )}
                     </td>

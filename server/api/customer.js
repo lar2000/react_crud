@@ -4,7 +4,7 @@ const router = express.Router();
 
 // Handle customer creation (without profile upload)
 router.post('/create', function (req, res) {
-  const {_id, cust_name, cust_surname, email, status } = req.body;
+  const {_id, cust_name, cust_surname, email} = req.body;
   const table = 'customer';
   
   // Auto-generate customer ID if it doesn't exist
@@ -13,7 +13,7 @@ router.post('/create', function (req, res) {
       const code = id.toString().slice(-4).padStart(4, '0');
       const custCode = 'C-' + code;
       const fields = 'cust_id, cust_code, cust_name, cust_surname, email, status, state';
-      const dataValue = [id, custCode, cust_name, cust_surname, email, status, 1]; // Default state to 1 (active)
+      const dataValue = [id, custCode, cust_name, cust_surname, email, 0, 1]; // Default state to 1 (active)
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -34,8 +34,8 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch customer data.' });
       }
 
-      const fields = 'cust_name, cust_surname, email, status';
-      const newData = [cust_name, cust_surname, email, status, _id];
+      const fields = 'cust_name, cust_surname, email';
+      const newData = [cust_name, cust_surname, email, _id];
       const condition = 'cust_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -92,7 +92,7 @@ router.get('/single/:id', function (req, res, next) {
 // Get all active customers
 router.get('/', function (req, res, next) {
   const tables = 'customer';
-  const fields = 'cust_id, cust_code, cust_name, cust_surname, email, state, status';
+  const fields = 'cust_id, cust_code, cust_name, cust_surname, email, status';
   const where = 'state = 1';
   db.selectWhere(tables, fields, where, (err, results) => {
     if (err) {

@@ -23,6 +23,7 @@ const Service = () => {
     service_name: "",
     servicetype_id_fk: "",
     set_id_fk: "",
+    price: "",
   });
 
   useEffect(() => {
@@ -43,6 +44,7 @@ const Service = () => {
         service_name: "",
         servicetype_id_fk: "",
         set_id_fk: "",
+        price: "",
     });
     setOpen(false);
   };
@@ -67,6 +69,7 @@ const Service = () => {
       service_name: data.service_name,
       servicetype_id_fk: data.servicetype_id_fk,
       set_id_fk: data.set_id_fk,
+      price: data.price,
     });
   };
 
@@ -178,7 +181,7 @@ const Service = () => {
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
+                        <a href="javascript:;" className="btn-primary btn-sm">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"

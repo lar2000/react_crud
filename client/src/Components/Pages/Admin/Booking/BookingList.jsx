@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, SelectPicker, DatePicker, Input, Text, DateRangePicker } 
+import { Modal, Button, SelectPicker, DatePicker, Input, Text, DateRangePicker, Timeline } 
 from "rsuite";
+import TimeRoundIcon from '@rsuite/icons/TimeRound';
+import CheckRoundIcon from '@rsuite/icons/CheckRound';
 import { format } from "date-fns";
 import { Config} from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
@@ -13,6 +15,7 @@ import { useServiceType, useCustomer  } from "../../../../config/selectOption"; 
 const Booking = () => {
   const api = Config.ApiURL;
   const [getData, setData] = useState([]);
+  const [reloadKey, setReloadKey] = useState(0); // Trigger re-fetch of customers
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDate, setSearchDate] = useState(null);
@@ -24,7 +27,6 @@ const Booking = () => {
     group_type: "",
     cust_id_fk: null,
     date: [null, null],
-    time: null,
     service_id_fk: null,
     group_size: "",
     email: "",
@@ -33,7 +35,7 @@ const Booking = () => {
   });
 
   const serviceType = useServiceType();
-  const customers = useCustomer();
+  const customers = useCustomer(reloadKey);
   const group_type = ['ກຸ່ມ', 'ບຸກຄົນ'].map(
     item => ({ label: item, value: item })
   );
@@ -122,20 +124,22 @@ const Booking = () => {
         alert(`booking ${bookData.book_id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
-        resetForm();
+        setReloadKey((prevKey) => prevKey + 1); // Increment key to trigger re-fetch of customers
     } catch (err) {
       console.error("Failed to submit booking data", err);
     }
   };
-  const handleDeleteClick = async (book_id) => {
+  const handleDeleteClick = async (book_id, cust_id_fk) => {
+    alert(cust_id_fk)
     try {
-      await axios.patch(`${api}/booking/${book_id}`);
-      alert("booking member soft deleted successfully!");
+      await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk }); // Send cust_id_fk
+      alert("Booking member soft deleted successfully!");
       fetchgetData();
+      setReloadKey((prevKey) => prevKey + 1); // Increment key to trigger re-fetch of customers
     } catch (err) {
       console.error("Failed to delete booking", err);
     }
-  };
+  };  
 
   const maskEmail = (email) => {
     if (!email) return "";
@@ -213,12 +217,12 @@ const Booking = () => {
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
-                <th className="text-nowrap">ລະຫັດຈອງ</th>
+                <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ປະເພດຈອງ</th>
                 <th className="text-nowrap">ວັນທີຈອງ~ສິ້ນສຸດ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
                 <th className="text-nowrap">ຂໍ້ມູນຕິດຕໍ່</th>
-                <th className="text-nowrap">ບໍລິການ/ລາຄາ</th>
+                <th className="text-nowrap">ບໍລິການ</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
@@ -233,7 +237,14 @@ const Booking = () => {
                   <td>{booking.group_type}
                     <Text color="blue" weight="semibold">({booking.group_size} ຄົນ)</Text>
                   </td>
-                  <td>{format(new Date(booking.date), "dd-MM-yyyy")}~{format(new Date(booking.dateEnd), "dd-MM-yyyy")}</td>
+                  <Timeline className="custom-timeline">
+                    <Timeline.Item dot={<TimeRoundIcon style={{ marginBottom: '8px' }}/>}>
+                      <p>{format(new Date(booking.date), "dd-MM-yyyy")}</p>
+                    </Timeline.Item>
+                    <Timeline.Item dot={<CheckRoundIcon style={{ marginBottom: '8px' }}/>}>
+                      <p>{format(new Date(booking.dateEnd), "dd-MM-yyyy")}</p>
+                    </Timeline.Item>
+                  </Timeline>
                   <td>{booking.cust_name} {booking.cust_surname}
                   <Text muted>{booking.cust_code}</Text>
                   </td>
@@ -241,22 +252,22 @@ const Booking = () => {
                     <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
                   <td>{booking.service_name}
-                  <Text color="green" weight="semibold">(ລາຄາ: {booking.price} ກີບ)</Text>
+                  {/* <Text color="green" weight="semibold">(ລາຄາລວມ: {booking.total_price} ກີບ)</Text> */}
                   </td>
                   <td>{booking.note}</td>
                   <td><div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"
+                        <a href="javascript:;" className="dropdown-item">
+                          <i className="fas fa-eye"></i></a>  
+                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle ms-2"
                           data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i>
                         </a>
-                        <div className="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:;" className="dropdown-item">
-                          <i className="fas fa-eye"></i></a>   
+                        <div className="dropdown-menu dropdown-menu-end"> 
                           <a href="javascript:;" className="dropdown-item"
                             onClick={() => handleEditClick(booking)}><i className="fas fa-pen-to-square"></i></a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(booking.book_id)}>
+                          onClick={() => handleDeleteClick(booking.book_id, booking.cust_id_fk)}>
                             <i className="fas fa-trash"></i></a>
                         </div>
                       </div>
@@ -329,13 +340,13 @@ const Booking = () => {
               <label className="form-label">ໝາຍເຫດ</label>
               <Input as="textarea" rows={3} name="textarea" className="form-label" value={bookData.note} 
               onChange={(value) => handleChange("note", value)}
-                placeholder="textarea..." required/>
+                placeholder="textarea..."/>
             </div>
             </div>
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Add" : "Update"}
+            {modalType === "add" ? "Next" : "Update"}
           </Button>
           <Button onClick={resetForm} appearance="subtle">
             Cancel
