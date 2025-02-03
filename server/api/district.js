@@ -20,7 +20,6 @@ district.patch("/", function (req, res) {
     });
 });
 
-
 district.get("/:id", function (req, res) {
     const id= req.params.id;
     const where=`district_id=${id}`;
@@ -32,10 +31,9 @@ district.get("/:id", function (req, res) {
     });
 });
 
-
 district.get("/pv/:id", function (req, res) {
     const pvid= req.params.id;
-    const where=`province_id_fk=${pvid}`;
+    const where=`province_id_fk='${pvid}'`;
     db.selectWhere('tbl_district', '*', where,(err, results) => {
         if (err) {
         return res.status(400).send(err);

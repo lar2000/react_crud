@@ -28,9 +28,8 @@ export const useProvince = () =>
     value: province_id,
   }));
 
-export const useDistrict = (provinceId) =>
-  useFetchData(`district/pv/${provinceId}`, [provinceId]).map(
-    ({ district_name, district_id }) => ({
+export const useDistrict = (pvid) =>
+  useFetchData(`district/pv/${pvid}`, [pvid]).map(({ district_name, district_id }) => ({
       label: district_name,
       value: district_id,
     })
@@ -55,10 +54,16 @@ export const useSetProduct = () =>
   }));
 
 export const useServiceType = () =>
-  useFetchData("service").map(({ service_name, service_id }) => ({
-    label: service_name,
-    value: service_id,
+  useFetchData("service_type").map(({ servicetype_name, servicetype_id }) => ({
+    label: servicetype_name,
+    value: servicetype_id,
   }));
+
+  export const useService = () =>
+    useFetchData("service").map(({ service_name, service_id }) => ({
+      label: service_name,
+      value: service_id,
+    }));
 
 export const useUnit = () =>
   useFetchData("unit").map(({ name, id }) => ({
@@ -66,16 +71,11 @@ export const useUnit = () =>
     value: id,
   }));
 
-  export const useCustomer = (key) => {
-  const allCustomers = useFetchData("customer/status", key); // Pass the key to force reload
-  const filteredCustomers = allCustomers.map(({ cust_name, cust_surname, cust_id, status }) => ({
-    label: `${cust_name} ${cust_surname} ${status === 1 ? "(Original)" : ""}`, // Show "Original" for selected customer
+  export const useCustomer = () =>
+  useFetchData("customer").map(({ cust_name, cust_surname, cust_id }) => ({
+    label: `${cust_name} ${cust_surname}`, // Show "Original" for selected customer
     value: cust_id,
-    status,
   }));
-
-  return filteredCustomers;
-};
 
   
   

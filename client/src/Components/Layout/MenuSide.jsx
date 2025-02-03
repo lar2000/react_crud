@@ -70,6 +70,7 @@ const MenuSide = () => {
 						<a href="javascript:void(0);" className="menu-link">
 							<div className="menu-icon"><i className="fa-solid fa-star"></i></div>
 							<div className="menu-text">ບໍລິການ</div>
+							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
 							<div className="menu-item">
@@ -85,9 +86,30 @@ const MenuSide = () => {
 						</div>
 					</div>
 					<div className="menu-item has-sub fs-5">
+						<a href="javascript:;" className="menu-link">
+						<div className="menu-icon"><i className="fa-solid fa-warehouse"></i></div>
+							<div className="menu-text">ສະຕ໋ອກສິນຄ້າ</div>
+							<div className="menu-caret"></div>
+						</a>
+						<div className="menu-submenu">
+							<div className="menu-item">
+								<Link to="/importproduct" className="menu-link">
+							<div className="menu-text">ນຳເຂົ້າສິນຄ້າ</div></Link></div>
+								<div className="menu-item">
+								<Link to="/product" className="menu-link">
+							<div className="menu-text">ສິນຄ້າ</div></Link></div>
+								<div className="menu-item">
+								<Link to="/set_product" className="menu-link">
+							<div className="menu-text">ເຊັດສິນຄ້າ</div>
+                                </Link>
+                            </div>
+						</div>
+					</div>
+					<div className="menu-item has-sub fs-5">
 						<a href="javascript:void(0);" className="menu-link">
 							<div className="menu-icon"><i className="fa-solid fa-file-lines"></i></div>
 							<div className="menu-text">ລາຍງານ</div>
+							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
 							<div className="menu-item">
@@ -108,25 +130,6 @@ const MenuSide = () => {
 							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
-							<div className="menu-item has-sub fs-14px">
-								<a href="javascript:;" className="menu-link">
-									<div className="menu-text">ສະຕ໋ອກສິນຄ້າ</div>
-									<div className="menu-caret"></div>
-								</a>
-								<div className="menu-submenu">
-									<div className="menu-item">
-										<Link to="/importproduct" className="menu-link">
-										   <div className="menu-text">ນຳເຂົ້າສິນຄ້າ</div></Link></div>
-									<div className="menu-item">
-										<Link to="/product" className="menu-link">
-										   <div className="menu-text">ສິນຄ້າ</div></Link></div>
-									<div className="menu-item">
-										<Link to="/set_product" className="menu-link">
-										   <div className="menu-text">ເຊັດສິນຄ້າ</div>
-                                        </Link>
-                                    </div>
-								</div>
-							</div>
 							<div className="menu-item">
 								<Link to="/staff" className="menu-link">
                                     <div className="menu-text">ພະນັກງານ</div>

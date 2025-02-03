@@ -23,7 +23,7 @@ router.post('/create', function (req, res) {
         const setFields = `
           amount = amount + ${amount}, 
           price = IF(price != ${price}, ${price}, price),
-          total = (amount + ${amount}) * IF(price != ${price}, ${price}, price)`;
+          total = amount * price`;
         const condition = `pro_id = '${pro_id_fk}'`;
         db.updateField('product', setFields, condition, (err) => {
           if (err) {
@@ -60,7 +60,7 @@ router.post('/create', function (req, res) {
          const setFields = `
            amount = amount + ${deltaAmount}, 
            price = IF(price != ${price}, ${price}, price),
-           total = (amount + ${deltaAmount}) * IF(price != ${price}, ${price}, price) `;
+           total = amount * price`;
            const productCondition = `pro_id = '${pro_id_fk}'`;
 
            db.updateField('product', setFields, productCondition, (err) => {
@@ -93,7 +93,7 @@ router.delete('/:imp_id', function (req, res, next) {
      // Adjust product table
      const setFields = `
      amount = amount - ${amount},
-     total = (amount - ${amount}) * price`;
+     total = amount * price`;
    const productCondition = `pro_id = '${pro_id_fk}'`;
 
    db.updateField('product', setFields, productCondition, (err) => {

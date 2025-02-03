@@ -12,8 +12,9 @@ function updateCustomerStatus(cust_id_fk, status, callback) {
 
 // Handle booking creation (without profile upload)
 router.post('/create', function (req, res) {
-  const { book_id, cust_id_fk, service_id_fk, group_type, date, group_size, tell, email, note } = req.body;
+  let { book_id, cust_id_fk, service_id_fk, group_type, date, group_size, tell, email, note } = req.body;
   const table = 'booking';
+  group_type = group_size > 1 ? 'ກຸ່ມ' : 'ບຸກຄົນ';
   
   if (!book_id) {
     db.autoId(table, 'book_id', (err, book_id) => {

@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, SelectPicker, DatePicker, Input, Text, DateRangePicker, Timeline } 
-from "rsuite";
+import { DatePicker, Text,Timeline} from "rsuite";
 import TimeRoundIcon from '@rsuite/icons/TimeRound';
 import CheckRoundIcon from '@rsuite/icons/CheckRound';
 import { format } from "date-fns";
 import { Config} from "../../../../config/connection";
+import Detail from "./Details";
+import BookingModal from './Modal';
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { useServiceType, useCustomer  } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
 const Booking = () => {
   const api = Config.ApiURL;
   const [getData, setData] = useState([]);
-  const [reloadKey, setReloadKey] = useState(0); // Trigger re-fetch of customers
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDate, setSearchDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState("add"); // Add or edit
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   const [bookData, setbookData] = useState({
     book_id: null,
@@ -33,12 +33,6 @@ const Booking = () => {
     tell: "",
     note: "",
   });
-
-  const serviceType = useServiceType();
-  const customers = useCustomer(reloadKey);
-  const group_type = ['ກຸ່ມ', 'ບຸກຄົນ'].map(
-    item => ({ label: item, value: item })
-  );
 
   useEffect(() => {
     fetchgetData();
@@ -55,7 +49,6 @@ const Booking = () => {
   const resetForm = () => {
     setbookData({
       book_id: null,
-      group_type: "",
       date: [null, null],
       cust_id_fk: null,
       service_id_fk: null,
@@ -78,14 +71,12 @@ const Booking = () => {
     setModalType("add");
   };
 
-  const handleDateSelect = (range) => {
-    if (range && range.length === 2) {
-      setbookData({ ...bookData, date: range });
-    }
-  };
-
   const handleDateSearch = (value) => {
     setSearchDate(value);
+  };
+
+  const handleViewClick = (booking) => {
+    setSelectedBooking(booking);
   };
 
   const handleEditClick = (data) => {
@@ -93,7 +84,6 @@ const Booking = () => {
     handleOpen();
     setbookData({
       book_id: data.book_id,
-      group_type: data.group_type,
       date: [new Date(data.date), new Date(data.dateEnd)],
       cust_id_fk: data.cust_id_fk,
       service_id_fk: data.service_id_fk,
@@ -101,19 +91,6 @@ const Booking = () => {
       email: data.email,
       tell: data.tell,
       note: data.note,
-    });
-  };
-
-  const handleChange = (name, value) => {
-    setbookData({
-      ...bookData,
-      [name]: value,
-    });
-  };
-  const handleSelectChange = (event, field) => {
-    setbookData({
-      ...bookData,
-      [field]: event,
     });
   };
   const handleSubmit = async (e) => {
@@ -124,7 +101,6 @@ const Booking = () => {
         alert(`booking ${bookData.book_id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
-        setReloadKey((prevKey) => prevKey + 1); // Increment key to trigger re-fetch of customers
     } catch (err) {
       console.error("Failed to submit booking data", err);
     }
@@ -135,7 +111,6 @@ const Booking = () => {
       await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk }); // Send cust_id_fk
       alert("Booking member soft deleted successfully!");
       fetchgetData();
-      setReloadKey((prevKey) => prevKey + 1); // Increment key to trigger re-fetch of customers
     } catch (err) {
       console.error("Failed to delete booking", err);
     }
@@ -153,7 +128,6 @@ const Booking = () => {
     return phone.substring(0, 2) + "*****" + phone.slice(-3);
   };
     
-  
   const filteredData = getData.filter((booking) => {
     const searchDateMatch =
       searchDate && booking.date
@@ -175,17 +149,11 @@ const Booking = () => {
   return (
     <div id="content" className="app-content">
       <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">booking</li>
+        <li className="breadcrumb-item"><a href="javascript:;">Home</a>
+        </li><li className="breadcrumb-item"><a href="javascript:;">Page Options</a>
+        </li><li className="breadcrumb-item active">booking</li>
       </ol>
-      <h1 className="page-header">
-        Manage booking <small>header small text goes here...</small>
-      </h1>
+      <h1 className="page-header">Manage booking <small>header small text goes here...</small></h1>
 
       <div className="panel panel-inverse">
         <div className="panel-heading">
@@ -252,13 +220,15 @@ const Booking = () => {
                     <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
                   <td>{booking.service_name}
-                  {/* <Text color="green" weight="semibold">(ລາຄາລວມ: {booking.total_price} ກີບ)</Text> */}
+                  <Text muted>ລາຄາ: {booking.price}/ຄົນ</Text>
+                  <Text color="green" weight="semibold">(ລວມ: {booking.total_price} ກີບ)</Text>
                   </td>
                   <td>{booking.note}</td>
                   <td><div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a href="javascript:;" className="dropdown-item">
-                          <i className="fas fa-eye"></i></a>  
+                      <a href="javascript:;" className="dropdown-item" onClick={() => handleViewClick(booking)}>
+                        <i className="fas fa-eye"></i>
+                      </a>
                         <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle ms-2"
                           data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i>
@@ -284,76 +254,10 @@ const Booking = () => {
 
       {/*---------- Modal Component ---------------*/}
 
-      <Modal size={"md"} open={open} onClose={handleClose}>
-        <Modal.Header>
-          <Modal.Title className="title text-center">
-            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນການຈອງ" : "ແກ້ໄຂ ຂໍ້ມູນການຈອງ"}
-          </Modal.Title>
-        </Modal.Header>
-        <form  onSubmit={handleSubmit}>
-        <Modal.Body>
-          <div className="row mb-3">
-          <div className="col-md-2">
-              <label className="form-label">ຈຳນວນຄົນ</label>
-              <Input className="form-label" name="amount" value={bookData.group_size} 
-              onChange={(value) => handleChange("group_size", value.replace(/[^0-9]/g, ""))}
-              placeholder="" required />
-            </div>
-          <div className="col-md-4">
-              <label className="form-label">ປະເພດຈອງ</label>
-              <SelectPicker className="form-label" data={group_type} searchable={false}
-                value={bookData.group_type}
-                onChange={(value) => handleSelectChange(value, "group_type")}
-                placeholder="ເລືອກ" required block/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ວັນທີຈອງ~ວັນທີສິ້ນສຸດ</label>
-              <DateRangePicker className="form-label" name="date" value={bookData.date} 
-              onChange={(date) => handleDateSelect(date)}
-              placeholder="" required style={{ width: "100%" }}/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ປະເພດບໍລິການ</label>
-              <SelectPicker className="form-label" data={serviceType} value={bookData.service_id_fk}
-                onChange={(value) => handleSelectChange(value, "service_id_fk")}
-                placeholder="ເລືອກປະເພດບໍລິການ" required block/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ຊື່ ແລະ ນາມສະກຸນ</label>
-              <SelectPicker className="form-label" data={customers} value={bookData.cust_id_fk}
-                onChange={(value) => handleSelectChange(value, "cust_id_fk")}
-                placeholder="ເລືອກຊື່..." required block/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={bookData.email} 
-              onChange={(value) => handleChange("email", value)}
-                placeholder="ອີເມວ໌..."/>
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">ເບີໂທ</label>
-              <Input className="form-label" name="tell" value={bookData.tell} 
-              onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
-                placeholder="020xxxxxxxx/030xxxxxxx" required/>
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ໝາຍເຫດ</label>
-              <Input as="textarea" rows={3} name="textarea" className="form-label" value={bookData.note} 
-              onChange={(value) => handleChange("note", value)}
-                placeholder="textarea..."/>
-            </div>
-            </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Next" : "Update"}
-          </Button>
-          <Button onClick={resetForm} appearance="subtle">
-            Cancel
-          </Button>
-        </Modal.Footer>
-        </form>
-      </Modal>
+      <Detail data={selectedBooking} show={!!selectedBooking} onClose={() => setSelectedBooking(null)}/>
+
+      <BookingModal open={open} onClose={handleClose} modalType={modalType}
+        bookData={bookData} setBookData={setbookData} handleSubmit={handleSubmit} />
     </div>
   );
 };

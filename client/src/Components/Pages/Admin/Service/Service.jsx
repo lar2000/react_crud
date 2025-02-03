@@ -181,7 +181,7 @@ const Service = () => {
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a href="javascript:;" className="btn-primary btn-sm">
+                      <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"
