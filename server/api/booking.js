@@ -146,8 +146,9 @@ router.get('/single/:book_id', function (req, res) {
 // Get all active bookings
 router.get('/', function (req, res) {
   const tables = `booking
-       LEFT JOIN customer ON booking.cust_id_fk=customer.cust_id 
-       LEFT JOIN service ON booking.service_id_fk=service.service_id`;
+       LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id 
+       LEFT JOIN payment ON booking.book_id = payment.book_id_fk 
+       LEFT JOIN service ON booking.service_id_fk = service.service_id`;
 
   const fields = `
       booking.book_id,
@@ -157,15 +158,19 @@ router.get('/', function (req, res) {
       booking.group_type, 
       booking.date, 
       booking.dateEnd, 
-      booking.email, note, 
+      booking.email,
       booking.tell, 
       booking.group_size,  
       CASE WHEN booking.note = '' THEN 'ບໍ່ລະບຸ' ELSE booking.note END AS note,
       customer.cust_code,
       customer.cust_name, 
       customer.cust_surname,
+      payment.pay_id,
+      payment.paytype_id_fk,
+      payment.total_price,
+      payment.pay_date,
+      payment.detail,
       service.price,
-      (booking.group_size * service.price) AS total_price,
       service.service_name`;
   const where = `booking.state = 1`;
 

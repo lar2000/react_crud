@@ -60,9 +60,10 @@ export const useServiceType = () =>
   }));
 
   export const useService = () =>
-    useFetchData("service").map(({ service_name, service_id }) => ({
+    useFetchData("service").map(({ service_name, service_id, price }) => ({
       label: service_name,
       value: service_id,
+      price
     }));
 
 export const useUnit = () =>
@@ -73,9 +74,15 @@ export const useUnit = () =>
 
   export const useCustomer = () =>
   useFetchData("customer").map(({ cust_name, cust_surname, cust_id }) => ({
-    label: `${cust_name} ${cust_surname}`, // Show "Original" for selected customer
+    label: `${cust_name} ${cust_surname}`,
     value: cust_id,
   }));
+
+  export const usePayType = () =>
+    useFetchData("payment/paytype").map(({ paytype_name, paytype_id }) => ({
+      label: paytype_name,
+      value: paytype_id,
+    }));
 
   
   

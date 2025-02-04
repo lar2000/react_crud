@@ -1,9 +1,46 @@
 /* eslint-disable react/prop-types */
-import { Modal, Button } from "rsuite";
-import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { Modal, Button, Progress } from "rsuite";
+import { format, differenceInMinutes, isSameDay } from "date-fns";
 
-// eslint-disable-next-line react/prop-types
 const Detail = ({ data, show, onClose }) => {
+  const [progress, setProgress] = useState(0);
+  const [remainingTime, setRemainingTime] = useState("");
+
+  useEffect(() => {
+    if (data) {
+      const startDate = new Date(data.date);  // Booking start date
+      const endDate = new Date(data.dateEnd); // Booking end date
+      const currentTime = new Date(); // Current time
+  
+      let totalMinutes;
+      if (isSameDay(startDate, endDate)) {
+        totalMinutes = 24 * 60; // If booking is for one day, set total to 24 hours (1440 minutes)
+      } else {
+        totalMinutes = differenceInMinutes(endDate, startDate) + 24 * 60; // Otherwise, calculate full duration
+      }
+  
+      // Calculate elapsed time in minutes
+      const elapsedMinutes = differenceInMinutes(currentTime, startDate);
+      const remainingMinutes = Math.max(totalMinutes - elapsedMinutes, 0);
+  
+      // Calculate progress percentage
+      const percentage = Math.round((elapsedMinutes / totalMinutes) * 100, 100);
+      setProgress(percentage);
+  
+      // Convert remaining minutes to days, hours, and minutes
+      const remainingDays = Math.floor(remainingMinutes / (24 * 60));
+      const remainingHours = Math.floor((remainingMinutes % (24 * 60)) / 60);
+      const remainingMins = remainingMinutes % 60;
+  
+      // Format remaining time as 'X days HH:mm'
+      setRemainingTime(
+        `${remainingDays > 0 ? `${remainingDays} day${remainingDays > 1 ? "s" : ""} ` : ""}`
+        + `${String(remainingHours).padStart(2, "0")} h : ${String(remainingMins).padStart(2, "0")} mm`
+      );
+    }
+  }, [data]);
+  
   if (!data) {
     return <p className="text-center text-gray-500 mt-4">No data available</p>;
   }
@@ -12,27 +49,38 @@ const Detail = ({ data, show, onClose }) => {
     <Modal open={show} onClose={onClose} size="sm" className="rounded-lg shadow-lg">
       <Modal.Header className="border-b border-gray-200 py-4">
         <Modal.Title className="text-center">Booking Details</Modal.Title>
-        <div className="d-flex justify-content-center mt-2"><i className="fa-solid fa-spa"></i></div>
+        <div className="d-flex justify-content-center mt-2">
+          <i className="fa-solid fa-spa"></i>
+        </div>
       </Modal.Header>
       <Modal.Body className="bg-gray-50 py-4 px-6">
-      <div className="nav-wizards-container">
-        <nav className="nav nav-wizards-2 mb-3">
-            <div className="nav-item col">
-                <h6 className="text-center">ວັນທີຈອງ</h6>
-            <div className="nav-link completed" href="javascript:;">
-                <div className="nav-text">{format(new Date(data.date), "dd-MM-yyyy")}</div>
-            </div>
-            </div>
-            <div className="nav-item col">
-            <h6 className="text-center">ວັນທີສິ້ນສຸດ</h6>
-            <div className="nav-link disabled" href="javascript:;"> 
-                <div className="nav-text">{format(new Date(data.dateEnd), "dd-MM-yyyy")}</div>
-            </div>
-            </div>
-        </nav>
+         {/* Progress Bar */}
+        <div className="progress-container mb-4">
+          <h6 className="text-center">Remaining Time: {remainingTime}</h6>
+          <Progress.Line
+            percent={progress}  showInfo={true} format={() => remainingTime}
+            strokeColor={progress < 20 ? "#ff9800" : "#4caf50"} // Orange if <20%, Green otherwise
+          />
         </div>
+        <div className="nav-wizards-container">
+          <nav className="nav nav-wizards-2 mb-3">
+            <div className="nav-item col">
+              <h6 className="text-center">ວັນທີຈອງ</h6>
+              <div className="nav-link">
+                <div className="nav-text">{format(new Date(data.date), "dd-MM-yyyy")}</div>
+              </div>
+            </div>
+            <div className="nav-item col">
+              <h6 className="text-center">ວັນທີສິ້ນສຸດ</h6>
+              <div className="nav-link">
+                <div className="nav-text">{format(new Date(data.dateEnd), "dd-MM-yyyy")}</div>
+              </div>
+            </div>
+          </nav>
+        </div>
+
         <div className="container mb-4">
-        {[
+          {[
             { label: "ລະຫັດຈອງ :", value: data.book_code },
             { label: "ຈອງເປັນ :", value: `${data.group_type}(${data.group_size}ຄົນ)` },
             { label: "ລະຫັດລູກຄ້າ :", value: data.cust_code },
@@ -42,12 +90,12 @@ const Detail = ({ data, show, onClose }) => {
             { label: "ບໍລິການທີຈອງ :", value: data.service_name },
             { label: "ລາຄາທັງໝົດ :", value: data.total_price },
             { label: "ໝາຍເຫດ :", value: data.note },
-        ].map((item, index) => (
+          ].map((item, index) => (
             <div key={index} className="d-flex justify-content-between border-bottom py-2">
-            <span className="fw-bold">{item.label}</span>
-            <span>{item.value}</span>
+              <span className="fw-bold">{item.label}</span>
+              <span>{item.value}</span>
             </div>
-        ))}
+          ))}
         </div>
       </Modal.Body>
       <Modal.Footer className="bg-gray-100 py-3 px-6">

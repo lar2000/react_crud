@@ -15262,6 +15262,100 @@ a.ui-button:active {
     }
 }
 
+/* Detail.css */
+
+/* Modal Styling */
+.rs-modal {
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .rs-modal-header {
+    border-bottom: 2px solid #e5e7eb;
+    padding: 16px;
+    text-align: center;
+  }
+  
+  .rs-modal-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .rs-modal-body {
+    background-color: #f9fafb;
+    padding: 20px;
+  }
+   /* ---------------------------------Detail.css ------------------------------*/
+   
+  /* Progress Bar Styling */
+  .nav-wizards-container {
+    margin-bottom: 20px;
+  }
+  
+  .nav-wizards-2 {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .nav-item {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .nav-link {
+    display: block;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .nav-link.completed {
+    background-color: #4caf50;
+  }
+  
+  .nav-link.disabled {
+    background: linear-gradient(to right, #4caf50 0%, #ddd 100%);
+    color: #333;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+  }
+  
+  /* Information Table */
+  .container {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .container .d-flex {
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .container .fw-bold {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Footer */
+  .rs-modal-footer {
+    background: #f3f4f6;
+    padding: 15px;
+  }
+  
+  .rs-modal-footer .rs-btn {
+    width: 100px;
+    font-weight: bold;
+  }
+  
+  .rs-modal-footer .rs-btn:hover {
+    opacity: 0.9;
+  }  
+
 .ps {
     overflow: hidden !important;
     overflow-anchor: none;

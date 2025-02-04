@@ -20,6 +20,7 @@ const routes = [
   'service',
   'service_type',
   'booking',
+  'payment',
   'set_product'
 ];
 

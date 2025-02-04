@@ -32,6 +32,12 @@ const Booking = () => {
     email: "",
     tell: "",
     note: "",
+
+    pay_id: null,
+    paytype_id_fk: null,
+    total_price: "",
+    pay_date: null,
+    detail: null,
   });
 
   useEffect(() => {
@@ -55,7 +61,13 @@ const Booking = () => {
       group_size: "",
       email: "",
       tell: "",
-      note:""
+      note:"",
+
+      pay_id: null,
+      paytype_id_fk: null,
+      total_price: "",
+      pay_date: null,
+      detail: null,
     });
     setOpen(false);
   };
@@ -91,24 +103,63 @@ const Booking = () => {
       email: data.email,
       tell: data.tell,
       note: data.note,
+
+      pay_id: data.pay_id,
+      paytype_id_fk: data.paytype_id_fk,
+      total_price: data.total_price,
+      pay_date: new Date(data.pay_date),
+      detail: data.detail,
     });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-   
+    // Prepare booking data
+    const bookingData = {
+      book_id: bookData.book_id,
+      cust_id_fk: bookData.cust_id_fk,
+      date: bookData.date,
+      service_id_fk: bookData.service_id_fk,
+      group_size: bookData.group_size,
+      email: bookData.email,
+      tell: bookData.tell,
+      note: bookData.note,
+    };
+  
+    // Prepare payment data
+    const paymentData = {
+      pay_id: bookData.pay_id,
+      paytype_id_fk: bookData.paytype_id_fk,
+      pay_date: new Date(bookData.pay_date),
+      total_price: bookData.total_price,
+    };
+  
     try {
-        await axios.post(`${api}/booking/create`, bookData);
-        alert(`booking ${bookData.book_id ? "updated" : "added"} successfully!`);
-        handleClose();
-        fetchgetData();
+      // Always create a new booking
+      const bookingResponse = await axios.post(`${api}/booking/create`, bookingData);
+      console.log("Booking added successfully!");
+  
+      const createdBooking = bookingResponse.data;
+      if (!createdBooking || !createdBooking.booking) {
+        console.error("Failed to retrieve book_id from booking response");
+        alert("Error: Could not get book_id for payment.");
+        return;
+      }
+      paymentData.book_id = createdBooking.booking[0];
+      await axios.post(`${api}/payment/create`, paymentData);
+      alert("Payment added successfully!");
+  
+      handleClose();
+      fetchgetData();
     } catch (err) {
-      console.error("Failed to submit booking data", err);
+      console.error("Failed to submit booking and payment data", err);
+      alert("Error submitting booking or payment data.");
     }
   };
+  
   const handleDeleteClick = async (book_id, cust_id_fk) => {
-    alert(cust_id_fk)
     try {
       await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk }); // Send cust_id_fk
+      await axios.patch(`${api}/payment/${book_id}`); // Send cust_id_fk
       alert("Booking member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
