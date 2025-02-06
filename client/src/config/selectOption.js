@@ -84,5 +84,12 @@ export const useUnit = () =>
       value: paytype_id,
     }));
 
+    export const useDuration = () =>
+      useFetchData("duration").map(({ duration, dur_id }) => ({
+        label: duration,
+        value: dur_id,
+      }));
+  
+
   
   

@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const db = require('./db_connection');
+const db = require('../controller/controller.connection');
 const router = express.Router();
 
 router.post('/create', function (req, res) {

@@ -17,6 +17,7 @@ const routes = [
   'product',
   'protype',
   'unit',
+  'duration',
   'service',
   'service_type',
   'booking',

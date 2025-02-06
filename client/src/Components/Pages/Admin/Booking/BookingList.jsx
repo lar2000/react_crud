@@ -26,6 +26,7 @@ const Booking = () => {
     book_id: null,
     group_type: "",
     cust_id_fk: null,
+    dur_id_fk: null,
     date: [null, null],
     service_id_fk: null,
     group_size: "",
@@ -57,6 +58,7 @@ const Booking = () => {
       book_id: null,
       date: [null, null],
       cust_id_fk: null,
+      dur_id_fk: null,
       service_id_fk: null,
       group_size: "",
       email: "",
@@ -98,6 +100,7 @@ const Booking = () => {
       book_id: data.book_id,
       date: [new Date(data.date), new Date(data.dateEnd)],
       cust_id_fk: data.cust_id_fk,
+      dur_id_fk: data.dur_id_fk,
       service_id_fk: data.service_id_fk,
       group_size: data.group_size,
       email: data.email,
@@ -117,6 +120,7 @@ const Booking = () => {
     const bookingData = {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
+      dur_id_fk: bookData.dur_id_fk,
       date: bookData.date,
       service_id_fk: bookData.service_id_fk,
       group_size: bookData.group_size,
@@ -136,23 +140,21 @@ const Booking = () => {
     try {
       // Always create a new booking
       const bookingResponse = await axios.post(`${api}/booking/create`, bookingData);
-      console.log("Booking added successfully!");
   
       const createdBooking = bookingResponse.data;
       if (!createdBooking || !createdBooking.booking) {
-        console.error("Failed to retrieve book_id from booking response");
-        alert("Error: Could not get book_id for payment.");
+        alert(`${bookData.book_id}"Update Booking successfully!"`);
+        handleClose();
+        fetchgetData();
         return;
       }
       paymentData.book_id = createdBooking.booking[0];
       await axios.post(`${api}/payment/create`, paymentData);
-      alert("Payment added successfully!");
-  
+      alert(`${bookData.book_id}"Update Booking successfully!"`);
       handleClose();
       fetchgetData();
     } catch (err) {
       console.error("Failed to submit booking and payment data", err);
-      alert("Error submitting booking or payment data.");
     }
   };
   
@@ -240,8 +242,8 @@ const Booking = () => {
                 <th className="text-nowrap">ປະເພດຈອງ</th>
                 <th className="text-nowrap">ວັນທີຈອງ~ສິ້ນສຸດ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ຂໍ້ມູນຕິດຕໍ່</th>
-                <th className="text-nowrap">ບໍລິການ</th>
+                <th className="text-nowrap">ຊື່ບໍລິການ</th>
+                <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
@@ -265,12 +267,12 @@ const Booking = () => {
                     </Timeline.Item>
                   </Timeline>
                   <td>{booking.cust_name} {booking.cust_surname}
-                  <Text muted>{booking.cust_code}</Text>
-                  </td>
-                  <td>{maskEmail(booking.email)}
-                    <Text muted>{maskPhone(booking.tell)}</Text>
+                  <Text muted>{maskEmail(booking.email)}</Text>
+                  <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
                   <td>{booking.service_name}
+                  </td>
+                  <td>{booking.duration}
                   <Text muted>ລາຄາ: {booking.price}/ຄົນ</Text>
                   <Text color="green" weight="semibold">(ລວມ: {booking.total_price} ກີບ)</Text>
                   </td>
@@ -305,7 +307,7 @@ const Booking = () => {
 
       {/*---------- Modal Component ---------------*/}
 
-      <Detail data={selectedBooking} show={!!selectedBooking} onClose={() => setSelectedBooking(null)}/>
+      <Detail data={selectedBooking} open={!!selectedBooking} onClose={() => setSelectedBooking(null)}/>
 
       <BookingModal open={open} onClose={handleClose} modalType={modalType}
         bookData={bookData} setBookData={setbookData} handleSubmit={handleSubmit} />

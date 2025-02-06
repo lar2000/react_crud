@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('./db_connection');
+const db = require('../controller/controller.connection');
 const router = express.Router();
 
 // Handle importproduct creation (without profile upload)

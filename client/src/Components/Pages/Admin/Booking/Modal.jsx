@@ -1,17 +1,21 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, DatePicker, DateRangePicker } from 'rsuite';
-import { useService, useCustomer, usePayType } from "../../../../config/selectOption";
+import { Modal, Button, Steps, Panel, Input, SelectPicker, DatePicker, DateRangePicker } 
+from 'rsuite';
+import { useService, useCustomer, usePayType, useDuration } from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const services = useService();
   const customers = useCustomer();
   const payTypes = usePayType();
+  const durations = useDuration();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     if (modalType === 'add') {
       setStep(0); // Reset to step 0 when "Add New" is clicked
+    } else if (modalType === 'edit') {
+      setStep(0);
     }
   }, [modalType, open]); // This ensures that step resets when the modal opens
 
@@ -30,11 +34,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       return bookData.paytype_id_fk && 
       bookData.total_price && 
       bookData.pay_date;
-    }
-    if (step === 2) {
-      return bookData.payment_method && 
-      bookData.amount_paid && 
-      bookData.payment_date;
     }
     return true;
   };
@@ -70,24 +69,22 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       [field]: event,
     });
   };
-
   return (
-    <Modal size={"md"} open={open} onClose={onClose}>
-      <Modal.Header>
-        <Modal.Title className="title text-center">
-          {modalType === "add" ? "Add Booking" : "Edit Booking"}
+    <Modal size={"sm"} open={open} onClose={onClose}>
+  
+        <Modal.Title className="title text-center mt-2">
         </Modal.Title>
-      </Modal.Header>
       <form onSubmit={handleSubmit}>
+      <div className="d-flex justify-content-center align-items-center">
+      <div className="col-md-8">
+      <Steps current={step}>
+          <Steps.Item title= {modalType === "add" ? "ລາຍລະອຽດການຈອງ" : "ແກ້ໄຂຂໍ້ມູນການຈອງ" } />
+          <Steps.Item title="ຊຳລະເງິນ" />
+        </Steps>
+        </div>
+        </div>
         <Modal.Body>
           <div>
-            <Steps current={step}>
-              <Steps.Item title="ລາຍລະອຽດການຈອງ" />
-              <Steps.Item title="ການຊຳລະເງິນ" />
-              <Steps.Item title="ໃບບິນ" />
-              <Steps.Item title="Completed" />
-            </Steps>
-            <hr />
             {step === 0 && (
               <Panel>
                 <div className="row mb-3">
@@ -111,22 +108,28 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => handleSelectChange(value, "service_id_fk")} required block />
                   </div>
                   <div className="col-md-6">
+                    <label className="form-label">ໄລຍະເວລາ</label>
+                    <SelectPicker className="form-label" data={durations}
+                      value={bookData.dur_id_fk}
+                      onChange={(value) => handleSelectChange(value, "dur_id_fk")} required block />
+                  </div>
+                  <div className="col-md-6">
                     <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
                     <SelectPicker className="form-label" data={customers}
                       value={bookData.cust_id_fk}
                       onChange={(value) => handleSelectChange(value, "cust_id_fk")} required block />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Email</label>
-                    <Input className="form-label" name="email"
-                      value={bookData.email}
-                      onChange={(value) => setBookData({ ...bookData, email: value })} />
-                  </div>
-                  <div className="col-md-6">
                     <label className="form-label">Phone</label>
                     <Input className="form-label" name="tell" value={bookData.tell}
                       onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
                       required />
+                  </div>
+                  <div className="col-md-12">
+                    <label className="form-label">Email</label>
+                    <Input className="form-label" name="email"
+                      value={bookData.email}
+                      onChange={(value) => setBookData({ ...bookData, email: value })} />
                   </div>
                   <div className="col-md-12">
                     <label className="form-label">Notes</label>
@@ -140,13 +143,13 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
             {step === 1 && (
               <Panel>
                 <div className="row mb-3">
-                  <div className="col-md-6">
+                  <div className="col-md-12">
                     <label className="form-label">ປະເພດການຈ່າຍ</label>
                     <SelectPicker className="form-label" data={payTypes}
                       value={bookData.paytype_id_fk}
                       onChange={(value) => handleSelectChange(value, "paytype_id_fk")} required block />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-md-12">
                     <label className="form-label">ຈຳນວນເງິນ</label>
                     <Input className="form-label" name="total_price"
                       value={bookData.total_price}
@@ -155,19 +158,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                   </div>
                   {(bookData.paytype_id_fk === 3 || bookData.paytype_id_fk === 4) && (
                     <>
-                      <div className="col-md-6">
+                      <div className="col-md-12">
                         <label className="form-label">CVV Code</label>
                         <Input className="form-label" name="cvv" value={bookData.cvv}
                           onChange={(value) => setBookData({ ...bookData, cvv: value.replace(/[^0-9]/g, "") })}
                           required/>
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-12">
                         <label className="form-label">MM/YY</label>
                         <DatePicker className="form-label" name="expiry_date" value={bookData.expiry_date}
                           onChange={(value) => setBookData({ ...bookData, expiry_date: value })}
                           required style={{ width: "100%" }}/>
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-12">
                         <label className="form-label">Card Number</label>
                         <Input className="form-label" name="card_number"
                           value={bookData.card_number}
@@ -176,7 +179,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       </div>
                     </>
                   )}
-                  <div className="col-md-6">
+                  <div className="col-md-12">
                     <label className="form-label">ວັນທີ</label>
                     <DatePicker className="form-label" name="pay_date"
                       value={bookData.pay_date} onChange={(value) => setBookData({ ...bookData, pay_date:value})}
@@ -185,16 +188,15 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                 </div>
               </Panel>
             )}
-            {step === 2 && (
-              <Panel>
-              </Panel>
-            )}
           </div>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={onPrevious} disabled={step === 0}>Previous</Button>
-          <Button onClick={onNext} disabled={!validateStep()}>Next</Button>
-          <Button type="submit" appearance="primary" disabled={step !== 1}>
+          {step !== 1 && (
+            <Button onClick={onNext} disabled={!validateStep()}>Next</Button>
+          )}
+          <Button type="submit" appearance="primary" disabled={step !== 1}
+          onClick={handleSubmit}>
             {modalType === "add" ? "Book Now" : "Update"}
           </Button>
           <Button onClick={onClose} appearance="subtle">Cancel</Button>

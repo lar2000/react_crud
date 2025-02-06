@@ -1,6 +1,6 @@
 const express=require('express');
 const district = express.Router();
-const db = require('./db_connection');
+const db = require('../controller/controller.connection');
 
 district.get("/", function (req, res) {
     db.selectAll('tbl_district',(err, results) => {
