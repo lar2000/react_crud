@@ -61,10 +61,10 @@ const MenuSide = () => {
 						</Link>
 					 </div>
 					 <div className="menu-item fs-5">
-					    <a href="javascript:;" className="menu-link">
+					    <Link to="/checkIn" className="menu-link">
 					        <div className="menu-icon"><i className="fas fa-bed"></i></div>
 					        <div className="menu-text">ເຂົ້າໃຊ້ບໍລິການ</div>
-					    </a>
+					    </Link>
 					 </div>
 					 <div className="menu-item has-sub fs-5">
 						<a href="javascript:void(0);" className="menu-link">

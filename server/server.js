@@ -18,6 +18,7 @@ const routes = [
   'protype',
   'unit',
   'duration',
+  'timeperday',
   'service',
   'service_type',
   'booking',

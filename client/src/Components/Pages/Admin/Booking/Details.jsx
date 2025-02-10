@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { Modal, Button, Progress } from "rsuite";
 import { format, differenceInMinutes, isSameDay } from "date-fns";
 import { printContent } from "../../../../PrintDoc";
+import { displayDuration } from "../../../../util";
 
 const Detail = ({ data, open, onClose }) => {
   const [progress, setProgress] = useState(0);
@@ -56,7 +57,7 @@ const Detail = ({ data, open, onClose }) => {
         <div className="progress-container mb-4">
           <h6 className="text-center">Remaining Time: {remainingTime}</h6>
           <Progress.Line percent={progress} showInfo={true}
-            format={() => remainingTime} strokeColor={progress < 20 ? "#ff9800" : "#4caf50"}/>
+            format={() => remainingTime} strokeColor={progress > 100 ? "#f44336" : progress < 20 ? "#ff9800": "#4caf50"}/>
         </div>
         <div className="container mb-4" ref={printRef}>
           <div className="d-flex justify-content-center">
@@ -84,6 +85,7 @@ const Detail = ({ data, open, onClose }) => {
             { label: "ເບີໂທ :", value: data.tell },
             { label: "ອີເມວ໌ :", value: data.email },
             { label: "ບໍລິການທີຈອງ :", value: data.service_name },
+            { label: "ໄລຍະເວລາ :", value: `${displayDuration(data.duration)} (${data.time_per_day} ນາທີ/ວັນ)`},
             { label: "ລາຄາທັງໝົດ :", value: data.total_price },
             { label: "ໝາຍເຫດ :", value: data.note },
           ].map((item, index) => (

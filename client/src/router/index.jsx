@@ -1,5 +1,6 @@
 import { Routes, Route,Navigate } from 'react-router-dom';
 import Booking from '../Components/Pages/Admin/Booking/BookingList';
+import CheckIn from '../Components/Pages/Admin/Check-in/CheckIn';
 import Staff from '../Components/Pages/Admin/Staff/Staff';
 import Customer from '../Components/Pages/Admin/Customer/Customer';
 import ImportProd from '../Components/Pages/Admin/Product/ImportProduct';
@@ -15,6 +16,7 @@ export default function Content() {
             <Route path="/" element={<Navigate replace to={'home'} />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path="/checkIn" element={<CheckIn />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/customer" element={<Customer />} />
             <Route path="/importproduct" element={<ImportProd />} />

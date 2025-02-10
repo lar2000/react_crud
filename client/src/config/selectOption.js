@@ -84,11 +84,32 @@ export const useUnit = () =>
       value: paytype_id,
     }));
 
-    export const useDuration = () =>
-      useFetchData("duration").map(({ duration, dur_id }) => ({
-        label: duration,
+    export const useDuration = () => {
+      const durationLabels = {
+        7: "ວັນ (1 week)",
+        14: "ວັນ (2 weeks)",
+        30: "ວັນ (1 month)",
+        60: "ວັນ (2 months)",
+        90: "ວັນ (3 months)",
+        180: "ວັນ (6 months)",
+        365: "ວັນ (1 year)"
+      };
+    
+      return useFetchData("duration").map(({ duration, dur_id }) => ({
+        label: duration < 7 
+          ? `${duration} ວັນ` 
+          : `${duration} ${durationLabels[duration] || '/ວັນ'}`,
         value: dur_id,
+        duration,
       }));
+    };
+    export const useTimePerDay = () =>
+      useFetchData("timeperday").map(({ time_per_day, time_per_day_id }) => ({
+        label: time_per_day,
+        value: time_per_day_id,
+        time_per_day,
+      }));
+    
   
 
   

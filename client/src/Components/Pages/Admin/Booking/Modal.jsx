@@ -2,13 +2,15 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Steps, Panel, Input, SelectPicker, DatePicker, DateRangePicker } 
 from 'rsuite';
-import { useService, useCustomer, usePayType, useDuration } from "../../../../config/selectOption";
+import { useService, useCustomer, usePayType, useDuration, useTimePerDay }
+ from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const services = useService();
   const customers = useCustomer();
   const payTypes = usePayType();
   const durations = useDuration();
+  const timeperday = useTimePerDay();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -27,6 +29,8 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       return bookData.group_size && 
       Array.isArray(bookData.date) && bookData.date.length === 2 && bookData.date[0] && bookData.date[1] && 
       bookData.service_id_fk && 
+      bookData.dur_id_fk && 
+      bookData.time_per_day_fk && 
       bookData.cust_id_fk && 
       bookData.tell;
     }
@@ -45,17 +49,22 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       return;
     }
     if (!bookData.pay_date && bookData.date) {
-      const { date, group_size, service_id_fk } = bookData;
+      const { date, group_size, service_id_fk, dur_id_fk, time_per_day_fk} = bookData;
   
-      const selectedService = services.find(service => service.value === service_id_fk);
+      const selectedService = services.find(s => s.value === service_id_fk);
+      const selectedDuration = durations.find(d => d.value === dur_id_fk);
+      const selectedTimePerDay = timeperday.find(tpd => tpd.value === time_per_day_fk);
   
-      if (selectedService) {
-        const price = selectedService.price; // Get the price of the selected service
-  
+      if (selectedService && selectedDuration && selectedTimePerDay) {
+        const price = selectedService.price;
+        const duration = selectedDuration.duration;
+        const timeperday = (selectedTimePerDay.time_per_day)/30;
+        const calcu = duration * timeperday;
+        alert(calcu)
         setBookData({
           ...bookData,
-          pay_date: date ? date[0] : null,  // Set the pay_date to the start date of the booking
-          total_price: group_size * price,   // Calculate the total_price
+          pay_date: date ? date[0] : null,
+          total_price: (group_size * price)*calcu,  
         });
       }
     }
@@ -89,10 +98,34 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
               <Panel>
                 <div className="row mb-3">
                   <div className="col-md-6">
-                    <label className="form-label">ຈຳນວນ</label>
+                    <label className="form-label">ຈຳນວນຄົນ</label>
                     <Input className="form-label" name="amount" value={bookData.group_size}
                       onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
                       required />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">ເລຶອກບໍລິການ</label>
+                    <SelectPicker className="form-label" data={services}
+                      value={bookData.service_id_fk}
+                      onChange={(value) => handleSelectChange(value, "service_id_fk")} required block />
+                  </div>
+                  <div className="col-md-6">
+                  <label className="form-label">ໄລຍະເວລາ</label>
+                    <SelectPicker className="form-label" data={durations}
+                      value={bookData.dur_id_fk}
+                      onChange={(value) => handleSelectChange(value, "dur_id_fk")} required block />
+                    </div>
+                  <div className="col-md-6">
+                    <label className="form-label">ນາທີ/ວັນ</label>
+                    <SelectPicker className="form-label" data={timeperday}
+                      value={bookData.time_per_day_fk}
+                      onChange={(value) => handleSelectChange(value, "time_per_day_fk")} required block />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
+                    <SelectPicker className="form-label" data={customers}
+                      value={bookData.cust_id_fk}
+                      onChange={(value) => handleSelectChange(value, "cust_id_fk")} required block />
                   </div>
                   <div className="col-md-6">
                   <label className="form-label">ວັນທີຈອງ~ວັນທີສິ້ນສຸດ</label>
@@ -102,30 +135,12 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                     required style={{ width: "100%" }}/>
                     </div>
                   <div className="col-md-6">
-                    <label className="form-label">ເລຶອກບໍລິການ</label>
-                    <SelectPicker className="form-label" data={services}
-                      value={bookData.service_id_fk}
-                      onChange={(value) => handleSelectChange(value, "service_id_fk")} required block />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ໄລຍະເວລາ</label>
-                    <SelectPicker className="form-label" data={durations}
-                      value={bookData.dur_id_fk}
-                      onChange={(value) => handleSelectChange(value, "dur_id_fk")} required block />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
-                    <SelectPicker className="form-label" data={customers}
-                      value={bookData.cust_id_fk}
-                      onChange={(value) => handleSelectChange(value, "cust_id_fk")} required block />
-                  </div>
-                  <div className="col-md-6">
                     <label className="form-label">Phone</label>
                     <Input className="form-label" name="tell" value={bookData.tell}
                       onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
                       required />
                   </div>
-                  <div className="col-md-12">
+                  <div className="col-md-6">
                     <label className="form-label">Email</label>
                     <Input className="form-label" name="email"
                       value={bookData.email}

@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Config} from "../../../../config/connection";
 import Detail from "./Details";
 import BookingModal from './Modal';
+import { displayDuration } from "../../../../util";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
@@ -27,6 +28,7 @@ const Booking = () => {
     group_type: "",
     cust_id_fk: null,
     dur_id_fk: null,
+    time_per_day_fk: null,
     date: [null, null],
     service_id_fk: null,
     group_size: "",
@@ -53,12 +55,14 @@ const Booking = () => {
       console.error("Failed to fetch booking data", err);
     }
   };
+  
   const resetForm = () => {
     setbookData({
       book_id: null,
       date: [null, null],
       cust_id_fk: null,
       dur_id_fk: null,
+      time_per_day_fk: null,
       service_id_fk: null,
       group_size: "",
       email: "",
@@ -101,6 +105,7 @@ const Booking = () => {
       date: [new Date(data.date), new Date(data.dateEnd)],
       cust_id_fk: data.cust_id_fk,
       dur_id_fk: data.dur_id_fk,
+      time_per_day_fk: data.time_per_day_fk,
       service_id_fk: data.service_id_fk,
       group_size: data.group_size,
       email: data.email,
@@ -121,6 +126,7 @@ const Booking = () => {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
       dur_id_fk: bookData.dur_id_fk,
+      time_per_day_fk: bookData.time_per_day_fk,
       date: bookData.date,
       service_id_fk: bookData.service_id_fk,
       group_size: bookData.group_size,
@@ -143,14 +149,14 @@ const Booking = () => {
   
       const createdBooking = bookingResponse.data;
       if (!createdBooking || !createdBooking.booking) {
-        alert(`${bookData.book_id}"Update Booking successfully!"`);
+        alert(`${bookData.book_id} ? "Update Booking successfully!": "Added Booking successfully"`);
         handleClose();
         fetchgetData();
         return;
       }
       paymentData.book_id = createdBooking.booking[0];
       await axios.post(`${api}/payment/create`, paymentData);
-      alert(`${bookData.book_id}"Update Booking successfully!"`);
+      alert(`${bookData.book_id} ? "Update Booking successfully!"`);
       handleClose();
       fetchgetData();
     } catch (err) {
@@ -243,7 +249,7 @@ const Booking = () => {
                 <th className="text-nowrap">ວັນທີຈອງ~ສິ້ນສຸດ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
                 <th className="text-nowrap">ຊື່ບໍລິການ</th>
-                <th className="text-nowrap">ລາຄາ</th>
+                <th className="text-nowrap">ໄລຍະເວລາ/ລາຄາ</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
@@ -272,9 +278,9 @@ const Booking = () => {
                   </td>
                   <td>{booking.service_name}
                   </td>
-                  <td>{booking.duration}
-                  <Text muted>ລາຄາ: {booking.price}/ຄົນ</Text>
-                  <Text color="green" weight="semibold">(ລວມ: {booking.total_price} ກີບ)</Text>
+                  <td>{displayDuration(booking.duration)}
+                  <Text muted>{booking.time_per_day} ນາທີ/ວັນ</Text>
+                  <Text color="green" weight="semibold">(ລາຄາລວມ: {booking.total_price} ກີບ)</Text>
                   </td>
                   <td>{booking.note}</td>
                   <td><div className="panel-heading">
