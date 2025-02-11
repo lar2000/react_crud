@@ -24564,7 +24564,7 @@ a:focus {
   display: flex;
   flex-direction: column;
   flex: 0 0 22.5rem;
-  background: var(--bs-pos-sidebar-bg);
+  background: #DCE4C9;
   color: var(--bs-body-color);
 }
 @media (min-width: 992px) {
@@ -25112,7 +25112,7 @@ a:focus {
   padding: 0.46875rem;
   margin: 0;
   height: 100%;
-  width: 25%;
+  width: 100%;
   flex: 0 0 25%;
 }
 @media (max-width: 1199.98px) {
@@ -25130,6 +25130,7 @@ a:focus {
 .pos .pos-table-row .pos-table .pos-table-container {
   background: var(--bs-component-bg);
   color: var(--bs-component-color);
+  background-color: #D9DFC6;
   display: block;
   height: 100%;
   text-decoration: none;
