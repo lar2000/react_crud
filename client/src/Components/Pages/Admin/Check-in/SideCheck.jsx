@@ -30,6 +30,7 @@ const SideCheck = () => {
                 </div>
             </div>
         </div>
+		
     )
 }
 

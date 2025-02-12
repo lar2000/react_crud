@@ -11,16 +11,13 @@ function updateCustomerStatus(cust_id_fk, status, callback) {
 }
 // Handle checkin creation (without profile upload)
 router.post('/create', function (req, res) {
-  let { checkin_id, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, group_size, tell, email, note } = req.body;
+  let { checkin_id, date_checkin, date_checkout } = req.body;
   const table = 'checkin';
-  group_type = group_size > 1 ? 'ກຸ່ມ' : 'ບຸກຄົນ';
   
   if (!checkin_id) {
     db.autoId(table, 'checkin_id', (err, checkin_id) => {
-      const code = checkin_id.toString().slice(-4).padStart  (4, '0');
-      const checkin_code = 'B-' + code;
-      const fields = 'checkin_id, checkin_code, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, dateEnd, group_size, tell, email, note, state';
-      const dataValue = [checkin_id, checkin_code, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date[0], date[1], group_size, tell, email, note, 1]; 
+      const fields = 'checkin_id, date_checkin, date_checkout, state';
+      const dataValue = [checkin_id, date_checkin, date_checkout, 1, 1]; 
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -28,7 +25,7 @@ router.post('/create', function (req, res) {
           return res.status(500).json({ error: 'Failed to add checkin.' });
         }
         // Update customer status to active (1)
-        updateCustomerStatus(cust_id_fk, 1, (err, customerResults) => {
+        updateCustomerStatus(cust_id_fk, 2, (err, customerResults) => {
           if (err) {
             console.error('Error updating customer status:', err);
             return res.status(500).json({ error: 'Failed to update customer status.' });
@@ -54,8 +51,8 @@ router.post('/create', function (req, res) {
         }
 
         // Update checkin with new cust_id_fk
-        const fields = 'cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, dateEnd, group_size, tell, email, note';
-        const newData = [cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date[0], date[1], group_size, tell, email, note, checkin_id];
+        const fields = 'date_checkin, date_checkout';
+        const newData = [date_checkin, date_checkout, checkin_id];
         const condition = 'checkin_id=?';
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
@@ -140,21 +137,29 @@ router.get('/single/:checkin_id', function (req, res) {
 
 // Get all active checkins
 router.get('/', function (req, res) {
-  const tables = `checkin
-       LEFT JOIN customer ON checkin.cust_id_fk = customer.cust_id
-       LEFT JOIN duration ON checkin.dur_id_fk = duration.dur_id 
-       LEFT JOIN time_per_day ON checkin.time_per_day_fk = time_per_day.time_per_day_id `;
+  const tables = `checkin 
+  LEFT JOIN booking ON checkin.book_fk = booking.book_id
+  LEFT JOIN service ON booking.service_id_fk = service.service_id 
+  LEFT JOIN duration ON booking.dur_id_fk = duration.dur_id 
+  LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id
+  `;
 
   const fields = `
       checkin.checkin_id,
       checkin.book_fk,
+      checkin.status, 
       checkin.date_checkin, 
-      checkin.date_checkout, 
-      customer.cust_code,
+      checkin.date_checkout,
+      booking.book_id,
+      booking.book_code,
+      booking.dur_id_fk,
+      booking.group_size,  
+      customer.cust_id,
       customer.cust_name, 
       customer.cust_surname,
       duration.duration, 
-      time_per_day.time_per_day`;
+      service.service_name
+      `;
   const where = `checkin.state = 1`;
 
   db.selectWhere(tables, fields, where, (err, results) => {

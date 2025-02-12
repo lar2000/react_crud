@@ -60,11 +60,10 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
         const duration = selectedDuration.duration;
         const timeperday = (selectedTimePerDay.time_per_day)/30;
         const calcu = duration * timeperday;
-        alert(calcu)
         setBookData({
           ...bookData,
           pay_date: date ? date[0] : null,
-          total_price: (group_size * price)*calcu,  
+          total_price: (group_size * price) * calcu,  
         });
       }
     }

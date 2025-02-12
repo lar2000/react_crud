@@ -142,7 +142,7 @@ router.get('/single/:book_id', function (req, res) {
 router.get('/', function (req, res) {
   const tables = `booking
        LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id 
-       LEFT JOIN payment ON booking.book_id = payment.book_id_fk 
+       LEFT JOIN payment ON booking.pay_fk = payment.pay_id 
        LEFT JOIN duration ON booking.dur_id_fk = duration.dur_id 
        LEFT JOIN time_per_day ON booking.time_per_day_fk = time_per_day.time_per_day_id 
        LEFT JOIN service ON booking.service_id_fk = service.service_id`;

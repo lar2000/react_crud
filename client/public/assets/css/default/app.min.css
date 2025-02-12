@@ -24000,11 +24000,11 @@ a:focus {
   }
 }
 .pos.pos-with-header {
-  padding-top: 50px;
+  padding-top: 1px;
 }
 @media (min-width: 992px) {
   .pos.pos-with-header.pos-with-sidebar {
-    padding-right: 20.625rem;
+    padding-right: 18.625rem;
   }
 }
 @media (min-width: 992px) {
@@ -25303,7 +25303,13 @@ a:focus {
   color: transparent;
 }
 .pos .pos-table-row .pos-table.in-use .pos-table-container .pos-table-status {
+  background: var(--bs-gray);
+}
+.pos .pos-table-row .pos-table.in-use .pos-table-container .pos-table-status.warning {
   background: var(--bs-warning);
+}
+.pos .pos-table-row .pos-table.in-use .pos-table-container .pos-table-status.success {
+  background: var(--bs-success);
 }
 .pos .pos-stock-product {
   height: 100%;
