@@ -19,6 +19,7 @@ const routes = [
   'unit',
   'duration',
   'timeperday',
+  'package',
   'service',
   'service_type',
   'booking',

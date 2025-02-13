@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, Input, SelectPicker } from "rsuite";
+import { Modal, Button, Input, CheckPicker } from "rsuite";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
-import { useServiceType, useSetProduct } from "../../../../config/selectOption";
+import { useService } from "../../../../config/selectOption";
 
-const Service = () => {
+const Package = () => {
   const api = Config.ApiURL;
   const [getData, setData] = useState([]);
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [modalType, setModalType] = useState("add"); // Add or edit
-  const serviceType = useServiceType();
-  const setProducts = useSetProduct();
 
-  const [serviceData, setserviceData] = useState({
-    service_id: null,
-    service_name: "",
-    servicetype_id_fk: "",
-    set_id_fk: "",
-    price: "",
+  const [PackageData, setPackageData] = useState({
+    pk_id: null,
+    service_fk: [],
+    pk_code: "",
+    pk_name: "",
   });
+
+  const sersvices = useService();
 
   useEffect(() => {
     fetchgetData();
@@ -32,19 +32,18 @@ const Service = () => {
 
   const fetchgetData = async () => {
     try {
-      const res = await axios.get(`${api}/service`);
+      const res = await axios.get(`${api}/package`);
       setData(res.data);
     } catch (err) {
-      console.error("Failed to fetch service data", err);
+      console.error("Failed to fetch Package data", err);
     }
   };
   const resetForm = () => {
-    setserviceData({
-      service_id: null,
-        service_name: "",
-        servicetype_id_fk: "",
-        set_id_fk: "",
-        price: "",
+    setPackageData({
+        pk_id: null,
+        service_fk: [],
+        pk_code: "",
+        pk_name: "",
     });
     setOpen(false);
   };
@@ -62,59 +61,55 @@ const Service = () => {
   };
 
   const handleEditClick = (data) => {
+    console.log(data.service_fk)
     setModalType("edit");
     handleOpen();
-    setserviceData({
-      _id: data.service_id,
-      service_name: data.service_name,
-      servicetype_id_fk: data.servicetype_id_fk,
-      set_id_fk: data.set_id_fk,
-      price: data.price,
+    setPackageData({
+      _id: data.pk_id,
+      service_fk: data.service_fk, // An array
+      pk_code: data.pk_code,
+      pk_name: data.pk_name,
     });
   };
 
   const handleChange = (name, value) => {
-    setserviceData({
-      ...serviceData,
+    setPackageData({
+      ...PackageData,
       [name]: value,
-    });
-  };
-  const handleSelectChange = (event, field) => {
-    setserviceData({
-      ...serviceData,
-      [field]: event,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        console.log(serviceData)
-        await axios.post(`${api}/service/create`, serviceData);
-        alert(`service ${serviceData._id ? "updated" : "added"} successfully!`);
+        console.log(PackageData)
+        await axios.post(`${api}/package/create`, PackageData);
+        alert(`Package ${PackageData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
-        resetForm();
     } catch (err) {
-      console.error("Failed to submit service data", err);
+      console.error("Failed to submit Package data", err);
     }
   };
   const handleDeleteClick = async (id) => {
     try {
-      await axios.delete(`${api}/service/${id}`);
-      alert("service member soft deleted successfully!");
+      await axios.delete(`${api}/package/${id}`);
+      alert("Package member soft deleted successfully!");
       fetchgetData();
     } catch (err) {
-      console.error("Failed to delete service", err);
+      console.error("Failed to delete Package", err);
     }
   };
   
-  const filteredData = getData.filter((service) => {
+  const filteredData = getData.filter((pkg) => {
     const matchesSearch =
-      service.service_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.service_name.toLowerCase().includes(searchTerm.toLowerCase());
+      pkg.pk_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pkg.pk_name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch;
+    const matchesStatus =
+      selectedStatus === "" || pkg.status === parseInt(selectedStatus);
+
+    return matchesSearch && matchesStatus;
   });
 
   const startIndex = (currentPage - 1) * length;
@@ -129,20 +124,29 @@ const Service = () => {
         <li className="breadcrumb-item">
           <a href="javascript:;">Page Options</a>
         </li>
-        <li className="breadcrumb-item active">service</li>
+        <li className="breadcrumb-item active">Package</li>
       </ol>
       <h1 className="page-header">
-        Manage service <small>header small text goes here...</small>
+        Manage Package<small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
         <div className="panel-heading">
-          <h4 className="panel-title">service Panel</h4>
+          <h4 className="panel-title">Package Panel </h4>
         </div>
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
+              <div className="ms-2 mb-2">
+                <select className="form-select form-select-sm" value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}>
+                  <option value="">All</option>
+                  <option value="0">Booking</option>
+                  <option value="1">In progress</option>
+                  <option value="2">Done</option>
+                </select>
+              </div>
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
@@ -160,37 +164,35 @@ const Service = () => {
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
-                <th className="text-nowrap">ຊື່ບໍລິການ</th>
-                <th className="text-nowrap">ປະເພດ</th>
+                <th className="text-nowrap">ຊື່ແພັກເກດ</th>
+                <th className="text-nowrap">ບໍລິການທີໄດ້ຮັບ</th>
                 <th className="text-nowrap">ເວລາ</th>
                 <th className="text-nowrap">ລາຄາ</th>
-                <th className="text-nowrap">ເຊັດສິນຄ້າ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((service, index) => (
-                <tr key={service.service_id}>
+              {paginatedData.map((pkg, index) => (
+                <tr key={pkg.pk_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
                   </td>
-                  <td>{service.service_code}</td>
-                  <td>{service.service_name}</td>
-                  <td>{service.servicetype_name}</td>
-                  <td>{service.duration}</td>
-                  <td>{service.price}</td>
-                  <td>{service.set_name}</td>
+                  <td>{pkg.pk_code}</td>
+                  <td>{pkg.pk_name}</td>
+                  <td>{pkg.service_names}</td>
+                  <td>{pkg.total_duration}</td>
+                  <td>{pkg.total_price}</td>
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
-                      <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
+                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(service)}><i className="fas fa-pen-to-square"></i>
+                            onClick={() => handleEditClick(pkg)}><i className="fas fa-pen-to-square"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(service.service_id)}>
+                          onClick={() => handleDeleteClick(pkg.pk_id)}>
                             <i className="fas fa-trash"></i>
                              Delete
                           </a>
@@ -217,36 +219,29 @@ const Service = () => {
       <Modal size={"xs"} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
-            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນບໍລິການ" : "ແກ້ໄຂ ຂໍ້ມູນບໍລິການ"}
+            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນແພັກເກດ" : "ແກ້ໄຂ ຂໍ້ມູນແພັກເກດ"}
           </Modal.Title>
         </Modal.Header>
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
             <div className="col-md-12">
-              <label className="form-label">ຊື່ບໍລິການ</label>
-              <Input className="form-label" name="name" value={serviceData.service_name} 
-              onChange={(value) => handleChange("service_name", value)}
+              <label className="form-label">ຊື່ແພັກເກດ</label>
+              <Input className="form-label" name="pk_name" value={PackageData.pk_name} 
+              onChange={(value) => handleChange("pk_name", value)}
               placeholder="ຊື່..." required />
             </div>
             <div className="col-md-12">
-              <label className="form-label">ປະເພດບໍລິການ</label>
-              <SelectPicker className="form-label" data={serviceType} value={serviceData.servicetype_id_fk}
-                onChange={(value) => handleSelectChange(value, "servicetype_id_fk")}
-                placeholder="ເລືອກປະເພດ" required block/>
+            <label className="form-label">ເລຶອກບໍລິການ</label>
+            <CheckPicker className="form-label" data={sersvices} value={PackageData.service_fk}
+                onChange={(value) => handleChange("service_fk", value)}  
+                placeholder="ເລືອກສິນຄ້າ" required block/>
             </div>
-            <div className="col-md-12">
-              <label className="form-label">ລາຄາ</label>
-              <Input className="form-label" name="price" value={serviceData.price} 
-              onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
-              placeholder="ລາຄາ..." required />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ເຊັດສິນຄ້າ</label>
-              <SelectPicker className="form-label" data={setProducts} value={serviceData.set_id_fk}
-                onChange={(value) => handleSelectChange(value, "set_id_fk")}
-                placeholder="ເລືອກເຊັດສິນຄ້າ" required block/>
-            </div>
+            {/* <div className="col-md-12">
+              <label className="form-label">ລາຍລະອຽດ</label>
+              <Input as="textarea" rows={3} name="textarea" className="form-label" value={PackageData.detail} onChange={(value) => handleChange("detail", value)}
+             placeholder="Textarea" required/>
+            </div> */}
             </div>
         </Modal.Body>
         <Modal.Footer>
@@ -263,4 +258,4 @@ const Service = () => {
   );
 };
 
-export default Service;
+export default Package;

@@ -69,7 +69,7 @@ const MenuSide = () => {
 					 <div className="menu-item has-sub fs-5">
 						<a href="javascript:void(0);" className="menu-link">
 							<div className="menu-icon"><i className="fa-solid fa-star"></i></div>
-							<div className="menu-text">ບໍລິການ</div>
+							<div className="menu-text">ບໍລິການ & package</div>
 							<div className="menu-caret"></div>
 						</a>
 						<div className="menu-submenu fs-14px">
@@ -79,8 +79,13 @@ const MenuSide = () => {
 								</Link>
 							</div>
 							<div className="menu-item">
+								<Link to="/package" className="menu-link">
+									<div className="menu-text">packages</div>
+								</Link>
+							</div>
+							<div className="menu-item">
 								<Link to="/service" className="menu-link">
-									<div className="menu-text">ລາຍການບໍລິການ</div>
+									<div className="menu-text">ບໍລິການ</div>
 								</Link>
 							</div>
 						</div>

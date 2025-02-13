@@ -8,6 +8,7 @@ import Product from '../Components/Pages/Admin/Product/Product';
 import Set_Product from '../Components/Pages/Admin/Product/Set_Product';
 import ServiceType from '../Components/Pages/Admin/Service/ServiceType';
 import Service from '../Components/Pages/Admin/Service/Service';
+import Package from '../Components/Pages/Admin/Service/Package';
 import HomePage from '../Components/Pages/Home/Home';
 
 export default function Content() {
@@ -24,6 +25,7 @@ export default function Content() {
             <Route path="/set_product" element={<Set_Product />} />
             <Route path="/service_type" element={<ServiceType />} />
             <Route path="/service" element={<Service />} />
+            <Route path="/package" element={<Package />} />
             </Routes>
     );
 }

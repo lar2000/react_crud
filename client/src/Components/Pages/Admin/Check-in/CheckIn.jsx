@@ -23,7 +23,7 @@ const CheckIn = () => {
   status: null,
   });
 
-  const handleCheck = () => {};
+  //const handleCheck = () => {};
 
   const handleClick = (book_id) => {
     if (isSelected !== book_id) {  // Only update selection if the clicked table is different
@@ -81,6 +81,26 @@ const CheckIn = () => {
     return count > 0 ? count : "0";
   };
 
+  const getLatestTime = (book_fk, timeType) => { 
+    const checkIn = getCheckInData.filter((checkIn) => checkIn.book_fk === book_fk);
+    
+    if (checkIn.length > 0) {
+      const latestEntry = checkIn.sort((a, b) => new Date(b[timeType]) - new Date(a[timeType]))[0];
+      const latestTime = new Date(latestEntry[timeType]).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      return latestTime;
+    } else {
+      return "00:00";
+    }
+  };
+
+  const getCheckInTimeLatest = (book_fk) => {
+    return getLatestTime(book_fk, 'date_checkin');
+  };
+
+  const getCheckOutTimeLatest = (book_fk) => {
+    return getLatestTime(book_fk, 'date_checkout');
+  };
+  
   return (
     
     <div id="content" className="app-content">
@@ -118,13 +138,13 @@ const CheckIn = () => {
 						 <div className="pos-table-row">
               {paginatedData.map((booking, index) => (
 						  <div key={booking.book_id} 
-              className={`pos-table in-use ${isSelected === booking.book_id ? "selected" : ""}`}
-						  onClick={() => handleClick(booking.book_id)}>
-							<a href="javascript:;" className="pos-table-container" data-toggle="select-table">
-                <div className={`pos-table-status ${getCheckInIndex(booking.book_id) < 1 ? "" 
-                  : getCheckInIndex(booking.book_id) === booking.duration ? "success" : "warning"}`}>
-                </div>
-									<div className="pos-table-name">
+                className={`pos-table in-use ${isSelected === booking.book_id ? "selected" : ""}`}
+						      onClick={() => handleClick(booking.book_id)}>
+							      <a href="javascript:;" className="pos-table-container" data-toggle="select-table">
+                      <div className={`pos-table-status ${getCheckInIndex(booking.book_id) < 1 ? "" 
+                        : getCheckInIndex(booking.book_id) === booking.duration ? "success" : "warning"}`}>
+                      </div>
+									    <div className="pos-table-name">
 										<div className="name">Table {index + 1}</div>
 										<div className="no">{booking.book_code}</div>
 										{/* <div className="no">{checkin.date_checkin}</div> */}
@@ -140,21 +160,24 @@ const CheckIn = () => {
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
 												<span className="icon opacity-50"><i className="far fa-clock"></i></span>
-												<span className="text">09:30</span>
+												<span className="text">{booking?.book_id ? getCheckInTimeLatest(booking.book_id) : "00:00"}
+                        </span>
 											</div>
 										</div>
 									</div>
 									<div className="pos-table-info-row">
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-50"><i className="fa fa-clock"></i></span>
-												<span className="text">11:20</span>
+												<span className="icon opacity-40"><i className="fa fa-clock"></i></span>
+												<span className="text">{booking.time_per_day}</span>
+                        <span className="text ms-1">ນາທີ</span>
 											</div>
 										</div>
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-50"><i className="fa fa-clipboard-check"></i></span>
-												<span className="text">11:20</span>
+												<span className="icon opacity-50"><i className="fa fa-circle-check"></i></span>
+												<span className="text">{booking?.book_id ? getCheckOutTimeLatest(booking.book_id) : "00:00"}
+                        </span>
 											</div>
 										</div>
 									</div>
@@ -202,19 +225,19 @@ const CheckIn = () => {
                   </div>
                 </div>
                     <div className="pos-sidebar-footer">
-                      <div className="d-flex align-items-center mb-2">
+                      {/* <div className="d-flex align-items-center mb-2">
                         <div>ວັນ~ເວລາ</div>
-                        <div className="flex-1 text-end h6 mb-0">
+                         <div className="flex-1 text-end h6 mb-0">
                           <DatePicker placement="autoVerticalEnd" style={{ width: "78%"}} 
                           format="MM/dd/yyyy hh:mm aa" showMeridiem /></div>
-                      </div>
-                      {/* <div className="d-flex align-items-center">
+                      </div> 
+                      <div className="d-flex align-items-center">
                         <div>ເວລາ</div>
                         <div className="flex-1 text-end h6 mb-0">$3.90</div>
-                      </div> */}
-                        <hr className="opacity-1 my-10px"></hr>
+                      </div>
+                        <hr className="opacity-1 my-10px"></hr> */}
                         <div className="d-flex align-items-center mb-2">
-                          <div>ຈຳນວນ</div>
+                          <div>ຈຳນວນຄັ້ງ</div>
                           <div className="flex-1 text-end h4 mb-0">
                           {getCheckInIndex(selectedBooking.book_id)} / {selectedBooking.duration}
                             </div>
