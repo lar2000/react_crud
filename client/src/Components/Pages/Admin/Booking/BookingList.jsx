@@ -28,8 +28,7 @@ const Booking = () => {
     group_type: "",
     cust_id_fk: null,
     dur_id_fk: null,
-    time_per_day_fk: null,
-    date: [null, null],
+    date: null,
     service_id_fk: null,
     group_size: "",
     email: "",
@@ -59,10 +58,9 @@ const Booking = () => {
   const resetForm = () => {
     setbookData({
       book_id: null,
-      date: [null, null],
+      date: null,
       cust_id_fk: null,
       dur_id_fk: null,
-      time_per_day_fk: null,
       service_id_fk: null,
       group_size: "",
       email: "",
@@ -102,10 +100,9 @@ const Booking = () => {
     handleOpen();
     setbookData({
       book_id: data.book_id,
-      date: [new Date(data.date), new Date(data.dateEnd)],
+      date: new Date(data.date),
       cust_id_fk: data.cust_id_fk,
       dur_id_fk: data.dur_id_fk,
-      time_per_day_fk: data.time_per_day_fk,
       service_id_fk: data.service_id_fk,
       group_size: data.group_size,
       email: data.email,
@@ -126,7 +123,6 @@ const Booking = () => {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
       dur_id_fk: bookData.dur_id_fk,
-      time_per_day_fk: bookData.time_per_day_fk,
       date: bookData.date,
       service_id_fk: bookData.service_id_fk,
       group_size: bookData.group_size,
@@ -246,10 +242,10 @@ const Booking = () => {
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ປະເພດຈອງ</th>
-                <th className="text-nowrap">ວັນທີຈອງ~ສິ້ນສຸດ</th>
+                <th className="text-nowrap">ວັນນັດໝາຍ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ຊື່ບໍລິການ</th>
-                <th className="text-nowrap">ໄລຍະເວລາ/ລາຄາ</th>
+                <th className="text-nowrap">ຊື່ບໍລິການ/package</th>
+                <th className="text-nowrap">status</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>

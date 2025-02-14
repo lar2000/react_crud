@@ -172,7 +172,7 @@ router.get('/', function (req, res, next) {
     set_product
     LEFT JOIN set_prod_association ON set_product.set_id = set_prod_association.set_fk 
     LEFT JOIN product ON set_prod_association.pro_id_fk = product.pro_id 
-    GROUP BY set_product.set_id` 
+    GROUP BY set_product.set_id`;
 
   const fields = `
     set_product.set_id,
@@ -196,5 +196,4 @@ router.get('/', function (req, res, next) {
     res.status(200).json(results);
   });
 });
-
 module.exports = router;

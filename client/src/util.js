@@ -13,3 +13,13 @@ export const displayDuration = (duration) => {
       ? `${duration} ວັນ`
       : `${duration} ${durationLabels[duration] || '/ວັນ'}`;
   };
+
+  export const formatDuration = (time) => {
+    if (time < 60) {
+      return `${time} Min`;
+    } else {
+      const hours = Math.floor(time / 60);
+      const minutes = time % 60;
+      return `${hours} H${minutes > 0 ? ` : ${minutes} Min` : ''}`;
+    }
+  };

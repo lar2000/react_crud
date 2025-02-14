@@ -3,7 +3,7 @@ const db = require('../controller/controller.connection');
 const router = express.Router();
 
 router.post('/create', function (req, res) {
-  const { _id, servicetype_id_fk, set_id_fk, service_name, price } = req.body;
+  const { _id, servicetype_id_fk, set_id_fk, service_name, service_duration, price } = req.body;
   const table = 'service';
 
   // Auto-generate service_code if it doesn't exist
@@ -11,8 +11,8 @@ router.post('/create', function (req, res) {
     db.autoId(table, 'service_id', (err, id) => {
       const code = id.toString().slice(-4).padStart(4, '0');
       const serviceCode = 'SV-' + code;
-      const fields = 'service_id, service_code, servicetype_id_fk, set_id_fk, service_name, price';
-      const dataValue = [id, serviceCode, servicetype_id_fk, set_id_fk, service_name, price];
+      const fields = 'service_id, service_code, servicetype_id_fk, set_id_fk, service_name, service_duration, price';
+      const dataValue = [id, serviceCode, servicetype_id_fk, set_id_fk, service_name, service_duration, price];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -33,8 +33,8 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch service data.' });
       }
 
-      const fields = 'servicetype_id_fk, set_id_fk, service_name, price';
-      const newData = [servicetype_id_fk, set_id_fk, service_name, price,  _id];
+      const fields = 'servicetype_id_fk, set_id_fk, service_name, service_duration, price';
+      const newData = [servicetype_id_fk, set_id_fk, service_name, service_duration, price,  _id];
       const condition = 'service_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -81,7 +81,8 @@ router.get("/", function (req, res) {
       service.service_code,
       service.servicetype_id_fk, 
       service.set_id_fk, 
-      service.service_name, price,  
+      service.service_name, 
+      service.service_duration,  
       service.price, 
       set_product.set_name,
       service_type.servicetype_name`;

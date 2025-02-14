@@ -7,6 +7,8 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 import { useService } from "../../../../config/selectOption";
+import { formatDuration } from "../../../../util"; 
+
 
 const Package = () => {
   const api = Config.ApiURL;
@@ -14,12 +16,11 @@ const Package = () => {
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [PackageData, setPackageData] = useState({
     pk_id: null,
-    service_fk: [],
+    association_service_fk: [],
     pk_code: "",
     pk_name: "",
   });
@@ -41,7 +42,7 @@ const Package = () => {
   const resetForm = () => {
     setPackageData({
         pk_id: null,
-        service_fk: [],
+        association_service_fk: [],
         pk_code: "",
         pk_name: "",
     });
@@ -61,12 +62,12 @@ const Package = () => {
   };
 
   const handleEditClick = (data) => {
-    console.log(data.service_fk)
     setModalType("edit");
     handleOpen();
+data.association_service_fk.map(id => Number(id));
     setPackageData({
       _id: data.pk_id,
-      service_fk: data.service_fk, // An array
+      association_service_fk: data.association_service_fk.map(id => Number(id)),
       pk_code: data.pk_code,
       pk_name: data.pk_name,
     });
@@ -106,10 +107,7 @@ const Package = () => {
       pkg.pk_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pkg.pk_name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      selectedStatus === "" || pkg.status === parseInt(selectedStatus);
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const startIndex = (currentPage - 1) * length;
@@ -138,15 +136,6 @@ const Package = () => {
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
-              <div className="ms-2 mb-2">
-                <select className="form-select form-select-sm" value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="">All</option>
-                  <option value="0">Booking</option>
-                  <option value="1">In progress</option>
-                  <option value="2">Done</option>
-                </select>
-              </div>
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
@@ -166,7 +155,7 @@ const Package = () => {
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ແພັກເກດ</th>
                 <th className="text-nowrap">ບໍລິການທີໄດ້ຮັບ</th>
-                <th className="text-nowrap">ເວລາ</th>
+                <th className="text-nowrap">ໄລຍະເວລາ</th>
                 <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
@@ -180,7 +169,7 @@ const Package = () => {
                   <td>{pkg.pk_code}</td>
                   <td>{pkg.pk_name}</td>
                   <td>{pkg.service_names}</td>
-                  <td>{pkg.total_duration}</td>
+                  <td>{formatDuration(pkg.total_duration)}</td>
                   <td>{pkg.total_price}</td>
                   <td>
                     <div className="panel-heading">
@@ -233,8 +222,9 @@ const Package = () => {
             </div>
             <div className="col-md-12">
             <label className="form-label">ເລຶອກບໍລິການ</label>
-            <CheckPicker className="form-label" data={sersvices} value={PackageData.service_fk}
-                onChange={(value) => handleChange("service_fk", value)}  
+            <CheckPicker placement="auto" className="form-label" data={sersvices} 
+            value={PackageData.association_service_fk}
+                onChange={(value) => handleChange("association_service_fk", value)}  
                 placeholder="ເລືອກສິນຄ້າ" required block/>
             </div>
             {/* <div className="col-md-12">

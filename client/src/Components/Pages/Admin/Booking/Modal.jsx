@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, DatePicker, DateRangePicker } 
+import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Placeholder, Tabs } 
 from 'rsuite';
-import { useService, useCustomer, usePayType, useDuration, useTimePerDay }
+import { useService, useCustomer, usePayType, useDuration }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
@@ -10,7 +10,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   const customers = useCustomer();
   const payTypes = usePayType();
   const durations = useDuration();
-  const timeperday = useTimePerDay();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -27,10 +26,9 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   const validateStep = () => {
     if (step === 0) {
       return bookData.group_size && 
-      Array.isArray(bookData.date) && bookData.date.length === 2 && bookData.date[0] && bookData.date[1] && 
+      bookData.date && 
       bookData.service_id_fk && 
       bookData.dur_id_fk && 
-      bookData.time_per_day_fk && 
       bookData.cust_id_fk && 
       bookData.tell;
     }
@@ -49,21 +47,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       return;
     }
     if (!bookData.pay_date && bookData.date) {
-      const { date, group_size, service_id_fk, dur_id_fk, time_per_day_fk} = bookData;
+      const { date, group_size, service_id_fk, dur_id_fk} = bookData;
   
       const selectedService = services.find(s => s.value === service_id_fk);
-      const selectedDuration = durations.find(d => d.value === dur_id_fk);
-      const selectedTimePerDay = timeperday.find(tpd => tpd.value === time_per_day_fk);
+      const selectedDuration = durations.find(d => d.value === dur_id_fk)
   
-      if (selectedService && selectedDuration && selectedTimePerDay) {
+      if (selectedService && selectedDuration) {
         const price = selectedService.price;
         const duration = selectedDuration.duration;
-        const timeperday = (selectedTimePerDay.time_per_day)/30;
-        const calcu = duration * timeperday;
+
         setBookData({
           ...bookData,
-          pay_date: date ? date[0] : null,
-          total_price: (group_size * price) * calcu,  
+          pay_date: date ? date : null,
+          total_price: (group_size * price) * duration,  
         });
       }
     }
@@ -103,10 +99,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">ເລຶອກບໍລິການ</label>
-                    <SelectPicker className="form-label" data={services}
-                      value={bookData.service_id_fk}
-                      onChange={(value) => handleSelectChange(value, "service_id_fk")} required block />
+                  <Tabs defaultActiveKey="1" appearance="subtle">
+                      <Tabs.Tab eventKey="1" title="ທົ່ວໄປ">
+                      <CheckPicker className="form-label" data={services}
+                      value={bookData.service_id_fk} onChange={(value) => setBookData(value, "service_id_fk")}
+                      placeholder="ບໍລິການທົ່ວໄປ..." required block />
+                      </Tabs.Tab>
+                      <Tabs.Tab eventKey="2" title="ແພັກເກດ">
+                    <CheckPicker className="form-label" data={services}
+                      value={bookData.service_id_fk} onChange={(value) => setBookData(value, "service_id_fk")}
+                      placeholder="ແພັກເກດ..." required block />
+                      </Tabs.Tab>
+                    </Tabs>
+                    
                   </div>
                   <div className="col-md-6">
                   <label className="form-label">ໄລຍະເວລາ</label>
@@ -115,22 +120,15 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => handleSelectChange(value, "dur_id_fk")} required block />
                     </div>
                   <div className="col-md-6">
-                    <label className="form-label">ນາທີ/ວັນ</label>
-                    <SelectPicker className="form-label" data={timeperday}
-                      value={bookData.time_per_day_fk}
-                      onChange={(value) => handleSelectChange(value, "time_per_day_fk")} required block />
-                  </div>
-                  <div className="col-md-6">
                     <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
                     <SelectPicker className="form-label" data={customers}
                       value={bookData.cust_id_fk}
                       onChange={(value) => handleSelectChange(value, "cust_id_fk")} required block />
                   </div>
                   <div className="col-md-6">
-                  <label className="form-label">ວັນທີຈອງ~ວັນທີສິ້ນສຸດ</label>
-                  <DateRangePicker className="form-label" name="date"
-                   value={bookData.date || []} onChange={(date) => { setBookData({ 
-                    ...bookData, date: date && date.length === 2 ? date : [] });}}
+                  <label className="form-label">ເວລານັດໝາຍ</label>
+                  <DatePicker format="MM/dd/yyyy HH:mm" className="form-label" placement='auto' 
+                   value={bookData.date} onChange={(date) =>  setBookData({ ...bookData, date: date })}
                     required style={{ width: "100%" }}/>
                     </div>
                   <div className="col-md-6">
@@ -159,16 +157,9 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                 <div className="row mb-3">
                   <div className="col-md-12">
                     <label className="form-label">ປະເພດການຈ່າຍ</label>
-                    <SelectPicker className="form-label" data={payTypes}
+                    <SelectPicker placement='auto' className="form-label" data={payTypes}
                       value={bookData.paytype_id_fk}
                       onChange={(value) => handleSelectChange(value, "paytype_id_fk")} required block />
-                  </div>
-                  <div className="col-md-12">
-                    <label className="form-label">ຈຳນວນເງິນ</label>
-                    <Input className="form-label" name="total_price"
-                      value={bookData.total_price}
-                      onChange={(value) => setBookData({ ...bookData, total_price: value.replace(/[^0-9.]/g, "") })}
-                      readOnly style={{color:'green'}}/>
                   </div>
                   {(bookData.paytype_id_fk === 3 || bookData.paytype_id_fk === 4) && (
                     <>
@@ -198,6 +189,12 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                     <DatePicker className="form-label" name="pay_date"
                       value={bookData.pay_date} onChange={(value) => setBookData({ ...bookData, pay_date:value})}
                       required style={{ width: "100%" }} />
+                
+                    <label className="form-label">ຈຳນວນເງິນ</label>
+                    <Input className="form-label" name="total_price"
+                      value={bookData.total_price}
+                      onChange={(value) => setBookData({ ...bookData, total_price: value.replace(/[^0-9.]/g, "") })}
+                      readOnly style={{color:'green'}}/>
                   </div>
                 </div>
               </Panel>

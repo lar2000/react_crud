@@ -11,7 +11,7 @@ function updateCustomerStatus(cust_id_fk, status, callback) {
 }
 // Handle booking creation (without profile upload)
 router.post('/create', function (req, res) {
-  let { book_id, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, group_size, tell, email, note } = req.body;
+  let { book_id, cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, group_size, tell, email, note } = req.body;
   const table = 'booking';
   group_type = group_size > 1 ? 'ກຸ່ມ' : 'ບຸກຄົນ';
   
@@ -19,8 +19,8 @@ router.post('/create', function (req, res) {
     db.autoId(table, 'book_id', (err, book_id) => {
       const code = book_id.toString().slice(-4).padStart  (4, '0');
       const book_code = 'B-' + code;
-      const fields = 'book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, dateEnd, group_size, tell, email, note, state';
-      const dataValue = [book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date[0], date[1], group_size, tell, email, note, 1]; 
+      const fields = 'book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, dateEnd, group_size, tell, email, note, state';
+      const dataValue = [book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date[0], date[1], group_size, tell, email, note, 1]; 
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -54,8 +54,8 @@ router.post('/create', function (req, res) {
         }
 
         // Update booking with new cust_id_fk
-        const fields = 'cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date, dateEnd, group_size, tell, email, note';
-        const newData = [cust_id_fk, service_id_fk, dur_id_fk, time_per_day_fk, group_type, date[0], date[1], group_size, tell, email, note, book_id];
+        const fields = 'cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, dateEnd, group_size, tell, email, note';
+        const newData = [cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date[0], date[1], group_size, tell, email, note, book_id];
         const condition = 'book_id=?';
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
@@ -144,19 +144,18 @@ router.get('/', function (req, res) {
        LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id 
        LEFT JOIN payment ON booking.pay_fk = payment.pay_id 
        LEFT JOIN duration ON booking.dur_id_fk = duration.dur_id 
-       LEFT JOIN time_per_day ON booking.time_per_day_fk = time_per_day.time_per_day_id 
-       LEFT JOIN service ON booking.service_id_fk = service.service_id`;
+       LEFT JOIN bps_association ON booking.book_id = bps_association.book_association_fk 
+       LEFT JOIN service ON service.service_id = bps_association.sv_assocaition_fk 
+       LEFT JOIN package ON booking.pk_id = bps_association.pk_association_fk 
+       `;
 
   const fields = `
       booking.book_id,
-      booking.service_id_fk,
       booking.cust_id_fk,
       booking.dur_id_fk,
-      booking.time_per_day_fk,
       booking.book_code, 
       booking.group_type, 
       booking.date, 
-      booking.dateEnd, 
       booking.email,
       booking.tell, 
       booking.group_size,  
@@ -170,7 +169,7 @@ router.get('/', function (req, res) {
       payment.pay_date,
       payment.detail,
       duration.duration, 
-      time_per_day.time_per_day,
+      package.pk_name,
       service.price,
       service.service_name`;
   const where = `booking.state = 1`;

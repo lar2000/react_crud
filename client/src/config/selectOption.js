@@ -103,12 +103,6 @@ export const useUnit = () =>
         duration,
       }));
     };
-    export const useTimePerDay = () =>
-      useFetchData("timeperday").map(({ time_per_day, time_per_day_id }) => ({
-        label: time_per_day,
-        value: time_per_day_id,
-        time_per_day,
-      }));
     
   
 

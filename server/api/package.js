@@ -2,8 +2,6 @@ const express = require('express');
 const db = require('../controller/controller.connection');
 const router = express.Router();
 
-// Handle package creation (without servicefile upload)
-// Handle package creation (without servicefile upload)
 router.post('/create', function (req, res) {
   const { _id, association_service_fk = [], pk_name } = req.body;
   const table = 'package';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, Input, CheckPicker } from "rsuite";
+import {Text, Modal, Button, Input, CheckPicker } from "rsuite";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
@@ -14,7 +14,6 @@ const Set_Product = () => {
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [modalType, setModalType] = useState("add"); // Add or edit
 
   const [productData, setProductData] = useState({
@@ -63,12 +62,11 @@ const Set_Product = () => {
   };
 
   const handleEditClick = (data) => {
-    console.log(data.pro_id_fk)
     setModalType("edit");
     handleOpen();
     setProductData({
       _id: data.set_id,
-      pro_id_fk: data.pro_id_fk, // An array
+      pro_id_fk: data.pro_id_fk.map(id => Number(id)), // An array
       set_code: data.set_code,
       set_name: data.set_name,
       detail: data.detail,
@@ -109,10 +107,7 @@ const Set_Product = () => {
       set_product.set_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       set_product.set_name.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      selectedStatus === "" || set_product.status === parseInt(selectedStatus);
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const startIndex = (currentPage - 1) * length;
@@ -141,15 +136,6 @@ const Set_Product = () => {
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
-              <div className="ms-2 mb-2">
-                <select className="form-select form-select-sm" value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="">All</option>
-                  <option value="0">Booking</option>
-                  <option value="1">In progress</option>
-                  <option value="2">Done</option>
-                </select>
-              </div>
             </div>
 
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
@@ -168,7 +154,7 @@ const Set_Product = () => {
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ເຊັດສິນຄ້າ</th>
-                <th className="text-nowrap">ລາຍລະອຽດ</th>
+                <th className="text-nowrap">ລາຍລະອຽດສິນຄ້າ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
@@ -180,8 +166,8 @@ const Set_Product = () => {
                   </td>
                   <td>{set_product.set_code}</td>
                   <td>{set_product.set_name}</td>
-                  <td>{set_product.pro_names} <h6>ຄຸນປະໂຫຍດ: </h6>
-                    {set_product.detail}
+                  <td>{set_product.pro_names}
+                    <Text color="blue">{set_product.detail}</Text>
                   </td>
                   <td>
                     <div className="panel-heading">
@@ -234,14 +220,14 @@ const Set_Product = () => {
             </div>
             <div className="col-md-12">
             <label className="form-label">ເລຶອກສິນຄ້າ</label>
-            <CheckPicker className="form-label" data={products} value={productData.pro_id_fk}
+            <CheckPicker  placement="auto" className="form-label" data={products} value={productData.pro_id_fk}
                 onChange={(value) => handleChange("pro_id_fk", value)}  
                 placeholder="ເລືອກສິນຄ້າ" required block/>
             </div>
             <div className="col-md-12">
               <label className="form-label">ລາຍລະອຽດ</label>
               <Input as="textarea" rows={3} name="textarea" className="form-label" value={productData.detail} onChange={(value) => handleChange("detail", value)}
-             placeholder="Textarea" required/>
+             placeholder="Textarea"/>
             </div>
             </div>
         </Modal.Body>

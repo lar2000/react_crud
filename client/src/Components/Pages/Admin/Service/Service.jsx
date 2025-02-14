@@ -7,6 +7,7 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 import { useServiceType, useSetProduct } from "../../../../config/selectOption";
+import { formatDuration } from "../../../../util"; 
 
 const Service = () => {
   const api = Config.ApiURL;
@@ -22,6 +23,7 @@ const Service = () => {
     service_id: null,
     service_name: "",
     servicetype_id_fk: "",
+    service_duration: "",
     set_id_fk: "",
     price: "",
   });
@@ -43,6 +45,7 @@ const Service = () => {
       service_id: null,
         service_name: "",
         servicetype_id_fk: "",
+        service_duration: "",
         set_id_fk: "",
         price: "",
     });
@@ -68,6 +71,7 @@ const Service = () => {
       _id: data.service_id,
       service_name: data.service_name,
       servicetype_id_fk: data.servicetype_id_fk,
+      service_duration: data.service_duration,
       set_id_fk: data.set_id_fk,
       price: data.price,
     });
@@ -162,7 +166,7 @@ const Service = () => {
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ບໍລິການ</th>
                 <th className="text-nowrap">ປະເພດ</th>
-                <th className="text-nowrap">ເວລາ</th>
+                <th className="text-nowrap">ໄລຍະເວລາ</th>
                 <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">ເຊັດສິນຄ້າ</th>
                 <th className="text-nowrap">Actions</th>
@@ -177,7 +181,7 @@ const Service = () => {
                   <td>{service.service_code}</td>
                   <td>{service.service_name}</td>
                   <td>{service.servicetype_name}</td>
-                  <td>{service.duration}</td>
+                  <td>{formatDuration(service.service_duration)}</td>
                   <td>{service.price}</td>
                   <td>{service.set_name}</td>
                   <td>
@@ -236,6 +240,12 @@ const Service = () => {
                 placeholder="ເລືອກປະເພດ" required block/>
             </div>
             <div className="col-md-12">
+              <label className="form-label">ເວລາ</label>
+              <Input className="form-label" name="service_duration" value={serviceData.service_duration} 
+              onChange={(value) => handleChange("service_duration", value)}
+              placeholder="ເວລາ..." required />
+            </div>
+            <div className="col-md-12">
               <label className="form-label">ລາຄາ</label>
               <Input className="form-label" name="price" value={serviceData.price} 
               onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
@@ -245,7 +255,7 @@ const Service = () => {
               <label className="form-label">ເຊັດສິນຄ້າ</label>
               <SelectPicker className="form-label" data={setProducts} value={serviceData.set_id_fk}
                 onChange={(value) => handleSelectChange(value, "set_id_fk")}
-                placeholder="ເລືອກເຊັດສິນຄ້າ" required block/>
+                placeholder="ເລືອກເຊັດສິນຄ້າ..." required/>
             </div>
             </div>
         </Modal.Body>
