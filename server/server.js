@@ -8,11 +8,12 @@ app.use(cors());
 app.use(express.json()); // To parse JSON bodie
 
 const routes = [
-  'service',
   'staff', 
   'province',
   'district',
   'customer',
+  'room',
+  'roomtype',
   'imp',
   'product',
   'protype',

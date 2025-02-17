@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { DatePicker, Text,Timeline} from "rsuite";
-import TimeRoundIcon from '@rsuite/icons/TimeRound';
-import CheckRoundIcon from '@rsuite/icons/CheckRound';
+import { DatePicker, Text} from "rsuite";
 import { format } from "date-fns";
 import { Config} from "../../../../config/connection";
 import Detail from "./Details";
@@ -30,6 +28,7 @@ const Booking = () => {
     dur_id_fk: null,
     date: null,
     service_id_fk: null,
+    pk_fk: null,
     group_size: "",
     email: "",
     tell: "",
@@ -62,6 +61,7 @@ const Booking = () => {
       cust_id_fk: null,
       dur_id_fk: null,
       service_id_fk: null,
+      pk_fk: null,
       group_size: "",
       email: "",
       tell: "",
@@ -104,6 +104,7 @@ const Booking = () => {
       cust_id_fk: data.cust_id_fk,
       dur_id_fk: data.dur_id_fk,
       service_id_fk: data.service_id_fk,
+      pk_fk: data.pk_fk,
       group_size: data.group_size,
       email: data.email,
       tell: data.tell,
@@ -125,6 +126,7 @@ const Booking = () => {
       dur_id_fk: bookData.dur_id_fk,
       date: bookData.date,
       service_id_fk: bookData.service_id_fk,
+      pk_fk: bookData.pk_fk,
       group_size: bookData.group_size,
       email: bookData.email,
       tell: bookData.tell,
@@ -235,7 +237,7 @@ const Booking = () => {
               </div>
             </div>
           </div>
-
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
           <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
             <thead>
               <tr>
@@ -244,7 +246,7 @@ const Booking = () => {
                 <th className="text-nowrap">ປະເພດຈອງ</th>
                 <th className="text-nowrap">ວັນນັດໝາຍ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ຊື່ບໍລິການ/package</th>
+                <th className="text-nowrap">ບໍລິການທີເລຶອກ</th>
                 <th className="text-nowrap">status</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
                 <th className="text-nowrap">Actions</th>
@@ -260,20 +262,21 @@ const Booking = () => {
                   <td>{booking.group_type}
                     <Text color="blue" weight="semibold">({booking.group_size} ຄົນ)</Text>
                   </td>
-                  <Timeline className="custom-timeline">
-                    <Timeline.Item dot={<TimeRoundIcon style={{ marginBottom: '8px' }}/>}>
-                      <p>{format(new Date(booking.date), "dd-MM-yyyy")}</p>
-                    </Timeline.Item>
-                    <Timeline.Item dot={<CheckRoundIcon style={{ marginBottom: '8px' }}/>}>
-                      <p>{format(new Date(booking.dateEnd), "dd-MM-yyyy")}</p>
-                    </Timeline.Item>
-                  </Timeline>
+                  <td>{format(new Date(booking.date), "dd-MM-yyyy")}
+                    <Text>{format(new Date(booking.date), "HH:mm")}</Text>
+                  </td>
                   <td>{booking.cust_name} {booking.cust_surname}
                   <Text muted>{maskEmail(booking.email)}</Text>
                   <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
-                  <td>{booking.service_name}
-                  </td>
+                  <td>{booking.pk_names.split(',').map((name, index) => (
+                          <span key={index}>🔹{name}<br /></span>
+                        ))}
+                  <Text>{booking.service_names.split(',').map((name, index) => (
+                          <span key={index}>🔸{name}<br /></span>
+                        ))}
+                      </Text>
+                    </td>
                   <td>{displayDuration(booking.duration)}
                   <Text muted>{booking.time_per_day} ນາທີ/ວັນ</Text>
                   <Text color="green" weight="semibold">(ລາຄາລວມ: {booking.total_price} ກີບ)</Text>
@@ -302,6 +305,7 @@ const Booking = () => {
               ))}
             </tbody>
           </table>
+          </div>
           <Pagination total={filteredData.length} length={length}
             currentPage={currentPage} setCurrentPage={setCurrentPage}/>
         </div>

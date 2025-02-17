@@ -3,7 +3,6 @@ const db = require('../controller/controller.connection');
 const router = express.Router();
 
 // Handle set_product creation (without profile upload)
-// Handle set_product creation (without profile upload)
 router.post('/create', function (req, res) {
   const { _id, pro_id_fk = [], set_name, detail } = req.body;
   const table = 'set_product';

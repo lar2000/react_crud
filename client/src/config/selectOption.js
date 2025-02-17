@@ -66,6 +66,13 @@ export const useServiceType = () =>
       price
     }));
 
+    export const usePackage = () =>
+      useFetchData("package").map(({ pk_name, pk_id, price }) => ({
+        label: pk_name,
+        value: pk_id,
+        price
+      }));
+
 export const useUnit = () =>
   useFetchData("unit").map(({ name, id }) => ({
     label: name,
@@ -104,7 +111,11 @@ export const useUnit = () =>
       }));
     };
     
-  
+    export const useRoomType = () =>
+      useFetchData("roomtype").map(({ roomtype_name, roomtype_id }) => ({
+        label: roomtype_name,
+        value: roomtype_id,
+      }));
 
   
   

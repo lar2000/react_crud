@@ -1,12 +1,13 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Placeholder, Tabs } 
+import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Tabs } 
 from 'rsuite';
-import { useService, useCustomer, usePayType, useDuration }
+import { useService, useCustomer, usePayType, useDuration, usePackage }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const services = useService();
+  const packages = usePackage();
   const customers = useCustomer();
   const payTypes = usePayType();
   const durations = useDuration();
@@ -93,12 +94,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
               <Panel>
                 <div className="row mb-3">
                   <div className="col-md-6">
-                    <label className="form-label">ຈຳນວນຄົນ</label>
-                    <Input className="form-label" name="amount" value={bookData.group_size}
-                      onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
-                      required />
-                  </div>
-                  <div className="col-md-6">
                   <Tabs defaultActiveKey="1" appearance="subtle">
                       <Tabs.Tab eventKey="1" title="ທົ່ວໄປ">
                       <CheckPicker className="form-label" data={services}
@@ -106,12 +101,17 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       placeholder="ບໍລິການທົ່ວໄປ..." required block />
                       </Tabs.Tab>
                       <Tabs.Tab eventKey="2" title="ແພັກເກດ">
-                    <CheckPicker className="form-label" data={services}
-                      value={bookData.service_id_fk} onChange={(value) => setBookData(value, "service_id_fk")}
+                    <CheckPicker className="form-label" data={packages}
+                      value={bookData.pk_fk} onChange={(value) => setBookData(value, "pk_fk")}
                       placeholder="ແພັກເກດ..." required block />
                       </Tabs.Tab>
                     </Tabs>
-                    
+                  </div>
+                  <div className="col-md-6 mt-4">
+                    <label className="form-label">ຈຳນວນຄົນ</label>
+                    <Input className="form-label" name="amount" value={bookData.group_size}
+                      onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
+                      required />
                   </div>
                   <div className="col-md-6">
                   <label className="form-label">ໄລຍະເວລາ</label>
@@ -137,7 +137,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
                       required />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-md-12">
                     <label className="form-label">Email</label>
                     <Input className="form-label" name="email"
                       value={bookData.email}
@@ -161,29 +161,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       value={bookData.paytype_id_fk}
                       onChange={(value) => handleSelectChange(value, "paytype_id_fk")} required block />
                   </div>
-                  {(bookData.paytype_id_fk === 3 || bookData.paytype_id_fk === 4) && (
-                    <>
-                      <div className="col-md-12">
-                        <label className="form-label">CVV Code</label>
-                        <Input className="form-label" name="cvv" value={bookData.cvv}
-                          onChange={(value) => setBookData({ ...bookData, cvv: value.replace(/[^0-9]/g, "") })}
-                          required/>
-                      </div>
-                      <div className="col-md-12">
-                        <label className="form-label">MM/YY</label>
-                        <DatePicker className="form-label" name="expiry_date" value={bookData.expiry_date}
-                          onChange={(value) => setBookData({ ...bookData, expiry_date: value })}
-                          required style={{ width: "100%" }}/>
-                      </div>
-                      <div className="col-md-12">
-                        <label className="form-label">Card Number</label>
-                        <Input className="form-label" name="card_number"
-                          value={bookData.card_number}
-                          onChange={(value) => setBookData({ ...bookData, card_number: value.replace(/[^0-9]/g, "") })}
-                          required/>
-                      </div>
-                    </>
-                  )}
                   <div className="col-md-12">
                     <label className="form-label">ວັນທີ</label>
                     <DatePicker className="form-label" name="pay_date"
@@ -195,7 +172,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       value={bookData.total_price}
                       onChange={(value) => setBookData({ ...bookData, total_price: value.replace(/[^0-9.]/g, "") })}
                       readOnly style={{color:'green'}}/>
-                  </div>
+                  </div>a
                 </div>
               </Panel>
             )}

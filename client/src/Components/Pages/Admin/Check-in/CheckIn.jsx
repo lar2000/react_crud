@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { format } from 'date-fns';
-import {Text, DatePicker} from "rsuite";
+import {Text} from "rsuite";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";

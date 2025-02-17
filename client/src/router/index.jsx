@@ -1,4 +1,4 @@
-import { Routes, Route,Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Booking from '../Components/Pages/Admin/Booking/BookingList';
 import CheckIn from '../Components/Pages/Admin/Check-in/CheckIn';
 import Staff from '../Components/Pages/Admin/Staff/Staff';
@@ -9,6 +9,8 @@ import Set_Product from '../Components/Pages/Admin/Product/Set_Product';
 import ServiceType from '../Components/Pages/Admin/Service/ServiceType';
 import Service from '../Components/Pages/Admin/Service/Service';
 import Package from '../Components/Pages/Admin/Service/Package';
+import RoomType from '../Components/Pages/Admin/Room/RoomType';
+import Room from '../Components/Pages/Admin/Room/Room';
 import HomePage from '../Components/Pages/Home/Home';
 
 export default function Content() {
@@ -26,6 +28,8 @@ export default function Content() {
             <Route path="/service_type" element={<ServiceType />} />
             <Route path="/service" element={<Service />} />
             <Route path="/package" element={<Package />} />
+            <Route path="/roomtype" element={<RoomType />} />
+            <Route path="/room" element={<Room />} />
             </Routes>
     );
 }

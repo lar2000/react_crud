@@ -54,6 +54,21 @@ const MenuSide = () => {
 					<div className="menu-text">ໜ້າຫຼັກ</div>
 					</Link>
 					</div>
+					<div className="menu-item has-sub fs-5">
+						<a href="javascript:void(0);" className="menu-link">
+							<div className="menu-icon"><i className="fas fa-door-open"></i></div>
+							<div className="menu-text">ຫ້ອງ</div>
+							<div className="menu-caret"></div>
+						</a>
+						<div className="menu-submenu fs-14px">
+							<div className="menu-item">
+								<Link to="/roomtype" className="menu-link"><div className="menu-text">ປະເພດຫ້ອງ</div></Link>
+							</div>
+							<div className="menu-item">
+								<Link to="/room" className="menu-link"><div className="menu-text">ຫ້ອງ</div></Link>
+							</div>
+						</div>
+					</div>
 					<div className="menu-item fs-5">
 						<Link to="/booking" className="menu-link">
 							<div className="menu-icon"><i className="fas fa-bookmark"></i></div>
