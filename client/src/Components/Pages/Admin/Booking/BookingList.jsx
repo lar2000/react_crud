@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { Config} from "../../../../config/connection";
 import Detail from "./Details";
 import BookingModal from './Modal';
-import { displayDuration } from "../../../../util";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
@@ -27,8 +26,8 @@ const Booking = () => {
     cust_id_fk: null,
     dur_id_fk: null,
     date: null,
-    service_id_fk: null,
-    pk_fk: null,
+    sv_fk: [],
+    pk_fk: [],
     group_size: "",
     email: "",
     tell: "",
@@ -36,7 +35,7 @@ const Booking = () => {
 
     pay_id: null,
     paytype_id_fk: null,
-    total_price: "",
+    calculation: "",
     pay_date: null,
     detail: null,
   });
@@ -59,9 +58,8 @@ const Booking = () => {
       book_id: null,
       date: null,
       cust_id_fk: null,
-      dur_id_fk: null,
-      service_id_fk: null,
-      pk_fk: null,
+      sv_fk: [],
+      pk_fk: [],
       group_size: "",
       email: "",
       tell: "",
@@ -69,7 +67,7 @@ const Booking = () => {
 
       pay_id: null,
       paytype_id_fk: null,
-      total_price: "",
+      calculation: "",
       pay_date: null,
       detail: null,
     });
@@ -102,9 +100,8 @@ const Booking = () => {
       book_id: data.book_id,
       date: new Date(data.date),
       cust_id_fk: data.cust_id_fk,
-      dur_id_fk: data.dur_id_fk,
-      service_id_fk: data.service_id_fk,
-      pk_fk: data.pk_fk,
+      sv_fk: data.sv_fk.map(id => Number(id)),
+      pk_fk: data.pk_fk.map(id => Number(id)),
       group_size: data.group_size,
       email: data.email,
       tell: data.tell,
@@ -112,7 +109,7 @@ const Booking = () => {
 
       pay_id: data.pay_id,
       paytype_id_fk: data.paytype_id_fk,
-      total_price: data.total_price,
+      calculation: data.calculation,
       pay_date: new Date(data.pay_date),
       detail: data.detail,
     });
@@ -123,9 +120,8 @@ const Booking = () => {
     const bookingData = {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
-      dur_id_fk: bookData.dur_id_fk,
       date: bookData.date,
-      service_id_fk: bookData.service_id_fk,
+      sv_fk: bookData.sv_fk,
       pk_fk: bookData.pk_fk,
       group_size: bookData.group_size,
       email: bookData.email,
@@ -138,7 +134,7 @@ const Booking = () => {
       pay_id: bookData.pay_id,
       paytype_id_fk: bookData.paytype_id_fk,
       pay_date: new Date(bookData.pay_date),
-      total_price: bookData.total_price,
+      calculation: bookData.calculation,
     };
   
     try {
@@ -269,18 +265,23 @@ const Booking = () => {
                   <Text muted>{maskEmail(booking.email)}</Text>
                   <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
-                  <td>{booking.pk_names.split(',').map((name, index) => (
-                          <span key={index}>🔹{name}<br /></span>
-                        ))}
-                  <Text>{booking.service_names.split(',').map((name, index) => (
-                          <span key={index}>🔸{name}<br /></span>
-                        ))}
+                  <td>{booking.pk_names.split(',').map((name, index) => 
+                    (<span key={index}>🔹{name}<br /></span>))}
+                  <Text>{booking.service_names.split(',').map((name, index) => 
+                    (<span key={index}>🔸{name}<br /></span>))}
                       </Text>
                     </td>
-                  <td>{displayDuration(booking.duration)}
-                  <Text muted>{booking.time_per_day} ນາທີ/ວັນ</Text>
-                  <Text color="green" weight="semibold">(ລາຄາລວມ: {booking.total_price} ກີບ)</Text>
-                  </td>
+                  <td> { booking.pay_status === 2 ? (
+                        <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>aied</span>) 
+                        : booking.pay_status === 1 ? (
+                        <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>paied 50%</span>) 
+                        : (
+                        <span className="badge border border-danger text-danger px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>unpaied
+                        </span>
+                    )}</td>
                   <td>{booking.note}</td>
                   <td><div className="panel-heading">
                       <div className="btn-group my-n1">

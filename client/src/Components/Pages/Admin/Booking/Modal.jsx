@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Tabs } 
+import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Tabs, InlineEdit } 
 from 'rsuite';
-import { useService, useCustomer, usePayType, useDuration, usePackage }
+import { useService, useCustomer, usePayType, usePackage }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
@@ -10,7 +10,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   const packages = usePackage();
   const customers = useCustomer();
   const payTypes = usePayType();
-  const durations = useDuration();
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -28,14 +27,13 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     if (step === 0) {
       return bookData.group_size && 
       bookData.date && 
-      bookData.service_id_fk && 
-      bookData.dur_id_fk && 
+      bookData.sv_fk || bookData.pk_fk &&
       bookData.cust_id_fk && 
       bookData.tell;
     }
     if (step === 1) {
       return bookData.paytype_id_fk && 
-      bookData.total_price && 
+      bookData.calculation && 
       bookData.pay_date;
     }
     return true;
@@ -47,26 +45,32 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       alert("Please fill in all required fields.");
       return;
     }
+
     if (!bookData.pay_date && bookData.date) {
-      const { date, group_size, service_id_fk, dur_id_fk} = bookData;
-  
-      const selectedService = services.find(s => s.value === service_id_fk);
-      const selectedDuration = durations.find(d => d.value === dur_id_fk)
-  
-      if (selectedService && selectedDuration) {
-        const price = selectedService.price;
-        const duration = selectedDuration.duration;
+      const { date, group_size, sv_fk, pk_fk } = bookData;
+
+      const selectedServices = services.filter(s => sv_fk.includes(s.value));
+      const selectedPackages = packages.filter(pk => pk_fk.includes(pk.value));
+
+      if (selectedServices.length > 0 || selectedPackages.length > 0) {
+
+        const servicePrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+        const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.total_price), 0);
+
+        const totalPrice = group_size * (servicePrice + packagePrice);
 
         setBookData({
           ...bookData,
-          pay_date: date ? date : null,
-          total_price: (group_size * price) * duration,  
+          pay_date: date || null,
+          total_price: totalPrice,
         });
+        alert(`ລາຄາບໍລິການທັງໝົດ: ${servicePrice} ກີບ\nລາຄາແພັກເກດທັງໝົດ: ${packagePrice} ກີບ\nລວມ: ${totalPrice} ກີບ`);
       }
     }
-  
+
     onChange(step + 1);  // Continue to the next step
-  };  
+};
+
 
   const handleSelectChange = (event, field) => {
     setBookData({
@@ -75,15 +79,14 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     });
   };
   return (
-    <Modal size={"sm"} open={open} onClose={onClose}>
-  
+    <Modal size={step === 1 ? "xs" : "sm"} open={open} onClose={onClose}>
         <Modal.Title className="title text-center mt-2">
         </Modal.Title>
       <form onSubmit={handleSubmit}>
       <div className="d-flex justify-content-center align-items-center">
       <div className="col-md-8">
-      <Steps current={step}>
-          <Steps.Item title= {modalType === "add" ? "ລາຍລະອຽດການຈອງ" : "ແກ້ໄຂຂໍ້ມູນການຈອງ" } />
+      <Steps current={step} small={step === 1 ? true : false}>
+          <Steps.Item title= {modalType === "add" ? "ລາຍລະອຽດຈອງ" : "ແກ້ໄຂຂໍ້ມູນຈອງ" } />
           <Steps.Item title="ຊຳລະເງິນ" />
         </Steps>
         </div>
@@ -97,12 +100,13 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                   <Tabs defaultActiveKey="1" appearance="subtle">
                       <Tabs.Tab eventKey="1" title="ທົ່ວໄປ">
                       <CheckPicker className="form-label" data={services}
-                      value={bookData.service_id_fk} onChange={(value) => setBookData(value, "service_id_fk")}
-                      placeholder="ບໍລິການທົ່ວໄປ..." required block />
+                        value={bookData.sv_fk || []} 
+                        onChange={(value) => handleSelectChange(value, "sv_fk")}
+                        placeholder="ບໍລິການທົ່ວໄປ..." required block />
                       </Tabs.Tab>
                       <Tabs.Tab eventKey="2" title="ແພັກເກດ">
                     <CheckPicker className="form-label" data={packages}
-                      value={bookData.pk_fk} onChange={(value) => setBookData(value, "pk_fk")}
+                      value={bookData.pk_fk || []} onChange={(value) => handleSelectChange(value, "pk_fk")}
                       placeholder="ແພັກເກດ..." required block />
                       </Tabs.Tab>
                     </Tabs>
@@ -114,21 +118,15 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       required />
                   </div>
                   <div className="col-md-6">
-                  <label className="form-label">ໄລຍະເວລາ</label>
-                    <SelectPicker className="form-label" data={durations}
-                      value={bookData.dur_id_fk}
-                      onChange={(value) => handleSelectChange(value, "dur_id_fk")} required block />
-                    </div>
-                  <div className="col-md-6">
                     <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
                     <SelectPicker className="form-label" data={customers}
                       value={bookData.cust_id_fk}
-                      onChange={(value) => handleSelectChange(value, "cust_id_fk")} required block />
+                      onChange={(value) => setBookData({...bookData, cust_id_fk: value})} required block />
                   </div>
                   <div className="col-md-6">
                   <label className="form-label">ເວລານັດໝາຍ</label>
-                  <DatePicker format="MM/dd/yyyy HH:mm" className="form-label" placement='auto' 
-                   value={bookData.date} onChange={(date) =>  setBookData({ ...bookData, date: date })}
+                  <DatePicker format="dd/MM/yyyy HH:mm" className="form-label" placement='auto' 
+                   value={bookData.date} onChange={(value) =>  setBookData({ ...bookData, date: value })}
                     required style={{ width: "100%" }}/>
                     </div>
                   <div className="col-md-6">
@@ -137,7 +135,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
                       required />
                   </div>
-                  <div className="col-md-12">
+                  <div className="col-md-6">
                     <label className="form-label">Email</label>
                     <Input className="form-label" name="email"
                       value={bookData.email}
@@ -153,28 +151,58 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
               </Panel>
             )}
             {step === 1 && (
-              <Panel>
-                <div className="row mb-3">
-                  <div className="col-md-12">
-                    <label className="form-label">ປະເພດການຈ່າຍ</label>
-                    <SelectPicker placement='auto' className="form-label" data={payTypes}
-                      value={bookData.paytype_id_fk}
-                      onChange={(value) => handleSelectChange(value, "paytype_id_fk")} required block />
+             <Panel>
+             <div className="row mb-3">
+               <div className="h-100 d-flex flex-column p-0">
+                 <div className="d-md-flex justify-content-between dt-layout-end">
+                   <h5 className="title">ຈຳນວນເງິນ:</h5>
+                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                    <InlineEdit defaultValue={bookData.total_price || 0 }
+                      onChange={(value) => {setBookData({ ...bookData, calculation: value });}}
+                      style={{width: 200, textAlign: 'right'}}
+                      readOnly/>
                   </div>
-                  <div className="col-md-12">
-                    <label className="form-label">ວັນທີ</label>
-                    <DatePicker className="form-label" name="pay_date"
-                      value={bookData.pay_date} onChange={(value) => setBookData({ ...bookData, pay_date:value})}
-                      required style={{ width: "100%" }} />
-                
-                    <label className="form-label">ຈຳນວນເງິນ</label>
-                    <Input className="form-label" name="total_price"
-                      value={bookData.total_price}
-                      onChange={(value) => setBookData({ ...bookData, total_price: value.replace(/[^0-9.]/g, "") })}
-                      readOnly style={{color:'green'}}/>
-                  </div>a
+                 </div>        
+                 <div className="d-md-flex justify-content-between dt-layout-end">
+                   <h5 className="title">ຮັບເງິນ:</h5>
+                    <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                      <InlineEdit size="lg" placeholder="ປ້ອນຈຳນວນເງິນ..." style={{ width: 180, textAlign: 'right' }} />
+                    </div>
+                 </div>
+           
+                 <hr style={{ height: "2px", backgroundColor: "#333" }} />
+           
+                 <div className="header d-md-flex justify-content-between dt-layout-end">
+                   <h5 className="title">ເງິນທອນ:</h5>
+                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                   <h5 size="lg" style={{ width: 200 }} />
+                 </div>
+                 </div>
+           
+                 <div className="header d-md-flex justify-content-between dt-layout-end mt-4">
+                   <h6>ການຊຳລະ:</h6>
+                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                   <InlineEdit style={{ width: 200, textAlign: 'right' }} defaultValue={bookData.paytype_id_fk}>
+                     <SelectPicker placement="rightStart" className="form-label"
+                       data={payTypes} value={bookData.paytype_id_fk}
+                       onChange={(value) => handleSelectChange(value, "paytype_id_fk")}
+                       required block/>
+                   </InlineEdit>
+                 </div>
                 </div>
-              </Panel>
+                 <div className="header d-md-flex justify-content-between dt-layout-end">
+                   <h6>ວັນທີ:</h6>
+                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                   <InlineEdit style={{ width: 200, textAlign: 'right' }} defaultValue={new Date(bookData.date)}>
+                     <DatePicker className="form-label" placement="auto" value={bookData.pay_date}
+                       onChange={(value) => setBookData({ ...bookData, pay_date: value })}
+                       required />
+                   </InlineEdit>
+                 </div>
+                 </div>
+               </div>
+             </div>
+           </Panel>           
             )}
           </div>
         </Modal.Body>

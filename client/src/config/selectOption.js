@@ -67,10 +67,10 @@ export const useServiceType = () =>
     }));
 
     export const usePackage = () =>
-      useFetchData("package").map(({ pk_name, pk_id, price }) => ({
+      useFetchData("package").map(({ pk_name, pk_id, total_price }) => ({
         label: pk_name,
         value: pk_id,
-        price
+        total_price
       }));
 
 export const useUnit = () =>

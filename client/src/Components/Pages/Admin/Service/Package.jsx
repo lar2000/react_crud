@@ -64,7 +64,6 @@ const Package = () => {
   const handleEditClick = (data) => {
     setModalType("edit");
     handleOpen();
-data.association_service_fk.map(id => Number(id));
     setPackageData({
       _id: data.pk_id,
       association_service_fk: data.association_service_fk.map(id => Number(id)),

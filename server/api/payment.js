@@ -5,7 +5,7 @@ const router = express.Router();
 const table = 'payment';
 
 router.post('/create', function (req, res) {
-  const { pay_id, paytype_id_fk, book_id, total_price, pay_date, detail, state } = req.body;
+  const { pay_id, paytype_id_fk, book_id, calculation, pay_date, detail } = req.body;
 
   // Auto-generate payment ID if it doesn't exist
   if (!pay_id) {
@@ -17,8 +17,8 @@ router.post('/create', function (req, res) {
 
       const code = pay_id.toString().slice(-4).padStart(4, '0');
       const payCode = 'PAY-' + code;
-      const fields = 'pay_id, paytype_id_fk, book_id_fk, pay_code, total_price, pay_date, detail, state';
-      const dataValue = [pay_id, paytype_id_fk, book_id, payCode, total_price, pay_date, detail, 1];
+      const fields = 'pay_id, paytype_id_fk, book_id_fk, pay_code, calculation, pay_date, detail, state';
+      const dataValue = [pay_id, paytype_id_fk, book_id, payCode, calculation, pay_date, detail, 1];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -39,8 +39,8 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch payment data.' });
       }
 
-      const fields = 'paytype_id_fk, total_price, pay_date, detail';
-      const newData = [paytype_id_fk, total_price, pay_date, detail, pay_id];
+      const fields = 'paytype_id_fk, calculation, pay_date, detail';
+      const newData = [paytype_id_fk, calculation, pay_date, detail, pay_id];
       const condition = 'pay_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -103,7 +103,7 @@ router.get("/paytype", function (req, res, next) {
 
 router.get('/', function (req, res, next) {
   const tables = 'payment';
-  const fields = 'pay_id, paytype_id_fk, book_id_fk, pay_code, total_price, pay_date, detail';
+  const fields = 'pay_id, paytype_id_fk, book_id_fk, pay_code, calculation, pay_date, detail';
   const where = 'state = 1';
   db.selectWhere(tables, fields, where, (err, results) => {
     if (err) {

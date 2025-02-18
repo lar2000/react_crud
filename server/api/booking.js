@@ -11,7 +11,7 @@ function updateCustomerStatus(cust_id_fk, status, callback) {
 }
 // Handle booking creation (without profile upload)
 router.post('/create', function (req, res) {
-  let { book_id, cust_id_fk, service_id_fk = [], dur_id_fk, pk_fk = [], group_type, date, group_size, tell, email, note } = req.body;
+  let { book_id, cust_id_fk, service_id_fk = [], pk_fk = [], group_type, date, group_size, tell, email, note } = req.body;
   const table = 'booking';
   group_type = group_size > 1 ? 'ກຸ່ມ' : 'ບຸກຄົນ';
 
@@ -23,8 +23,8 @@ router.post('/create', function (req, res) {
     db.autoId(table, 'book_id', (err, book_id) => {
       const code = book_id.toString().slice(-4).padStart  (4, '0');
       const book_code = 'B-' + code;
-      const fields = 'book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, dateEnd, group_size, tell, email, note, state';
-      const dataValue = [book_id, book_code, cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date[0], date[1], group_size, tell, email, note, 1]; 
+      const fields = 'book_id, book_code, cust_id_fk, service_id_fk, pk_fk, group_type, date, group_size, tell, email, note, state';
+      const dataValue = [book_id, book_code, cust_id_fk, service_id_fk, pk_fk, group_type, date, group_size, tell, email, note, 1]; 
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -72,8 +72,8 @@ router.post('/create', function (req, res) {
         }
 
         // Update booking with new cust_id_fk
-        const fields = 'cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, group_size, tell, email, note';
-        const newData = [cust_id_fk, service_id_fk, dur_id_fk, pk_fk, group_type, date, group_size, tell, email, note, book_id];
+        const fields = 'cust_id_fk, service_id_fk, pk_fk, group_type, date, group_size, tell, email, note';
+        const newData = [cust_id_fk, service_id_fk, pk_fk, group_type, date, group_size, tell, email, note, book_id];
         const condition = 'book_id=?';
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
@@ -215,7 +215,6 @@ router.get('/', function (req, res) {
   const tables = `booking
        LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id 
        LEFT JOIN payment ON booking.pay_fk = payment.pay_id 
-       LEFT JOIN duration ON booking.dur_id_fk = duration.dur_id 
        LEFT JOIN bps_association ON booking.book_id = bps_association.book_association_fk 
        LEFT JOIN service ON service.service_id = bps_association.sv_association_fk 
        LEFT JOIN package ON package.pk_id = bps_association.pk_association_fk`;
@@ -223,7 +222,6 @@ router.get('/', function (req, res) {
   const fields = `
       booking.book_id,
       booking.cust_id_fk,
-      booking.dur_id_fk,
       booking.book_code, 
       booking.group_type, 
       booking.date, 
@@ -236,15 +234,14 @@ router.get('/', function (req, res) {
       customer.cust_surname,
       payment.pay_id,
       payment.paytype_id_fk,
-      payment.total_price,
+      payment.calculation,
       payment.pay_date,
       payment.detail,
-      duration.duration, 
-      GROUP_CONCAT(bps_association.pk_association_fk) AS pk_association_fk,
-      GROUP_CONCAT(bps_association.sv_association_fk) AS sv_association_fk,
+      payment.pay_status,
+      GROUP_CONCAT(bps_association.pk_association_fk) AS pk_fk,
+      GROUP_CONCAT(bps_association.sv_association_fk) AS sv_fk,
       GROUP_CONCAT(package.pk_name) AS pk_names,
-      GROUP_CONCAT(service.service_name) AS service_names,
-      SUM(service.price) AS total_price
+      GROUP_CONCAT(service.service_name) AS service_names
   `;
 
   const where = `booking.state = 1 GROUP BY booking.book_id`;
@@ -253,6 +250,10 @@ router.get('/', function (req, res) {
     if (err) {
       return res.status(400).send();
     }
+    results.forEach(row => {
+      row.pk_fk = row.pk_fk.split(','); // Split the string into an array
+      row.sv_fk = row.sv_fk.split(','); // Split the string into an array
+    });
     res.status(200).json(results);
   });
 });
