@@ -2,15 +2,15 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Tabs, InlineEdit } 
 from 'rsuite';
-import { useService, useCustomer, usePayType, usePackage }
+import { useService, useCustomer, usePackage }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const services = useService();
   const packages = usePackage();
   const customers = useCustomer();
-  const payTypes = usePayType();
   const [step, setStep] = useState(0);
+  const [changeAmount, setChangeAmount] = useState(0);
 
   useEffect(() => {
     if (modalType === 'add') {
@@ -18,7 +18,21 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     } else if (modalType === 'edit') {
       setStep(0);
     }
-  }, [modalType, open]); // This ensures that step resets when the modal opens
+    const { group_size, sv_fk, pk_fk } = bookData;
+
+    const selectedServices = services.filter((s) => sv_fk.includes(s.value));
+    const selectedPackages = packages.filter((pk) => pk_fk.includes(pk.value));
+  
+    const servicePrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
+    const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.total_price), 0);
+  
+    const totalPrice = group_size * (servicePrice + packagePrice);
+  
+    setBookData((prev) => ({
+      ...prev,
+      calculation: totalPrice,
+    }));
+  }, [modalType, open, bookData.sv_fk, bookData.pk_fk, bookData.group_size]);
 
   const onChange = (nextStep) => {
     setStep(nextStep < 0 ? 0 : nextStep > 3 ? 3 : nextStep);
@@ -32,8 +46,8 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       bookData.tell;
     }
     if (step === 1) {
-      return bookData.paytype_id_fk && 
-      bookData.calculation && 
+      return bookData.calculation && 
+      bookData.get_money && 
       bookData.pay_date;
     }
     return true;
@@ -45,38 +59,34 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       alert("Please fill in all required fields.");
       return;
     }
-
+  
     if (!bookData.pay_date && bookData.date) {
-      const { date, group_size, sv_fk, pk_fk } = bookData;
-
-      const selectedServices = services.filter(s => sv_fk.includes(s.value));
-      const selectedPackages = packages.filter(pk => pk_fk.includes(pk.value));
-
-      if (selectedServices.length > 0 || selectedPackages.length > 0) {
-
-        const servicePrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
-        const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.total_price), 0);
-
-        const totalPrice = group_size * (servicePrice + packagePrice);
-
-        setBookData({
-          ...bookData,
-          pay_date: date || null,
-          total_price: totalPrice,
-        });
-        alert(`ລາຄາບໍລິການທັງໝົດ: ${servicePrice} ກີບ\nລາຄາແພັກເກດທັງໝົດ: ${packagePrice} ກີບ\nລວມ: ${totalPrice} ກີບ`);
-      }
+      setBookData((prev) => ({
+        ...prev,
+        pay_date: bookData.date || null,
+      }));
     }
-
-    onChange(step + 1);  // Continue to the next step
-};
-
+  
+    onChange(step + 1); // Continue to the next step
+  };
 
   const handleSelectChange = (event, field) => {
     setBookData({
       ...bookData,
       [field]: event,
     });
+  };
+  const handleAmountChange = (value) => {
+    const received = Number(value) || 0;
+    const total = Number(bookData.calculation) || 0;
+    const change = total - received;
+  
+  
+    setChangeAmount(change);
+    setBookData((prev) => ({
+      ...prev,
+      get_money: received,
+    }));
   };
   return (
     <Modal size={step === 1 ? "xs" : "sm"} open={open} onClose={onClose}>
@@ -154,19 +164,31 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
              <Panel>
              <div className="row mb-3">
                <div className="h-100 d-flex flex-column p-0">
+                 <div className="header d-md-flex justify-content-between dt-layout-end">
+                   <h6>ວັນທີ:</h6>
+                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
+                   <InlineEdit size="lg" style={{ width: 200, textAlign: 'right' }} defaultValue={new Date(bookData.date)}>
+                     <DatePicker className="form-label" placement="auto" value={bookData.pay_date}
+                       onChange={(value) => setBookData({ ...bookData, pay_date: value })}
+                       required />
+                   </InlineEdit>
+                 </div>
+                 </div>
                  <div className="d-md-flex justify-content-between dt-layout-end">
                    <h5 className="title">ຈຳນວນເງິນ:</h5>
                    <div className="col-6 d-md-flex justify-content-between dt-layout-end">
-                    <InlineEdit defaultValue={bookData.total_price || 0 }
-                      onChange={(value) => {setBookData({ ...bookData, calculation: value });}}
-                      style={{width: 200, textAlign: 'right'}}
-                      readOnly/>
+                    <InlineEdit size="lg" defaultValue={bookData.calculation || 0 }
+                      onChange={(value) => setBookData({ ...bookData, calculation: value })}
+                      style={{width: 200, color:'green', textAlign: 'right'}}
+                      disabled/><strong className='semi-bold mt-3'>ກີບ</strong>
                   </div>
                  </div>        
                  <div className="d-md-flex justify-content-between dt-layout-end">
                    <h5 className="title">ຮັບເງິນ:</h5>
                     <div className="col-6 d-md-flex justify-content-between dt-layout-end">
-                      <InlineEdit size="lg" placeholder="ປ້ອນຈຳນວນເງິນ..." style={{ width: 180, textAlign: 'right' }} />
+                      <InlineEdit size="lg" placeholder="ປ້ອນຈຳນວນເງິນ..." style={{ width: 180, textAlign: 'right' }}
+                      defaultValue={bookData.get_money}
+                      onChange={(value) => handleAmountChange(value, "get_money")}/>
                     </div>
                  </div>
            
@@ -175,29 +197,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                  <div className="header d-md-flex justify-content-between dt-layout-end">
                    <h5 className="title">ເງິນທອນ:</h5>
                    <div className="col-6 d-md-flex justify-content-between dt-layout-end">
-                   <h5 size="lg" style={{ width: 200 }} />
-                 </div>
-                 </div>
-           
-                 <div className="header d-md-flex justify-content-between dt-layout-end mt-4">
-                   <h6>ການຊຳລະ:</h6>
-                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
-                   <InlineEdit style={{ width: 200, textAlign: 'right' }} defaultValue={bookData.paytype_id_fk}>
-                     <SelectPicker placement="rightStart" className="form-label"
-                       data={payTypes} value={bookData.paytype_id_fk}
-                       onChange={(value) => handleSelectChange(value, "paytype_id_fk")}
-                       required block/>
-                   </InlineEdit>
-                 </div>
-                </div>
-                 <div className="header d-md-flex justify-content-between dt-layout-end">
-                   <h6>ວັນທີ:</h6>
-                   <div className="col-6 d-md-flex justify-content-between dt-layout-end">
-                   <InlineEdit style={{ width: 200, textAlign: 'right' }} defaultValue={new Date(bookData.date)}>
-                     <DatePicker className="form-label" placement="auto" value={bookData.pay_date}
-                       onChange={(value) => setBookData({ ...bookData, pay_date: value })}
-                       required />
-                   </InlineEdit>
+                   <h5 size="lg" style={{ width: 200, color:'red', textAlign: 'right'}}>{changeAmount} ກີບ</h5>
                  </div>
                  </div>
                </div>

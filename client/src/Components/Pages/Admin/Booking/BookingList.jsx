@@ -24,7 +24,7 @@ const Booking = () => {
     book_id: null,
     group_type: "",
     cust_id_fk: null,
-    dur_id_fk: null,
+    pay_fk: null,
     date: null,
     sv_fk: [],
     pk_fk: [],
@@ -34,8 +34,8 @@ const Booking = () => {
     note: "",
 
     pay_id: null,
-    paytype_id_fk: null,
     calculation: "",
+    get_money: "",
     pay_date: null,
     detail: null,
   });
@@ -58,6 +58,7 @@ const Booking = () => {
       book_id: null,
       date: null,
       cust_id_fk: null,
+      pay_fk: null,
       sv_fk: [],
       pk_fk: [],
       group_size: "",
@@ -66,8 +67,8 @@ const Booking = () => {
       note:"",
 
       pay_id: null,
-      paytype_id_fk: null,
       calculation: "",
+      get_money: "",
       pay_date: null,
       detail: null,
     });
@@ -95,11 +96,13 @@ const Booking = () => {
 
   const handleEditClick = (data) => {
     setModalType("edit");
+    alert(data.book_id)
     handleOpen();
     setbookData({
       book_id: data.book_id,
       date: new Date(data.date),
       cust_id_fk: data.cust_id_fk,
+      pay_fk: data.pay_fk,
       sv_fk: data.sv_fk.map(id => Number(id)),
       pk_fk: data.pk_fk.map(id => Number(id)),
       group_size: data.group_size,
@@ -108,18 +111,20 @@ const Booking = () => {
       note: data.note,
 
       pay_id: data.pay_id,
-      paytype_id_fk: data.paytype_id_fk,
       calculation: data.calculation,
+      get_money: data.get_money,
       pay_date: new Date(data.pay_date),
       detail: data.detail,
     });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     // Prepare booking data
     const bookingData = {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
+      pay_fk: bookData.pay_fk,
       date: bookData.date,
       sv_fk: bookData.sv_fk,
       pk_fk: bookData.pk_fk,
@@ -131,32 +136,39 @@ const Booking = () => {
   
     // Prepare payment data
     const paymentData = {
-      pay_id: bookData.pay_id,
-      paytype_id_fk: bookData.paytype_id_fk,
+      pay_id: bookData.pay_id || null, // If pay_id is null, it will be auto-generated
       pay_date: new Date(bookData.pay_date),
       calculation: bookData.calculation,
+      get_money: bookData.get_money,
     };
   
     try {
-      // Always create a new booking
-      const bookingResponse = await axios.post(`${api}/booking/create`, bookingData);
-  
-      const createdBooking = bookingResponse.data;
-      if (!createdBooking || !createdBooking.booking) {
-        alert(`${bookData.book_id} ? "Update Booking successfully!": "Added Booking successfully"`);
-        handleClose();
-        fetchgetData();
-        return;
+      // alert(`Payment Data: ${JSON.stringify(paymentData, null, 2)}`);
+      const payResponse = await axios.post(`${api}/payment/create`, paymentData);
+      alert(`Payment ${paymentData.pay_id  ? "updated" : "added"} successfully!`);
+      const createdPay = payResponse.data;
+      
+      if (createdPay && createdPay.payment) {
+        const pay_id = createdPay.payment[0] || paymentData.pay_id;
+        bookingData.pay_fk = pay_id;
+        const bookResponse = await axios.post(`${api}/booking/create`, bookingData);
+        alert(`Payment and Booking ${bookData.book_id  ? "updated" : "added"} successfully!`);
+        
+        if (bookResponse.data && bookResponse.data.booking) {
+          alert(`Payment and Booking ${bookData.book_id  ? "updated" : "added"} successfully!`);
+          handleClose();
+          fetchgetData()
+        } else {
+          throw new Error("Failed to create booking.");
+        }
+      } else {
+        throw new Error("Failed to create payment.");
       }
-      paymentData.book_id = createdBooking.booking[0];
-      await axios.post(`${api}/payment/create`, paymentData);
-      alert(`${bookData.book_id} ? "Update Booking successfully!"`);
-      handleClose();
-      fetchgetData();
-    } catch (err) {
-      console.error("Failed to submit booking and payment data", err);
+    } catch (error) {
+      console.error("Error occurred:", error);
+      alert("An error occurred. Please try again.");
     }
-  };
+  };  
   
   const handleDeleteClick = async (book_id, cust_id_fk) => {
     try {
@@ -265,18 +277,18 @@ const Booking = () => {
                   <Text muted>{maskEmail(booking.email)}</Text>
                   <Text muted>{maskPhone(booking.tell)}</Text>
                   </td>
-                  <td>{booking.pk_names.split(',').map((name, index) => 
-                    (<span key={index}>🔹{name}<br /></span>))}
-                  <Text>{booking.service_names.split(',').map((name, index) => 
-                    (<span key={index}>🔸{name}<br /></span>))}
+                  <td> {booking.pk_names ? (booking.pk_names.split(',').map((name, index) => (
+                        <span key={index}>🔹{name}<br /></span>))) : ""}
+                  <Text>{booking.service_names ? ( booking.service_names.split(',').map((name, index) => (
+                          <span key={index}>🔸{name}<br /></span>))) : ""}
                       </Text>
                     </td>
                   <td> { booking.pay_status === 2 ? (
                         <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>aied</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>paied</span>) 
                         : booking.pay_status === 1 ? (
                         <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>paied 50%</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>deposit(ມັດຈຳ)</span>) 
                         : (
                         <span className="badge border border-danger text-danger px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
                         <i className="fa fa-circle fs-9px fa-fw me-5px"></i>unpaied

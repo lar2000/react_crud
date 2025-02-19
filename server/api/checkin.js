@@ -140,7 +140,6 @@ router.get('/', function (req, res) {
   const tables = `checkin 
   LEFT JOIN booking ON checkin.book_fk = booking.book_id
   LEFT JOIN service ON booking.service_id_fk = service.service_id 
-  LEFT JOIN duration ON booking.dur_id_fk = duration.dur_id 
   LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id
   `;
 
@@ -152,12 +151,10 @@ router.get('/', function (req, res) {
       checkin.date_checkout,
       booking.book_id,
       booking.book_code,
-      booking.dur_id_fk,
       booking.group_size,  
       customer.cust_id,
       customer.cust_name, 
       customer.cust_surname,
-      duration.duration, 
       service.service_name
       `;
   const where = `checkin.state = 1`;
