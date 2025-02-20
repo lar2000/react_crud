@@ -90,26 +90,6 @@ export const useUnit = () =>
       label: paytype_name,
       value: paytype_id,
     }));
-
-    export const useDuration = () => {
-      const durationLabels = {
-        7: "ວັນ (1 week)",
-        14: "ວັນ (2 weeks)",
-        30: "ວັນ (1 month)",
-        60: "ວັນ (2 months)",
-        90: "ວັນ (3 months)",
-        180: "ວັນ (6 months)",
-        365: "ວັນ (1 year)"
-      };
-    
-      return useFetchData("duration").map(({ duration, dur_id }) => ({
-        label: duration < 7 
-          ? `${duration} ວັນ` 
-          : `${duration} ${durationLabels[duration] || '/ວັນ'}`,
-        value: dur_id,
-        duration,
-      }));
-    };
     
     export const useRoomType = () =>
       useFetchData("roomtype").map(({ roomtype_name, roomtype_id }) => ({

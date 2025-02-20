@@ -9,6 +9,7 @@ import BookingModal from './Modal';
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
+import { maskEmail, maskPhone } from "../../../../util";
 
 const Booking = () => {
   const api = Config.ApiURL;
@@ -180,18 +181,6 @@ const Booking = () => {
       console.error("Failed to delete booking", err);
     }
   };  
-
-  const maskEmail = (email) => {
-    if (!email) return "";
-    const [name, domain] = email.split("@");
-  
-    // Show first 2 letters, mask the rest, and keep "@gmail.com"
-    return name.substring(0, 2) + "***@" + domain;
-  };
-  const maskPhone = (phone) => {
-    if (!phone) return "";
-    return phone.substring(0, 2) + "*****" + phone.slice(-3);
-  };
     
   const filteredData = getData.filter((booking) => {
     const searchDateMatch =
@@ -218,7 +207,7 @@ const Booking = () => {
         </li><li className="breadcrumb-item"><a href="javascript:;">Page Options</a>
         </li><li className="breadcrumb-item active">booking</li>
       </ol>
-      <h1 className="page-header">Manage booking <small>header small text goes here...</small></h1>
+      <h1 className="page-header"><small>header small text goes here...</small></h1>
 
       <div className="panel panel-inverse">
         <div className="panel-heading">

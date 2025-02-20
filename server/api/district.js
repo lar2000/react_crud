@@ -1,8 +1,8 @@
 const express=require('express');
-const district = express.Router();
+const router = express.Router();
 const db = require('../controller/controller.connection');
 
-district.get("/", function (req, res) {
+router.get("/", function (req, res) {
     db.selectAll('tbl_district',(err, results) => {
         if (err) {
             return res.status(400).send('ການສະແດງຂໍ້ມູນລົມເຫຼວ');
@@ -11,7 +11,7 @@ district.get("/", function (req, res) {
     });
 });
 
-district.patch("/", function (req, res) {
+router.patch("/", function (req, res) {
     db.selectAll('tbl_district',(err, results) => {
         if (err) {
             return res.status(400).send('ການສະແດງຂໍ້ມູນລົມເຫຼວ');
@@ -20,9 +20,9 @@ district.patch("/", function (req, res) {
     });
 });
 
-district.get("/:id", function (req, res) {
+router.get("/:id", function (req, res) {
     const id= req.params.id;
-    const where=`district_id=${id}`;
+    const where=`district_id='${id}'`;
     db.singleAll('tbl_district', where,(err, results) => {
         if (err) {
             return res.status(400).send();
@@ -31,7 +31,7 @@ district.get("/:id", function (req, res) {
     });
 });
 
-district.get("/pv/:id", function (req, res) {
+router.get("/pv/:id", function (req, res) {
     const pvid= req.params.id;
     const where=`province_id_fk='${pvid}'`;
     db.selectWhere('tbl_district', '*', where,(err, results) => {
@@ -42,4 +42,4 @@ district.get("/pv/:id", function (req, res) {
     });
 });
 
-module.exports=district
+module.exports = router;

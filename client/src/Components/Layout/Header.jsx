@@ -86,7 +86,7 @@ const Header = () => {
 					<a href="#" className="navbar-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
 						<img src={userImage} alt="" /> 
 						<span>
-							<span className="d-none d-md-inline">Adam Schwartz</span>
+							<span className="d-none d-md-inline">Hi, Lar YANG</span>
 							<b className="caret"></b>
 						</span>
 					</a>
@@ -99,7 +99,7 @@ const Header = () => {
 						<a href="calendar.html" className="dropdown-item">Calendar</a>
 						<a href="extra_settings_page.html" className="dropdown-item">Settings</a>
 						<div className="dropdown-divider"></div>
-						<a href="login.html" className="dropdown-item">Log Out</a>
+						<a href="/login" className="dropdown-item">Log Out</a>
 					</div>
 				</div>
 			</div>

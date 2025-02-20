@@ -6,6 +6,7 @@ import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
+import { maskEmail } from "../../../../util";
 
 const Customer = () => {
   const api = Config.ApiURL;
@@ -123,8 +124,7 @@ const Customer = () => {
         </li>
         <li className="breadcrumb-item active">Customer</li>
       </ol>
-      <h1 className="page-header">
-        Manage Customer <small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
@@ -175,7 +175,7 @@ const Customer = () => {
                   </td>
                   <td>{customer.cust_code}</td>
                   <td>{customer.cust_name} {customer.cust_surname}</td>
-                  <td>{customer.email}</td>
+                  <td>{maskEmail(customer.email)}</td>
                   <td>
                     {   customer.status === 3 ? (
                         <span className="badge border border-success text-success px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">

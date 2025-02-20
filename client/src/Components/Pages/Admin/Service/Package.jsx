@@ -7,7 +7,7 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 import { useService } from "../../../../config/selectOption";
-import { formatDuration } from "../../../../util"; 
+//import { formatDuration } from "../../../../util"; 
 
 
 const Package = () => {
@@ -123,8 +123,7 @@ const Package = () => {
         </li>
         <li className="breadcrumb-item active">Package</li>
       </ol>
-      <h1 className="page-header">
-        Manage Package<small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
@@ -168,7 +167,7 @@ const Package = () => {
                   <td>{pkg.pk_code}</td>
                   <td>{pkg.pk_name}</td>
                   <td>{pkg.service_names}</td>
-                  <td>{formatDuration(pkg.total_duration)}</td>
+                  {/* <td>{formatDuration(pkg.total_duration)}</td> */}
                   <td>{pkg.total_price}</td>
                   <td>
                     <div className="panel-heading">

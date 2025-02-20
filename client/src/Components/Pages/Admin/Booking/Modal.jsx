@@ -135,9 +135,9 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                   </div>
                   <div className="col-md-6">
                   <label className="form-label">ເວລານັດໝາຍ</label>
-                  <DatePicker format="dd/MM/yyyy HH:mm" className="form-label" placement='auto' 
+                  <DatePicker oneTap format="dd/MM/yyyy HH:mm" className="form-label" placement='auto' 
                    value={bookData.date} onChange={(value) =>  setBookData({ ...bookData, date: value })}
-                    required style={{ width: "100%" }}/>
+                    required block/>
                     </div>
                   <div className="col-md-6">
                     <label className="form-label">Phone</label>

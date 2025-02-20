@@ -124,8 +124,7 @@ const Set_Product = () => {
         </li>
         <li className="breadcrumb-item active">set_product</li>
       </ol>
-      <h1 className="page-header">
-        Manage set_product<small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">

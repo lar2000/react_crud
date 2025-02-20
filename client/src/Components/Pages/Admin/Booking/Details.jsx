@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { Modal, Button, Progress } from "rsuite";
 import { format, differenceInMinutes, isSameDay } from "date-fns";
 import { printContent } from "../../../../PrintDoc";
-import { displayDuration } from "../../../../util";
 
 const Detail = ({ data, open, onClose }) => {
   const [progress, setProgress] = useState(0);
@@ -65,16 +64,16 @@ const Detail = ({ data, open, onClose }) => {
           </div>
           <div className="nav-wizards-container mt-4">
             <nav className="nav nav-wizards-2 mb-3">
-              <div className="nav-item col"><h6 className="text-center">ວັນທີຈອງ</h6>
+              <div className="nav-item col"><h6 className="text-center">ວັນທີນັດໝາຍ</h6>
                 <div className="nav-link">
                   <div className="nav-text">{format(new Date(data.date), "dd-MM-yyyy")}</div>
                 </div>
               </div>
-              <div className="nav-item col"><h6 className="text-center">ວັນທີສິ້ນສຸດ</h6>
+              {/* <div className="nav-item col"><h6 className="text-center">ວັນທີສິ້ນສຸດ</h6>
                 <div className="nav-link">
-                  <div className="nav-text">{format(new Date(data.dateEnd), "dd-MM-yyyy")}</div>
+                  <div className="nav-text">{format(new Date(data.datenow), "dd-MM-yyyy")}</div>
                 </div>
-              </div>
+              </div> */}
             </nav>
           </div>
           {[
@@ -84,8 +83,20 @@ const Detail = ({ data, open, onClose }) => {
             { label: "ຊື່ ແລະ ນາມສະກຸນ :", value: `${data.cust_name} ${data.cust_surname}` },
             { label: "ເບີໂທ :", value: data.tell },
             { label: "ອີເມວ໌ :", value: data.email },
-            { label: "ບໍລິການທີຈອງ :", value: data.service_name },
-            { label: "ໄລຍະເວລາ :", value: `${displayDuration(data.duration)} (${data.time_per_day} ນາທີ/ວັນ)`},
+            { label: "ບໍລິການທີຈອງ :",  value: (
+              <>
+                  {data.pk_names ? (
+                      data.pk_names.split(',').map((name, index) => (
+                          <span key={index}>🔹{name}<br /></span>
+                      ))
+                  ) : ""}
+                  {data.service_names ? (
+                      data.service_names.split(',').map((name, index) => (
+                          <span key={index}>🔸{name}<br /></span>
+                      ))
+                  ) : ""}
+              </>
+          ) },
             { label: "ລາຄາທັງໝົດ :", value: data.total_price },
             { label: "ໝາຍເຫດ :", value: data.note },
           ].map((item, index) => (

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import userImage from '../../../../assets/user.png';
-import { Modal, Button, SelectPicker, Input } from "rsuite";
+import { Modal, Button, SelectPicker, Input, Radio, RadioGroup } from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
+import { maskEmail, maskPhone } from "../../../../util";
 import { useProvince, useDistrict } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
 const Staff = () => {
@@ -19,7 +20,7 @@ const Staff = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState(userImage);
-
+  const [visible, setVisible] = useState(false);
 
   const [staffData, setStaffData] = useState({
     staff_id: null,
@@ -95,6 +96,7 @@ const Staff = () => {
   };
 
   const handleChange = (name, value) => {
+    setVisible(!visible);
     setStaffData({
       ...staffData,
       [name]: value,
@@ -186,8 +188,7 @@ const Staff = () => {
         </li>
         <li className="breadcrumb-item active">Staff</li>
       </ol>
-      <h1 className="page-header">
-        Manage Staff <small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
@@ -250,8 +251,8 @@ const Staff = () => {
                   </td>
                   <td>{staff.staff_code}</td>
                   <td>{staff.staff_name} {staff.staff_surname}</td>
-                  <td>{staff.email}</td>
-                  <td>{staff.tell}</td>
+                  <td>{maskEmail(staff.email)}</td>
+                  <td>{maskPhone(staff.tell)}</td>
                   <td> {staff.village}, {staff.district_name}, {staff.province_name}
                   </td>
                   <td>
@@ -350,6 +351,25 @@ const Staff = () => {
               <Input className="form-label" value={staffData.village} onChange={(value) => handleChange("village", value)}
                 placeholder="ບ້ານ..." required/>
             </div>
+            <div className="col-md-12 mt-4">
+              <RadioGroup name="role" inline value={staffData.role}
+                onChange={(value) => handleChange("role", value)}>
+                <Radio value="A">Normal</Radio>
+                <Radio value="B">Admin</Radio>
+                <Radio value="C">Superadmin</Radio>
+              </RadioGroup>
+            </div>
+            {(staffData.role === "B" || staffData.role === "C") && (
+              <div className="col-md-12">
+                <label className="form-label">Password</label>
+                <Input type={visible ? "text" : "password"}
+                  className="form-label" name="password"
+                  value={staffData.password || ""}
+                  onChange={(value) => handleChange("password", value)}
+                  required/>
+              </div>
+            )}
+
             </div>
         </Modal.Body>
         <Modal.Footer>

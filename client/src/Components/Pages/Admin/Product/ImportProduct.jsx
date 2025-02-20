@@ -151,8 +151,7 @@ const Importproduct = () => {
         </li>
         <li className="breadcrumb-item active">importproduct</li>
       </ol>
-      <h1 className="page-header">
-        Manage importproduct <small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">

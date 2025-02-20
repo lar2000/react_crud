@@ -7,7 +7,7 @@ import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 import { useServiceType, useSetProduct } from "../../../../config/selectOption";
-import { formatDuration } from "../../../../util"; 
+// import { formatDuration } from "../../../../util"; 
 
 const Service = () => {
   const api = Config.ApiURL;
@@ -135,8 +135,7 @@ const Service = () => {
         </li>
         <li className="breadcrumb-item active">service</li>
       </ol>
-      <h1 className="page-header">
-        Manage service <small>header small text goes here...</small>
+      <h1 className="page-header"><small>header small text goes here...</small>
       </h1>
 
       <div className="panel panel-inverse">
@@ -181,7 +180,7 @@ const Service = () => {
                   <td>{service.service_code}</td>
                   <td>{service.service_name}</td>
                   <td>{service.servicetype_name}</td>
-                  <td>{formatDuration(service.service_duration)}</td>
+                  {/* <td>{formatDuration(service.service_duration)}</td> */}
                   <td>{service.price}</td>
                   <td>{service.set_name}</td>
                   <td>

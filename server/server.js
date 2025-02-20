@@ -18,8 +18,6 @@ const routes = [
   'product',
   'protype',
   'unit',
-  'duration',
-  'timeperday',
   'package',
   'service',
   'service_type',
