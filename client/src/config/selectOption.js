@@ -91,11 +91,11 @@ export const useUnit = () =>
       value: paytype_id,
     }));
     
-    export const useRoomType = () =>
-      useFetchData("roomtype").map(({ roomtype_name, roomtype_id }) => ({
-        label: roomtype_name,
-        value: roomtype_id,
-      }));
+  export const useRoomType = () =>
+    useFetchData("roomtype").map(({ roomtype_name, roomtype_id }) => ({
+      label: roomtype_name,
+      value: roomtype_id,
+    }));
 
   
   

@@ -1,7 +1,56 @@
-
+import {useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Config } from '../../config/connection';
+import { Notification } from '../../SweetAlert2';
 import Backgrouds from '../../assets/spa_bg.jpg' 
+import { Loader } from 'rsuite';
+import axios from 'axios';
 
-const LogIn = () => {
+export default function LoingPage() {
+const api = Config.ApiURL;
+const navigate = useNavigate();
+
+const [isLoading,setIsLoading]=useState(false)
+const [values,setValues]=useState({
+    email:'',
+    password:'',
+})
+const handledChange=(name,value)=>{
+    setValues({
+        ...values,[name]:value
+    })
+}
+
+const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    console.log(values)
+    try {
+      const res = await axios.post(`${api}/checklogin/`, values);
+ 
+      if (res.status === 200) {
+        const { staff_id,staff_code, staffName, email, token} = res.data; 
+		localStorage.setItem('staff_id', staff_id);
+		localStorage.setItem('staff_code', staff_code);
+        localStorage.setItem('staffName', staffName);
+        localStorage.setItem('email', email);
+        localStorage.setItem('token', token);
+        navigate('/home');
+      } else {
+        Notification.error('ຊື່ ແລະ ລະຫັດຜ່ານບໍ່ຖຶກຕ້ອງ ', 'ແຈ້ງເຕືອນ');
+      }
+	} catch {
+      Notification.error('ຊື່ ແລະ ລະຫັດຜ່ານບໍ່ຖຶກຕ້ອງ ', 'ແຈ້ງເຕືອນ');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+const [showPassword, setShowPassword] = useState(false);
+const handleCheckbox = () => {
+    setShowPassword(!showPassword);
+  };
+
     return (
         <div id="app" className="app">
         <div className="login login-v2 fw-bold">
@@ -21,33 +70,33 @@ const LogIn = () => {
 					</div>
 				</div>
 				<div className="login-content">
-					<form action="/home" method="GET">
-						<div className="form-floating mb-20px">
-							<input type="text" className="form-control fs-13px h-45px border-0" placeholder="Email Address" id="emailAddress" />
-							<label name="emailAddress" className="d-flex align-items-center text-gray-600 fs-13px">ອີເມວ໌</label>
-						</div>
-						<div className="form-floating mb-20px">
-							<input type="password" className="form-control fs-13px h-45px border-0" placeholder="Password" />
-							<label name="emailAddress" className="d-flex align-items-center text-gray-600 fs-13px">Password</label>
-						</div>
-						<div className="form-check mb-20px">
-							<input className="form-check-input border-0" type="checkbox" value="1" id="rememberMe" />
-							<label className="form-check-label fs-13px text-gray-500" name="rememberMe">
-								Remember Me
-							</label>
-						</div>
-						<div className="mb-20px">
-							<button type="submit" className="btn btn-theme d-block w-100 h-45px btn-lg">Sign me in</button>
-						</div>
-						<div className="text-gray-500">
-							Not a member yet? Click <a href="register_v3.html" className="text-white">here</a> to register.
-						</div>
-					</form>
-				</div>
+                    <form  onSubmit={handleSubmit}>
+                        <div className="form-floating mb-20px">
+                            <input type="text" onChange={(e)=>handledChange('email',e.target.value)} 
+							className="form-control fs-13px h-45px border-blue" placeholder="Email Address" required />
+                               <label name="email" className="d-flex align-items-center text-gray-600 fs-13px">Email Address</label>
+                        </div>
+                        <div className="form-floating mb-20px">
+                            <input type={showPassword ? 'text' : 'password'} onChange={(e)=>handledChange('password',e.target.value)}
+								className="form-control fs-13px h-45px border-blue" placeholder="Password" required />
+                                <label name="password" className="d-flex align-items-center text-gray-600 fs-13px">Password</label>
+                        </div>
+                        <div className="form-check mb-20px">
+                            <input className="form-check-input is-invalid"  onChange={handleCheckbox}  checked={showPassword} type="checkbox"  />
+                                <label className="form-check-label fs-13px text-gray-500" name="rememberMe"> ສະແດງລະຫັດຜ່ານ</label>
+                            </div>
+                            <div className="mb-20px">
+                                <button type="submit" className="btn btn-theme d-block w-100 h-45px btn-lg"
+								 disabled={isLoading}> {isLoading===true?( <Loader size="sm" content="ກຳລັງກວດສອບ..." />):'ເຂົ້າສູ່ລະບົບ'} </button>
+                            </div>
+                            <div className="text-gray-500">
+                                Version V.01
+                            </div>
+                        </form>
+                    </div>
 			</div>
 		</div>
 	</div>
  
     )
 } 
-export default LogIn;

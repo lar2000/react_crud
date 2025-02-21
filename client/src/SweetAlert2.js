@@ -1,18 +1,53 @@
-import { NotificationManager } from 'react-notifications';
 import Swal from 'sweetalert2';
 
 export const Notification = {
-  info: (message, title, duration = 3000) => {
-    NotificationManager.info(message, title, duration);
+  info: (message, title = 'Information', duration = 3000) => {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: 'info',
+      timer: duration,
+      showConfirmButton: false,
+      willClose: () => {
+        Swal.close();
+      }
+    });
   },
-  success: (message, title, duration = 3000) => {
-    NotificationManager.success(message, title, duration);
+  success: (message, title = 'Success', duration = 3000) => {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: 'success',
+      timer: duration,
+      showConfirmButton: false,
+      willClose: () => {
+        Swal.close();
+      }
+    });
   },
-  warning: (message, title, duration = 3000) => {
-    NotificationManager.warning(message, title, duration);
+  warning: (message, title = 'Warning', duration = 3000) => {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: 'warning',
+      timer: duration,
+      showConfirmButton: false,
+      willClose: () => {
+        Swal.close();
+      }
+    });
   },
-  error: (message, title, duration = 3000) => {
-    NotificationManager.error(message, title, duration);
+  error: (message, title = 'Error', duration = 3000) => {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: 'error',
+      timer: duration,
+      showConfirmButton: false,
+      willClose: () => {
+        Swal.close();
+      }
+    });
   }
 };
 
@@ -39,7 +74,7 @@ export const Alert = {
   },
   successData: (message) => { 
     Swal.fire({
-      title: 'ຢືນຢັນ!',
+      title: 'ແຈ້ງເຕືອນ',
       text: message,
       icon: 'success',
       width: 350,
@@ -56,4 +91,19 @@ export const Alert = {
       confirmButtonColor: '#0fac29',
     });
   },
+    confirm: async (message) => { 
+      const result = await Swal.fire({
+        title: 'ແຈ້ງເຕືອນ',
+        text: message,
+        icon: 'question',
+        width: 400,
+        confirmButtonColor: '#0fac29',
+        showConfirmButton: true,
+        showCancelButton: true,
+        cancelButtonColor: "#d33",
+        cancelButtonText: "ຍົກເລີກ",
+      });
+  
+      return result.isConfirmed; // Return true if confirmed, false otherwise
+    },
 };

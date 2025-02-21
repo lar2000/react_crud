@@ -24,6 +24,7 @@ const routes = [
   'booking',
   'checkin',
   'payment',
+  'checklogin',
   'set_product'
 ];
 

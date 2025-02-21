@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Modal, Button, Input } from "rsuite";
-//import { Notification, Alert } from '../../../../SweetAlert2'
+import { Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
@@ -78,24 +78,26 @@ const Customer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        console.log(customerData)
         await axios.post(`${api}/customer/create`, customerData);
-        alert(`Customer ${customerData._id ? "updated" : "added"} successfully!`);
+        Alert.successData(`Customer ${customerData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
         resetForm();
-    } catch (err) {
-      console.error("Failed to submit customer data", err);
+    } catch {
+      Alert.errorData("Failed to submit customer data", 'Error!');
     }
   };
   const handleDeleteClick = async (cust_id) => {
+    const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
+    if (isConfirmed) {
     try {
       await axios.patch(`${api}/customer/${cust_id}`);
-      alert("Customer member soft deleted successfully!");
+      Alert.successData('ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!');
       fetchgetData();
-    } catch (err) {
-      console.error("Failed to delete customer", err);
+    } catch {
+      Alert.errorData('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
     }
+  }
   };
   
   const filteredData = getData.filter((customer) => {

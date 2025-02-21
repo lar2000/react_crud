@@ -1,8 +1,12 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const db = require('../controller/controller.connection');
+const moment = require('moment')
+const currentDatetime = moment();
+const dateNow = currentDatetime.format('YYYY-MM-DD');
 const router = express.Router();
 
 router.post('/create', function (req, res) {
@@ -20,14 +24,15 @@ router.post('/create', function (req, res) {
   const upload = multer({ storage }).single('profile');
   
   upload(req, res, function (err) {
-    const { _id, staff_name, staff_surname, email, tell, village, district_fk } = req.body;
+    const password = bcrypt.hashSync(req.body.password);
+    const { _id, staff_name, staff_surname, email, tell, village, district_fk, staff_status} = req.body;
     const table = 'staff';
     if(!_id) {
-      db.autoId(table, 'staff_id', (err, id) => { // Changed from 'id' to 'staff_id'
+      db.autoId(table, 'staff_id', (err, id) => {
         const code = id.toString().slice(-4).padStart(4, '0');
-        const staffCode = 'ST-' + code; // Changed 'staff_id' to 'staff_code'
-        const Fields = 'staff_id, staff_code, staff_name, staff_surname, email, tell, village, district_fk, profile, state'; // Changed 'id' to 'staff_id' and 'staff_id' to 'staff_code'
-        const dataValue = [id, staffCode, staff_name, staff_surname, email, tell, village, district_fk, profile, 1]; // Changed 'staff_id' to 'staff_code'
+        const staffCode = 'ST-' + code;
+        const Fields = 'staff_id, staff_code, staff_name, staff_surname, email, password, tell, village, district_fk, profile, staff_status, state, datetime'; // Changed 'id' to 'staff_id' and 'staff_id' to 'staff_code'
+        const dataValue = [id, staffCode, staff_name, staff_surname, email, password, tell, village, district_fk, profile, staff_status, 1, dateNow]; // Changed 'staff_id' to 'staff_code'
 
         db.insertData(table, Fields, dataValue, (err, results) => {
           if (err) {
@@ -57,8 +62,8 @@ router.post('/create', function (req, res) {
           });
         }
         const updatedProfile = profile || results[0].profile;
-        const fields = 'staff_name, staff_surname, email, tell, village, district_fk, profile';
-        const newData = [staff_name, staff_surname, email, tell, village, district_fk, updatedProfile, _id];
+        const fields = 'staff_name, staff_surname, email, password, tell, village, district_fk, profile';
+        const newData = [staff_name, staff_surname, email, password, tell, village, district_fk, updatedProfile, _id];
         const condition = 'staff_id=?'; // Changed from 'id' to 'staff_id'
 
         db.updateData(table, fields, newData, condition, (err, results) => {
@@ -120,11 +125,12 @@ router.get("/", function (req, res, next) {
       staff.staff_code,
       staff.staff_name, 
       staff.staff_surname, 
-      staff.email, 
+      staff.email, password, 
       staff.tell, 
       staff.profile, 
       staff.village,  
       staff.district_fk,
+      staff.staff_status,
       tbl_district.province_id_fk,
       tbl_district.district_name, 
       tbl_province.province_name`;

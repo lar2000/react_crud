@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import userImage from '../../../../assets/user.png';
-import { Modal, Button, SelectPicker, Input, Radio, RadioGroup } from "rsuite";
+import { Modal, Text, Button, SelectPicker, Input, InputGroup, Radio, RadioGroup, Badge } from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
@@ -32,10 +32,17 @@ const Staff = () => {
     village: "",
     district_fk: "",
     province: "",
+    staff_status: 0,
+    password: "",
   });
 
   const provinces = useProvince(); // Fetch province data
   const districts = useDistrict(staffData.province); // Fetch districts based on selected province
+  const staff_status = [
+    {label: 'Normal', value: 0},
+    {label: 'Admin', value: 1}, 
+    {label: 'superadmin', value: 2}
+  ]
 
   useEffect(() => {
     fetchgetData();
@@ -60,6 +67,8 @@ const Staff = () => {
       village: "",
       district_fk: "",
       province: "",
+      staff_status: null,
+      password: "",
     });
     setOpen(false);
     setImageUrl(userImage); // Reset image URL
@@ -72,6 +81,10 @@ const Staff = () => {
     setOpen(false);
     resetForm();
   }
+
+  const handleShow = () => {
+    setVisible(!visible);
+  };
 
   const handleAddClick = () => {
     handleOpen();
@@ -91,6 +104,8 @@ const Staff = () => {
       village: data.village,
       district_fk: data.district_fk,
       province: data.province_id_fk,
+      staff_status: data.staff_status,
+      password: "",
     });
     setImageUrl(data.profile ? `${img}${data.profile}` : userImage);
   };
@@ -157,7 +172,6 @@ const Staff = () => {
     }
   };
   const handleDeleteClick = async (id) => {
-    alert(id);
     try {
       await axios.patch(`${api}/staff/${id}`);
       alert("Staff member soft deleted successfully!");
@@ -227,9 +241,9 @@ const Staff = () => {
                 <th className="text-nowrap">ລ/ດ</th>
                 <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ລະຫັດ</th>
+                <th className="text-nowrap">ສະຖານະ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ອີດມວ໌</th>
-                <th className="text-nowrap">ເບີໂທະສັບ</th>
+                <th className="text-nowrap">ຂໍ້ມູນຕິດຕໍ່</th>
                 <th className="text-nowrap">ທີຢູ່</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
@@ -242,17 +256,16 @@ const Staff = () => {
                   </td>
                   <td width="1%" className="with-img">
                     {staff.profile && (
-                      <img
-                        src={`${img}${staff.profile}`}
-                        className="rounded h-30px my-n1 mx-n1"
-                        alt="profile"
-                      />
-                    )}
+                      <img className="rounded h-30px my-n1 mx-n1" alt="profile"
+                        src={`${img}${staff.profile}`}/>)}
                   </td>
                   <td>{staff.staff_code}</td>
-                  <td>{staff.staff_name} {staff.staff_surname}</td>
-                  <td>{maskEmail(staff.email)}</td>
-                  <td>{maskPhone(staff.tell)}</td>
+                  <td><Badge color="blue" content="superadmin" /></td>
+                  <td>{staff.staff_name} {staff.staff_surname}
+                  </td>
+                  <td>{maskEmail(staff.email)}
+                  <Text muted>{maskPhone(staff.tell)}</Text>
+                  </td>
                   <td> {staff.village}, {staff.district_name}, {staff.province_name}
                   </td>
                   <td>
@@ -352,24 +365,27 @@ const Staff = () => {
                 placeholder="ບ້ານ..." required/>
             </div>
             <div className="col-md-12 mt-4">
-              <RadioGroup name="role" inline value={staffData.role}
-                onChange={(value) => handleChange("role", value)}>
-                <Radio value="A">Normal</Radio>
-                <Radio value="B">Admin</Radio>
-                <Radio value="C">Superadmin</Radio>
+              <RadioGroup inline value={staffData.staff_status}
+                onChange={(value) => handleChange("staff_status", value)}>
+                {staff_status.map((status) => (
+                  <Radio key={status.value} value={status.value}>
+                    {status.label}
+                  </Radio>
+                ))}
               </RadioGroup>
             </div>
-            {(staffData.role === "B" || staffData.role === "C") && (
+            {(staffData.staff_status === 1 || staffData.staff_status === 2) && (
               <div className="col-md-12">
                 <label className="form-label">Password</label>
-                <Input type={visible ? "text" : "password"}
-                  className="form-label" name="password"
-                  value={staffData.password || ""}
-                  onChange={(value) => handleChange("password", value)}
-                  required/>
+                <InputGroup inside block>
+                    <Input type={visible ? 'text' : 'password'} value={staffData.password || ""}
+                     onChange={(value) => handleChange("password", value)} required/>
+                    <InputGroup.Button onClick={handleShow}>
+                      {visible ? <i className="fa-solid fa-eye" /> : <i className="fa-solid fa-eye-slash" />}
+                    </InputGroup.Button>
+                  </InputGroup>
               </div>
             )}
-
             </div>
         </Modal.Body>
         <Modal.Footer>
