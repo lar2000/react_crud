@@ -1,5 +1,19 @@
+
+import { useState, useEffect } from 'react';
 import userImage from '../../assets/user.jpeg';
+//import { Config } from '../../config/connection';
 const Header = () => {
+	//const api = Config.ApiURL;
+	const [staffName, setStaffName] = useState('');
+
+  useEffect(() => {
+    // const name = JSON.parse(localStorage.getItem('staffName'));
+	const name = localStorage.getItem('staffName');
+    if (name) {
+		setStaffName(name.staffName);
+    }
+  }, []);
+
   return (
 		<div id="header" className="app-header">
 			<div className="navbar-header">
@@ -86,7 +100,7 @@ const Header = () => {
 					<a href="#" className="navbar-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
 						<img src={userImage} alt="" /> 
 						<span>
-							<span className="d-none d-md-inline">Hi, Lar YANG</span>
+							<span className="d-none d-md-inline">Hi, {staffName || 'Guest'}</span>
 							<b className="caret"></b>
 						</span>
 					</a>

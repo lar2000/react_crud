@@ -9,7 +9,7 @@ router.post("/", function(req, res) {
     const password = req.body.password; 
     const email = req.body.email;
     const table = `staff`; 
-    const fields = `staff_id, staff_code, staffName, email, password, staff_status`; 
+    const fields = `staff_id, staff_code, staff_name, staff_surname, email, password, staff_status`; 
     const where = `state='1' AND email='${email}'`;
 
     db.fetchSingle(table, fields, where, (err, results) => {
@@ -58,7 +58,6 @@ router.post("/", function(req, res) {
     });
 });
 
-
 router.post("/authen", function(req, res) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -88,4 +87,25 @@ router.post("/authen", function(req, res) {
         });
     });
 });
+// const blacklistedTokens = new Set(); // In-memory blacklist
+
+// router.post("/logout", function(req, res) {
+//     const authHeader = req.headers.authorization;
+//     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+//         return res.status(401).json({
+//             status: "401",
+//             message: "Token is missing or invalid"
+//         });
+//     }
+
+//     const token = authHeader.split(' ')[1];
+
+//     blacklistedTokens.add(token);
+
+//     res.status(200).json({
+//         status: "200",
+//         message: "Logout successful"
+//     });
+// });
+
 module.exports = router;

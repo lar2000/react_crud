@@ -5,8 +5,8 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const db = require('../controller/controller.connection');
 const moment = require('moment')
-const currentDatetime = moment();
-const dateNow = currentDatetime.format('YYYY-MM-DD');
+//const currentDatetime = moment();
+const dateNow = moment().format('YYYY-MM-DD HH:mm:ss'); // Correct format for MySQL
 const router = express.Router();
 
 router.post('/create', function (req, res) {
@@ -24,7 +24,7 @@ router.post('/create', function (req, res) {
   const upload = multer({ storage }).single('profile');
   
   upload(req, res, function (err) {
-    const password = bcrypt.hashSync(req.body.password);
+    const password = req.body.password ? bcrypt.hashSync(req.body.password) : null;
     const { _id, staff_name, staff_surname, email, tell, village, district_fk, staff_status} = req.body;
     const table = 'staff';
     if(!_id) {
@@ -62,21 +62,39 @@ router.post('/create', function (req, res) {
           });
         }
         const updatedProfile = profile || results[0].profile;
-        const fields = 'staff_name, staff_surname, email, password, tell, village, district_fk, profile';
-        const newData = [staff_name, staff_surname, email, password, tell, village, district_fk, updatedProfile, _id];
-        const condition = 'staff_id=?'; // Changed from 'id' to 'staff_id'
+        const normalizedStatus = String(staff_status).trim().toLowerCase(); // staff_status is String Only && ລົບຊ່ອງວ່າງອອກ
+        const passwordToUpdate = (normalizedStatus === '0') ? null : password;
+        console.log(staff_status);
+
+        const fields = 'staff_name, staff_surname, email, password, tell, village, district_fk, profile, staff_status';
+        const newData = [staff_name, staff_surname, email, passwordToUpdate, tell, village, district_fk, updatedProfile, staff_status, _id];
+        const condition = 'staff_id=?';
 
         db.updateData(table, fields, newData, condition, (err, results) => {
           if (err) {
             console.error('Error updating data:', err);
             return res.status(500).json({ error: 'Failed to update staff' });
           }
-          res.status(200).json({ message: 'Staff updated successfully', data: results });
+          res.status(200).json({ message: 'Staff updated successfully', data: newData });
         });
       });
     } 
   })
 });
+
+router.post('/changepass', function (req, res) {
+  const newpass = bcrypt.hashSync(req.body.password);
+  const { _id, email, staff_status } = req.body;
+  const filedEdit = ` email, password, staff_status`;
+  const newData = [email, newpass, staff_status, _id];
+  const condition = 'staff_id=?';
+  db.updateData('staff', filedEdit, newData, condition, (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດ' });
+      }
+      res.status(200).json({ message: 'ການແກ້ໄຂລະຫັດຜ່ານສຳເລັດແລ້ວ'});
+  });
+})
 
 router.patch('/:id', function (req, res, next) {
   const id = req.params.id;
@@ -125,7 +143,7 @@ router.get("/", function (req, res, next) {
       staff.staff_code,
       staff.staff_name, 
       staff.staff_surname, 
-      staff.email, password, 
+      staff.email,
       staff.tell, 
       staff.profile, 
       staff.village,  

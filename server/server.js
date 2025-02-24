@@ -36,5 +36,5 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Start server
 const port = process.env.PORT || 5300;
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`⚡Server is running on http://localhost:${port}`);
 });

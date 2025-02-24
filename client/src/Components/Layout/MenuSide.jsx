@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 const MenuSide = () => {
+	
     return (
         <>
             <div id="sidebar" className="app-sidebar" data-bs-theme="dark">
@@ -47,7 +48,7 @@ const MenuSide = () => {
                         </div>
                         <div className="menu-header">ເມນູ</div>
                         <div className="menu-item fs-5">
-					<Link to="/" className="menu-link">
+					<Link to="/home" className="menu-link">
 					<div className="menu-icon">
 					<i className="fas fa-qrcode"></i>
 					</div>

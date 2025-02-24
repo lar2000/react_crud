@@ -164,7 +164,7 @@ const Customer = () => {
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
-                <th className="text-nowrap">ອີດມວ໌</th>
+                <th className="text-nowrap">ອີເມວ໌</th>
                 <th className="text-nowrap">ສະຖານະ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>

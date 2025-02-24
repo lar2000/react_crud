@@ -19,6 +19,7 @@ const Staff = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState("add"); // Add or edit
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [imageUrl, setImageUrl] = useState(userImage);
   const [visible, setVisible] = useState(false);
 
@@ -109,6 +110,14 @@ const Staff = () => {
     });
     setImageUrl(data.profile ? `${img}${data.profile}` : userImage);
   };
+  const handleChangePass = (item) => {
+    setModalType("editpass");
+    handleOpen()
+    setStaffData({
+    email: item.email,
+    password: item.password,
+  });
+  }
 
   const handleChange = (name, value) => {
     setVisible(!visible);
@@ -182,11 +191,17 @@ const Staff = () => {
   };
   
   const filteredData = getData.filter(
-    (staff) =>
+    (staff) => {
+      const matchesSearch =
       staff.staff_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.staff_surname.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      staff.staff_surname.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+      selectedStatus === "" || staff.staff_status === parseInt(selectedStatus);
+      
+      return matchesSearch && matchesStatus;
+  });
 
   const startIndex = (currentPage - 1) * length;
   const paginatedData = filteredData.slice(startIndex, startIndex + length);
@@ -214,37 +229,37 @@ const Staff = () => {
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
+              <div className="ms-2 mb-2">
+                <select className="form-select form-select-sm" value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}>
+                  <option value="">All</option>
+                  <option value="0">normal</option>
+                  <option value="1">admin</option>
+                  <option value="2">superadmin</option>
+                </select>
+              </div>
             </div>
-
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
-              <SearchQuery
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-              />
+              <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;"
-                  className="btn btn-sm btn-success ms-2"
-                  onClick={handleAddClick}
-                >
+                <a href="javarscript:;" className="btn btn-sm btn-success ms-2" onClick={handleAddClick}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
 
-          <table
-            id="data-table-default"
-            className="table table-striped table-bordered align-middle text-nowrap"
-          >
+          <table id="data-table-default"
+            className="table table-striped table-bordered align-middle text-nowrap">
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ລະຫັດ</th>
-                <th className="text-nowrap">ສະຖານະ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
                 <th className="text-nowrap">ຂໍ້ມູນຕິດຕໍ່</th>
                 <th className="text-nowrap">ທີຢູ່</th>
+                <th className="text-nowrap">ສະຖານະ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
@@ -260,31 +275,37 @@ const Staff = () => {
                         src={`${img}${staff.profile}`}/>)}
                   </td>
                   <td>{staff.staff_code}</td>
-                  <td><Badge color="blue" content="superadmin" /></td>
-                  <td>{staff.staff_name} {staff.staff_surname}
-                  </td>
+                  <td>{staff.staff_name} {staff.staff_surname}</td>
                   <td>{maskEmail(staff.email)}
                   <Text muted>{maskPhone(staff.tell)}</Text>
                   </td>
                   <td> {staff.village}, {staff.district_name}, {staff.province_name}
                   </td>
                   <td>
+                  <Badge 
+                    color={staff.staff_status === 0 ? "green" : staff.staff_status === 1 ? "orange" : "blue"} 
+                    content={staff.staff_status === 0 ? "" : staff.staff_status === 1 ? "A" : "S"} 
+                  />
+                </td>
+
+                  <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a
-                          href="javascript:;"
-                          className="btn-primary btn-sm dropdown-toggle"
-                          data-bs-toggle="dropdown"
-                        >
-                          <i className="fas fa-ellipsis"></i>
+                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"
+                          data-bs-toggle="dropdown"><i className="fas fa-ellipsis"></i>
                         </a>
                         <div className="dropdown-menu dropdown-menu-end">
+                        {staff.staff_status !== 0 && (
+                          <a href="javascript:;" className="dropdown-item" onClick={() => handleChangePass(staff)}>
+                            <i className="fas fa-lock fa-fw"></i> ChangePassword
+                          </a>
+                        )}
                           <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(staff)}><i className="fas fa-pen-to-square"></i>
+                            onClick={() => handleEditClick(staff)}><i className="fas fa-pen-to-square fa-fw"></i>
                              Edit</a>
                           <a href="javascript:;" className="dropdown-item"
                           onClick={() => handleDeleteClick(staff.staff_id)}>
-                            <i className="fas fa-trash"></i>
+                            <i className="fas fa-trash fa-fw"></i>
                              Delete
                           </a>
                         </div>
@@ -310,11 +331,37 @@ const Staff = () => {
       <Modal size={"sm"} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
-            {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນພະນັກງານ" : "ແກ້ໄຂ ຂໍ້ມູນພະນັກງານ"}
+          {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນພະນັກງານ" 
+          : modalType === "editpass" ? "ປ່ຽນລະຫັດຜ່ານ" : "ແກ້ໄຂ ຂໍ້ມູນພະນັກງານ"}
           </Modal.Title>
         </Modal.Header>
-        <form  onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
         <Modal.Body>
+        {modalType === "editpass" ? (
+          <>
+            <div className="col-md-12">
+              <label className="form-label">ອີເມວ໌</label>
+              <Input className="form-label" name="email" value={staffData.email}/>
+            </div>
+            <div className="col-md-12">
+              <label className="form-label">Password</label>
+              <InputGroup inside block>
+                <Input type={visible ? 'text' : 'password'} value={staffData.password || ""}
+                  onChange={(value) => handleChange("password", value)} required />
+                <InputGroup.Button onClick={handleShow}>
+                  {visible ? (<i className="fa-solid fa-eye" />) 
+                  : (<i className="fa-solid fa-eye-slash" />)}
+                </InputGroup.Button>
+              </InputGroup>
+            </div>
+            <div className="col-md-12">
+              <label className="form-label">Confirm Password</label>
+              <InputGroup>
+                <Input type='password' required />
+              </InputGroup>
+            </div>
+          </>
+        ) : (
           <div className="row mb-3">
             <div className="mb-3 d-flex justify-content-center align-items-center">
             <label role='button'>
@@ -365,7 +412,7 @@ const Staff = () => {
                 placeholder="ບ້ານ..." required/>
             </div>
             <div className="col-md-12 mt-4">
-              <RadioGroup inline value={staffData.staff_status}
+              <RadioGroup inline value={staffData.staff_status} defaultValue={0}
                 onChange={(value) => handleChange("staff_status", value)}>
                 {staff_status.map((status) => (
                   <Radio key={status.value} value={status.value}>
@@ -375,18 +422,33 @@ const Staff = () => {
               </RadioGroup>
             </div>
             {(staffData.staff_status === 1 || staffData.staff_status === 2) && (
+              <>
               <div className="col-md-12">
-                <label className="form-label">Password</label>
-                <InputGroup inside block>
+                    <label className="form-label">ອີເມວ໌</label>
+                    <Input className="form-label" name="email" value={staffData.email}
+                     onChange={(value) => handleChange("email", value)}
+                      placeholder="ອີເມວ໌..." readOnly/>
+                  </div>
+              <div className="col-md-12">
+                  <label className="form-label">Password</label>
+                  <InputGroup inside block>
                     <Input type={visible ? 'text' : 'password'} value={staffData.password || ""}
-                     onChange={(value) => handleChange("password", value)} required/>
+                      onChange={(value) => handleChange("password", value)} required />
                     <InputGroup.Button onClick={handleShow}>
-                      {visible ? <i className="fa-solid fa-eye" /> : <i className="fa-solid fa-eye-slash" />}
+                      {visible ? (<i className="fa-solid fa-eye" />) 
+                      : (<i className="fa-solid fa-eye-slash" />)}
                     </InputGroup.Button>
                   </InputGroup>
-              </div>
+                </div>
+                <div className="col-md-12">
+                    <label className="form-label">Confirmpassword</label>
+                    <InputGroup>
+                      <Input type='password' />
+                    </InputGroup>
+                </div>
+                </>
             )}
-            </div>
+            </div>)}
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit"  appearance="primary">
