@@ -1,18 +1,16 @@
 
-import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import userImage from '../../assets/user.jpeg';
-//import { Config } from '../../config/connection';
-const Header = () => {
-	//const api = Config.ApiURL;
-	const [staffName, setStaffName] = useState('');
 
-  useEffect(() => {
-    // const name = JSON.parse(localStorage.getItem('staffName'));
-	const name = localStorage.getItem('staffName');
-    if (name) {
-		setStaffName(name.staffName);
-    }
-  }, []);
+const Header = () => {
+
+    const userName = localStorage.getItem('staffName');
+    const navigate=useNavigate()
+	
+	const handleLogout=()=>{
+		localStorage.clear();
+		navigate('/login')
+	}
 
   return (
 		<div id="header" className="app-header">
@@ -100,7 +98,9 @@ const Header = () => {
 					<a href="#" className="navbar-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
 						<img src={userImage} alt="" /> 
 						<span>
-							<span className="d-none d-md-inline">Hi, {staffName || 'Guest'}</span>
+							<span className="d-none d-md-inline">
+								👋Hi,{userName}
+								</span>
 							<b className="caret"></b>
 						</span>
 					</a>
@@ -113,7 +113,7 @@ const Header = () => {
 						<a href="calendar.html" className="dropdown-item">Calendar</a>
 						<a href="extra_settings_page.html" className="dropdown-item">Settings</a>
 						<div className="dropdown-divider"></div>
-						<a href="/login" className="dropdown-item">Log Out</a>
+						<a href="javascript:;" onClick={handleLogout} className="dropdown-item">Log Out</a>
 					</div>
 				</div>
 			</div>

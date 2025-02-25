@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Config } from '../../config/connection';
 import { Notification } from '../../SweetAlert2';
@@ -15,6 +15,11 @@ const [values,setValues]=useState({
     email:'',
     password:'',
 })
+
+useEffect(() => {
+    checkToken();
+}, []);
+
 const handledChange=(name,value)=>{
     setValues({
         ...values,[name]:value
@@ -24,18 +29,20 @@ const handledChange=(name,value)=>{
 const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    console.log(values)
+
     try {
       const res = await axios.post(`${api}/checklogin/`, values);
  
       if (res.status === 200) {
-        const { staff_id,staff_code, staffName, email, token} = res.data; 
+        const { staff_id,staff_code, staffName, email,staff_status, token} = res.data; 
 		localStorage.setItem('staff_id', staff_id);
 		localStorage.setItem('staff_code', staff_code);
         localStorage.setItem('staffName', staffName);
         localStorage.setItem('email', email);
+        localStorage.setItem('staff_status', staff_status);
         localStorage.setItem('token', token);
-        navigate('/home');
+        // navigate('/home');
+        window.location.href = "/home";
       } else {
         Notification.error('ຊື່ ແລະ ລະຫັດຜ່ານບໍ່ຖຶກຕ້ອງ ', 'ແຈ້ງເຕືອນ');
       }
@@ -46,10 +53,28 @@ const handleSubmit = async (event) => {
     }
   };
 
-const [showPassword, setShowPassword] = useState(false);
-const handleCheckbox = () => {
-    setShowPassword(!showPassword);
-  };
+    const [showPassword, setShowPassword] = useState(false);
+    const handleCheckbox = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const checkToken = async () => {
+            //ດຶງ token ຈາກ localStorage ມາກວດສອບ
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const res = await axios.post(`${api}/checklogin/authen`, {}, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (res.status === 200) {
+                        navigate('/home');
+                    }
+                } catch {
+                    localStorage.clear();
+                    navigate('/login');
+                }
+            }
+        };
 
     return (
         <div id="app" className="app">
@@ -63,7 +88,7 @@ const handleCheckbox = () => {
 					<div className="brand">
 						<div className="d-flex align-items-center"><b>ຮ້ານນວດ</b>ແຜນບູຮານ
 						</div>
-                        <small>ຍິນດີຕ້ອນຮັບເຂົ້າສູ່ລະບົບ 👋</small>
+                        <small>ຍິນດີຕ້ອນຮັບເຂົ້າສູ່ລະບົບ 👋laryang.2000@gmail.com</small>
 					</div>
 					<div className="icon">
 						<i className="fa fa-lock"></i>

@@ -2,55 +2,54 @@ const express = require('express');
 const router = express.Router();
 const db = require('../controller/controller.connection');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
-router.post("/", function(req, res) {
-    const password = req.body.password; 
-    const email = req.body.email;
-    const table = `staff`; 
-    const fields = `staff_id, staff_code, staff_name, staff_surname, email, password, staff_status`; 
+const app_secret = process.env.APP_SECRET || "APP_SECRET_CHECK_V01";
+
+router.post("/", (req, res) => {
+    const { email, password } = req.body;
+    const table = `staff`;
+    const fields = `staff_id, staff_code, staff_name, staff_surname, email, password, staff_status`;
     const where = `state='1' AND email='${email}'`;
 
     db.fetchSingle(table, fields, where, (err, results) => {
         if (err || !results) {
-            return res.status(400).json({
-                status: "400",
+            return res.status(400).json({ 
+                status: "400", 
                 message: "ຊື່ອີເມວບໍ່ຖືກຕ້ອງ"
             });
         }
 
         bcrypt.compare(password, results.password, (bcryptErr, bcryptResult) => {
             if (bcryptErr || !bcryptResult) {
-                return res.status(400).json({
-                    status: "400",
-                    message: "ຫັດຜ່ານບໍ່ຖືກຕ້ອງ"
+                return res.status(400).json({ 
+                    status: "400", 
+                    message: "ຫັດຜ່ານບໍ່ຖືກຕ້ອງ" 
                 });
             }
 
-            const dateTime = new Date().toISOString(); // Ensure this is defined
-
-            const payload = {
+            const dateTime = new Date().toISOString(); 
+            
+            const payload = { 
                 staff_id: results.staff_id,
-                email: results.email,
-                create_date: dateTime
-            };
+                 email: results.email, 
+                 create_at: dateTime
+                 };
 
-            jwt.sign(payload, 'your_secret_key', { expiresIn: '1h' }, (signErr, token) => {
-                if (signErr) {
-                    return res.status(500).json({
-                        status: "500",
-                        message: "ເຊີບເວີພາຍໃນມີການຜິດພາດ"
-                    });
-                }
+            jwt.sign(payload, app_secret, { expiresIn: '12h' }, (signErr, token) => {
+                if (signErr) return res.status(500).json({ 
+                    status: "500", 
+                    message: "Server Error" 
+                });
 
                 res.status(200).json({
                     status: "200",
-                    message: "ການເຂົ້າສູ້ລະບົບສຳເລັດແລ້ວ",
-                    token: token,
+                    message: "Login Successful",
+                    token,
                     staff_id: results.staff_id,
                     staff_code: results.staff_code,
                     email: results.email,
+                    staff_status: results.staff_status,
                     staffName: `${results.staff_name} ${results.staff_surname}`,
                 });
             });
@@ -58,54 +57,25 @@ router.post("/", function(req, res) {
     });
 });
 
-router.post("/authen", function(req, res) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            status: "401",
-            message: "Authorization token is missing or invalid"
+router.post("/authen", (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ 
+        status: "401", 
+        message: "Token is missing" 
+    });
+
+    jwt.verify(token, app_secret, (err, decoded) => {
+        if (err) return res.status(401).json({ 
+            status: "401", 
+            message: "Invalid token" 
         });
-    }
 
-    const token = authHeader.split(' ')[1];
-
-    jwt.verify(token, process.env.JWT_SECRET_KEY, (verifyErr, decoded) => {
-        if (verifyErr) {
-            return res.status(401).json({
-                status: "401",
-                message: "Invalid token"
-            });
-        }
-
-        const userId = decoded.staff_id;
-        const email = decoded.email;
-        
-        res.status(200).json({
-            status: 'OK',
-            userId: userId,
-            email: email
+        res.status(200).json({ 
+            status: 'OK', 
+            userId: decoded.staff_id, 
+            email: decoded.email 
         });
     });
 });
-// const blacklistedTokens = new Set(); // In-memory blacklist
-
-// router.post("/logout", function(req, res) {
-//     const authHeader = req.headers.authorization;
-//     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-//         return res.status(401).json({
-//             status: "401",
-//             message: "Token is missing or invalid"
-//         });
-//     }
-
-//     const token = authHeader.split(' ')[1];
-
-//     blacklistedTokens.add(token);
-
-//     res.status(200).json({
-//         status: "200",
-//         message: "Logout successful"
-//     });
-// });
 
 module.exports = router;

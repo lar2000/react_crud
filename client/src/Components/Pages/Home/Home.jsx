@@ -1,21 +1,22 @@
 
 import ChartHome from './Chart'
 export default function HomePage() {
+
   return (
     <div id="content" className="app-content ">
       <div className="row">
         <div className="col-xl-3 col-md-6">
-          <div className="widget widget-stats bg-bps rounded-4">
-            <div className="stats-icon text-white"><i className="fa-solid fa-hotel" /></div>
+          <div className="widget text-dark widget-stats bg-bps rounded-4">
+            <div className="stats-icon"><i className="fa-solid fa-hotel" /></div>
             <div className="stats-info">
-              <h3 className='fs-16px'>ຈຳນວນຫ້ອງທັງໝົດ</h3>
+            <h3 className='fs-16px'>ຈຳນວນຫ້ອງທັງໝົດ</h3>
               <p>30 <span className='fs-18px'>ຫ້ອງ</span></p>
             </div>
           </div>
         </div>
         <div className="col-xl-3 col-md-6">
-          <div className="widget widget-stats bg-bps rounded-4">
-            <div className="stats-icon text-white"><i className="fa-solid fa-door-open" /></div>
+          <div className="widget text-dark widget-stats bg-bps rounded-4">
+            <div className="stats-icon"><i className="fa-solid fa-door-open" /></div>
             <div className="stats-info">
               <h3 className='fs-16px'>ຈຳນວນຫ້ອງຫວ່າງ</h3>
               <p>20 <span className='fs-18px'>ຫ້ອງ</span></p>
@@ -24,8 +25,8 @@ export default function HomePage() {
         </div>
 
         <div className="col-xl-3 col-md-6">
-          <div className="widget widget-stats bg-bps rounded-4">
-            <div className="stats-icon text-white"><i className="fa-solid fa-person-booth" /></div>
+          <div className="widget text-dark widget-stats bg-bps rounded-4">
+            <div className="stats-icon"><i className="fa-solid fa-person-booth" /></div>
             <div className="stats-info">
               <h3 className='fs-16px'>ຈຳນວນຫ້ອງເປິດ</h3>
               <p>10 <span className='fs-18px'>ຫ້ອງ</span></p>
@@ -34,8 +35,8 @@ export default function HomePage() {
         </div>
 
         <div className="col-xl-3 col-md-6">
-          <div className="widget widget-stats bg-bps rounded-4">
-            <div className="stats-icon text-white"><i className="fa-solid fa-house-medical-circle-check" /></div>
+          <div className="widget text-dark widget-stats bg-bps rounded-4">
+            <div className="stats-icon"><i className="fa-solid fa-house-medical-circle-check" /></div>
             <div className="stats-info">
               <h3 className='fs-16px'>ຫ້ອງໃກ້ຄົບວັນຊຳລະ</h3>
               <p>5 <span className='fs-18px'>ຫ້ອງ</span> </p>

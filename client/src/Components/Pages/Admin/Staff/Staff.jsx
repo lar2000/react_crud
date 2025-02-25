@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import userImage from '../../../../assets/user.png';
-import { Modal, Text, Button, SelectPicker, Input, InputGroup, Radio, RadioGroup, Badge } from "rsuite";
+import { 
+  Modal, 
+  Text, 
+  Button, 
+  SelectPicker, 
+  Input, 
+  InputGroup, 
+  Radio, 
+  RadioGroup, 
+  Badge,
+  Checkbox, 
+  CheckboxGroup 
+} 
+from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
 //import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
@@ -35,19 +48,25 @@ const Staff = () => {
     province: "",
     staff_status: 0,
     password: "",
+    reads: 1,
+    creates: 0,
+    updates: 0,
+    deletes: 0,
   });
 
   const provinces = useProvince(); // Fetch province data
   const districts = useDistrict(staffData.province); // Fetch districts based on selected province
+  const data = ['reads', 'creates', 'updates', 'deletes'];
   const staff_status = [
     {label: 'Normal', value: 0},
     {label: 'Admin', value: 1}, 
-    {label: 'superadmin', value: 2}
   ]
 
   useEffect(() => {
     fetchgetData();
-  }, []);
+    const selectedPermissions = data.filter(permission => staffData[permission] === 1);
+    setValue(selectedPermissions);
+  }, [staffData]);
 
   const fetchgetData = async () => {
     try {
@@ -70,6 +89,10 @@ const Staff = () => {
       province: "",
       staff_status: null,
       password: "",
+      reads: null,
+      creates: null,
+      updates: null,
+      deletes: null,
     });
     setOpen(false);
     setImageUrl(userImage); // Reset image URL
@@ -85,6 +108,20 @@ const Staff = () => {
 
   const handleShow = () => {
     setVisible(!visible);
+  };
+
+  const [value, setValue] = useState([]);
+
+  const handleCheck = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleCheckAll = (checked) => {
+    if (checked) {
+      setValue(data); // Select all permissions
+    } else {
+      setValue([]); // Deselect all permissions
+    }
   };
 
   const handleAddClick = () => {
@@ -106,7 +143,6 @@ const Staff = () => {
       district_fk: data.district_fk,
       province: data.province_id_fk,
       staff_status: data.staff_status,
-      password: "",
     });
     setImageUrl(data.profile ? `${img}${data.profile}` : userImage);
   };
@@ -114,8 +150,12 @@ const Staff = () => {
     setModalType("editpass");
     handleOpen()
     setStaffData({
-    email: item.email,
-    password: item.password,
+      reads: item.reads,
+      creates: item.creates,
+      updates: item.updates,
+      deletes: item.deletes,
+      email: item.email,
+      password: item.password,
   });
   }
 
@@ -421,8 +461,9 @@ const Staff = () => {
                 ))}
               </RadioGroup>
             </div>
-            {(staffData.staff_status === 1 || staffData.staff_status === 2) && (
+            {(staffData.staff_status === 1) && (
               <>
+              <div className="col-md-8">
               <div className="col-md-12">
                     <label className="form-label">ອີເມວ໌</label>
                     <Input className="form-label" name="email" value={staffData.email}
@@ -445,6 +486,29 @@ const Staff = () => {
                     <InputGroup>
                       <Input type='password' />
                     </InputGroup>
+                </div>
+                </div>
+                <div className="col-md-4 mt-2">
+                <Checkbox 
+                  indeterminate={value.length > 0 && value.length < data.length} 
+                  checked={value.length === data.length} 
+                  onChange={checked => handleCheckAll(checked)}
+                >
+                  All
+                </Checkbox>
+                
+                <CheckboxGroup 
+                  name="checkboxList" 
+                  value={value} 
+                  onChange={handleCheck} 
+                  style={{ marginLeft: 36 }}
+                >
+                  {data.map(item => (
+                    <Checkbox key={item} value={item}>
+                      {item}
+                    </Checkbox>
+                  ))}
+                </CheckboxGroup>
                 </div>
                 </>
             )}
