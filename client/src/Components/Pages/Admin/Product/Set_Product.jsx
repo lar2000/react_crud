@@ -83,7 +83,6 @@ const Set_Product = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        console.log(productData)
         await axios.post(`${api}/set_product/create`, productData);
         alert(`set_product ${productData._id ? "updated" : "added"} successfully!`);
         handleClose();

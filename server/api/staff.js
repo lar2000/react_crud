@@ -25,8 +25,13 @@ router.post('/create', function (req, res) {
   
   upload(req, res, function (err) {
     const password = req.body.password ? bcrypt.hashSync(req.body.password) : null;
-    const { _id, staff_name, staff_surname, email, tell, village, district_fk, staff_status} = req.body;
+    const { _id, authen_fk = [], staff_name, staff_surname, email, tell, village, district_fk, staff_status} = req.body;
     const table = 'staff';
+
+    if (!Array.isArray(authen_fk)) {
+      return res.status(400).json({ error: 'authen_fk must be an array.' });
+    }
+
     if(!_id) {
       db.autoId(table, 'staff_id', (err, id) => {
         const code = id.toString().slice(-4).padStart(4, '0');
@@ -38,6 +43,18 @@ router.post('/create', function (req, res) {
           if (err) {
             console.error('Error Inserting Data: ', err);
             return res.status(500).json({ error: `ການບັນທຶກຂໍ້ມູນຫລົ້ມເຫຼວ` });
+          }
+          if (authen_fk.length > 0) {
+            authen_fk.forEach(authen_id => {
+              const associationFields = 'staff_fk, authen_fk';
+              const associationData = [id, authen_id];
+          
+                db.insertData('staff_authen_association', associationFields, associationData, (err, results) => {
+                  if (err) {
+                    console.error('Error inserting staff_authen_association:', err);
+                  }
+                });
+            });
           }
           console.log('Data inserted successfully!', results);
           return res.status(200).json({ message: 'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ: ', dataValue });
@@ -75,6 +92,29 @@ router.post('/create', function (req, res) {
             console.error('Error updating data:', err);
             return res.status(500).json({ error: 'Failed to update staff' });
           }
+
+          const deleteCondition = `staff_fk = (SELECT staff_id FROM ${table} WHERE staff_id = '${_id}')`; // Changed id to set_id
+          
+            db.deleteData('staff_authen_association', deleteCondition, (err, results) => {
+              if (err) {
+                console.error('Error deleting associations:', err);
+                  return res.status(500).json({ error: 'Failed to delete associations.' });
+              }
+          
+              if (authen_fk.length > 0) {
+                authen_fk.forEach(authen_id => {
+                  const associationFields = 'staff_fk, authen_fk';
+                  const associationData = [_id, authen_id];
+          
+                    db.insertData('staff_authen_association', associationFields, associationData, (err, results) => {
+                      if (err) {
+                        console.error('Error inserting set_product_association:', err);
+                      }
+                    });
+                });
+              }
+            console.log('associations updated successfully!');
+          });
           res.status(200).json({ message: 'Staff updated successfully', data: newData });
         });
       });
@@ -83,11 +123,13 @@ router.post('/create', function (req, res) {
 });
 
 router.post('/changepass', function (req, res) {
+
   const newpass = bcrypt.hashSync(req.body.password);
-  const { _id, email, staff_status } = req.body;
-  const filedEdit = ` email, password, staff_status`;
-  const newData = [email, newpass, staff_status, _id];
+  const { passId, email} = req.body;
+  const filedEdit = ` email, password`;
+  const newData = [email, newpass, passId];
   const condition = 'staff_id=?';
+  
   db.updateData('staff', filedEdit, newData, condition, (err, results) => {
       if (err) {
           return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດ' });
@@ -110,14 +152,31 @@ router.patch('/:id', function (req, res, next) {
   });
 });
 
-router.delete("/:id", function (req, res, next) {
+
+router.delete('/:id', function (req, res, next) {
   const id = req.params.id;
-  const where = `staff_id='${id}'`; // Changed from 'id' to 'staff_id'
-  db.deleteData('staff', where, (err, results) => {
+
+  // First, delete the associations from the set_product_association table
+  const deleteAssociationsCondition = `staff_fk = (SELECT staff_id FROM staff WHERE staff_id = '${id}')`; // Changed id to set_id
+
+  db.deleteData('staff_authen_association', deleteAssociationsCondition, (err, results) => {
+    if (err) {
+      console.error('Error deleting associations:', err);
+      return res.status(500).json({ error: 'Failed to delete associations.' });
+    }
+
+    // Now delete the set_product
+    const deleteSetCondition = `staff_id = '${id}'`; // Changed id to set_id
+
+    db.deleteData('staff', deleteSetCondition, (err, results) => {
       if (err) {
-          return res.status(500).json({ error: 'ຂໍອະໄພການລືບຂໍ້ມູນບໍ່ສຳເລັດ' });
+        console.error('Error deleting set_product:', err);
+        return res.status(500).json({ error: 'Failed to delete set_product.' });
       }
-      res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ', data: results });
+
+      console.log('set_product and its associations deleted successfully!');
+      res.status(200).json({ message: 'set_product and its associations deleted successfully.' });
+    });
   });
 });
 
@@ -135,6 +194,7 @@ router.get("/single/:id", function (req, res, next) {
 
 router.get("/", function (req, res, next) {
   const tables = `staff
+       LEFT JOIN staff_authen_association ON staff.staff_id=staff_authen_association.staff_fk
        LEFT JOIN tbl_district ON staff.district_fk=tbl_district.district_id 
        LEFT JOIN tbl_province ON tbl_district.province_id_fk=tbl_province.province_id `;
 
@@ -149,16 +209,20 @@ router.get("/", function (req, res, next) {
       staff.village,  
       staff.district_fk,
       staff.staff_status,
+      COALESCE(GROUP_CONCAT(DISTINCT staff_authen_association.authen_fk), '') AS authen_fk,
       tbl_district.province_id_fk,
       tbl_district.district_name, 
       tbl_province.province_name`;
 
-  const wheres = `staff.state = 1`;
+  const wheres = `staff.state = 1 GROUP BY staff.staff_id`;
 
   db.selectWhere(tables, fields, wheres, (err, results) => {
       if (err) {
           return res.status(400).send();
       }
+      results.forEach(row => {
+        row.authen_fk = row.authen_fk ? row.authen_fk.split(',') : [];
+      });
       res.status(200).json(results);
   });
 });

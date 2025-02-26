@@ -9,6 +9,7 @@ app.use(express.json()); // To parse JSON bodie
 
 const routes = [
   'staff', 
+  'authen_actions', 
   'province',
   'district',
   'customer',

@@ -41,7 +41,6 @@ router.post('/create', function (req, res) {
             });
           });
         }
-
         console.log('set_product and associations added successfully!');
         return res.status(200).json({ message: 'set_product added successfully.', set_product: dataValue });
       });
@@ -85,7 +84,6 @@ router.post('/create', function (req, res) {
               });
             });
           }
-
           console.log('set_product and associations updated successfully!');
           res.status(200).json({ message: 'set_product updated successfully.' });
         });

@@ -21,7 +21,7 @@ import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { maskEmail, maskPhone } from "../../../../util";
-import { useProvince, useDistrict } from "../../../../config/selectOption"; // Assuming hooks are in this location
+import { useProvince, useDistrict, useAthenAtions } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
 const Staff = () => {
   const api = Config.ApiURL;
@@ -33,7 +33,10 @@ const Staff = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
+  const [checked, setChecked] = useState([]);
   const [imageUrl, setImageUrl] = useState(userImage);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
   const [visible, setVisible] = useState(false);
 
   const [staffData, setStaffData] = useState({
@@ -48,15 +51,12 @@ const Staff = () => {
     province: "",
     staff_status: 0,
     password: "",
-    reads: 1,
-    creates: 0,
-    updates: 0,
-    deletes: 0,
+    authen_fk: [],
   });
 
   const provinces = useProvince(); // Fetch province data
   const districts = useDistrict(staffData.province); // Fetch districts based on selected province
-  const data = ['reads', 'creates', 'updates', 'deletes'];
+  const authen_actions = useAthenAtions();
   const staff_status = [
     {label: 'Normal', value: 0},
     {label: 'Admin', value: 1}, 
@@ -64,9 +64,7 @@ const Staff = () => {
 
   useEffect(() => {
     fetchgetData();
-    const selectedPermissions = data.filter(permission => staffData[permission] === 1);
-    setValue(selectedPermissions);
-  }, [staffData]);
+  }, []);
 
   const fetchgetData = async () => {
     try {
@@ -89,10 +87,7 @@ const Staff = () => {
       province: "",
       staff_status: null,
       password: "",
-      reads: null,
-      creates: null,
-      updates: null,
-      deletes: null,
+      authen_fk: [],
     });
     setOpen(false);
     setImageUrl(userImage); // Reset image URL
@@ -110,18 +105,21 @@ const Staff = () => {
     setVisible(!visible);
   };
 
-  const [value, setValue] = useState([]);
-
-  const handleCheck = (newValue) => {
-    setValue(newValue);
+  const handleCheck = (value) => {
+    setStaffData(prevState => ({
+      ...prevState,
+      authen_fk: value,
+    }));
+    setChecked(value);
   };
 
-  const handleCheckAll = (checked) => {
-    if (checked) {
-      setValue(data); // Select all permissions
-    } else {
-      setValue([]); // Deselect all permissions
-    }
+  const handleCheckAll = (_, value) => {
+    const allValues = value ? authen_actions.map(item => item.value) : [];
+    setStaffData(prevState => ({
+      ...prevState,
+      authen_fk: allValues,
+    }));
+    setChecked(allValues);
   };
 
   const handleAddClick = () => {
@@ -143,6 +141,7 @@ const Staff = () => {
       district_fk: data.district_fk,
       province: data.province_id_fk,
       staff_status: data.staff_status,
+      authen_fk: data.authen_fk.map(id => Number(id)), 
     });
     setImageUrl(data.profile ? `${img}${data.profile}` : userImage);
   };
@@ -150,12 +149,10 @@ const Staff = () => {
     setModalType("editpass");
     handleOpen()
     setStaffData({
-      reads: item.reads,
-      creates: item.creates,
-      updates: item.updates,
-      deletes: item.deletes,
+      passId: item.staff_id,
+      authen_fk: item.authen_fk.map(id => Number(id)), 
       email: item.email,
-      password: item.password,
+      password: '',
   });
   }
 
@@ -200,24 +197,44 @@ const Staff = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (staffData.password !== confirmPassword) {
+      setPasswordError(true);
+      return;
+    }
+    setPasswordError(false); 
    
     const formData = new FormData();
-    // Append staff data to FormData
     for (const key in staffData) {
-      formData.append(key, staffData[key]);
+      if (Array.isArray(staffData[key])) {
+        staffData[key].forEach((item, index) => {
+          formData.append(`${key}[${index}]`, item);
+        });
+      } else {
+        formData.append(key, staffData[key]);
+      }
     }
+    
     try {
         await axios.post(`${api}/staff/create`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          headers: {'Content-Type': 'multipart/form-data'},
         });
+        if (staffData.passId) {
+          await axios.post(`${api}/changepass`, {
+              passId: staffData.staff_id, // Assuming staff_id exists
+              email: staffData.email,
+              password: staffData.password,
+          });
+
+          alert('Password updated successfully!');
+      }
         alert(`Staff ${staffData._id ? "updated" : "added"} successfully!`);
         handleClose();
         fetchgetData();
         resetForm();
     } catch (err) {
       console.error("Failed to submit staff data", err);
+      alert('Failed to submit staff data')
     }
   };
   const handleDeleteClick = async (id) => {
@@ -323,8 +340,8 @@ const Staff = () => {
                   </td>
                   <td>
                   <Badge 
-                    color={staff.staff_status === 0 ? "green" : staff.staff_status === 1 ? "orange" : "blue"} 
-                    content={staff.staff_status === 0 ? "" : staff.staff_status === 1 ? "A" : "S"} 
+                    color={staff.staff_status === 1 ? "green" : ""} 
+                    content={staff.staff_status === 1 ? "admin" : ""} 
                   />
                 </td>
 
@@ -368,7 +385,7 @@ const Staff = () => {
 
       {/*---------- Modal Component ---------------*/}
 
-      <Modal size={"sm"} open={open} onClose={handleClose}>
+      <Modal size={modalType==='editpass' ? 'xs' : 'sm'} open={open} onClose={handleClose}>
         <Modal.Header>
           <Modal.Title className="title text-center">
           {modalType === "add" ? "ເພີ່ມ ຂໍ້ມູນພະນັກງານ" 
@@ -397,8 +414,10 @@ const Staff = () => {
             <div className="col-md-12">
               <label className="form-label">Confirm Password</label>
               <InputGroup>
-                <Input type='password' required />
+              <Input type="password" onChange={(value) => setConfirmPassword(value)} 
+              required/>
               </InputGroup>
+              {passwordError && (<span className="text-danger">Passwords do not match!</span>)}
             </div>
           </>
         ) : (
@@ -416,22 +435,26 @@ const Staff = () => {
             </div>
             <div className="col-md-6">
               <label className="form-label">ຊື່</label>
-              <Input className="form-label" name="name" value={staffData.staff_name} onChange={(value) => handleChange("staff_name", value)}
+              <Input className="form-label" name="name" value={staffData.staff_name} 
+              onChange={(value) => handleChange("staff_name", value)}
               placeholder="ຊື່..." required />
             </div>
             <div className="col-md-6">
               <label className="form-label">ນາມສະກຸນ</label>
-              <Input className="form-label" name="surname" value={staffData.staff_surname} onChange={(value) => handleChange("staff_surname", value)}
+              <Input className="form-label" name="surname" value={staffData.staff_surname}
+               onChange={(value) => handleChange("staff_surname", value)}
              placeholder="ນາມສະກຸນ..." required/>
             </div>
             <div className="col-md-12">
               <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={staffData.email} onChange={(value) => handleChange("email", value)}
+              <Input className="form-label" name="email" value={staffData.email} 
+              onChange={(value) => handleChange("email", value)}
                 placeholder="ອີເມວ໌..."/>
             </div>
             <div className="col-md-6">
               <label className="form-label">ເບີໂທ</label>
-              <Input className="form-label" name="tell" value={staffData.tell} onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
+              <Input className="form-label" name="tell" value={staffData.tell} 
+              onChange={(value) => handleChange("tell", value.replace(/[^0-9]/g, ""))}
                 placeholder="020xxxxxxxx/030xxxxxxx" required/>
             </div>
             <div className="col-md-6">
@@ -448,7 +471,8 @@ const Staff = () => {
             </div>
             <div className="col-md-6">
               <label className="form-label">ບ້ານ</label>
-              <Input className="form-label" value={staffData.village} onChange={(value) => handleChange("village", value)}
+              <Input className="form-label" name="village" value={staffData.village} 
+              onChange={(value) => handleChange("village", value)}
                 placeholder="ບ້ານ..." required/>
             </div>
             <div className="col-md-12 mt-4">
@@ -484,28 +508,24 @@ const Staff = () => {
                 <div className="col-md-12">
                     <label className="form-label">Confirmpassword</label>
                     <InputGroup>
-                      <Input type='password' />
+                    <Input type="password" onChange={(value) => setConfirmPassword(value)} 
+                      required/>
                     </InputGroup>
+                    {passwordError && (<span className="text-danger">Passwords do not match!</span>)}
                 </div>
                 </div>
                 <div className="col-md-4 mt-2">
-                <Checkbox 
-                  indeterminate={value.length > 0 && value.length < data.length} 
-                  checked={value.length === data.length} 
-                  onChange={checked => handleCheckAll(checked)}
-                >
+                <Checkbox
+                  indeterminate={checked.length > 0 && checked.length < authen_actions.length}
+                  checked={checked.length === authen_actions.length} onChange={handleCheckAll}>
                   All
                 </Checkbox>
-                
-                <CheckboxGroup 
-                  name="checkboxList" 
-                  value={value} 
-                  onChange={handleCheck} 
-                  style={{ marginLeft: 36 }}
-                >
-                  {data.map(item => (
-                    <Checkbox key={item} value={item}>
-                      {item}
+
+                <CheckboxGroup data={authen_actions} value={staffData.authen_fk} 
+                onChange={(value) => handleCheck(value, "authen_fk")} style={{ marginLeft: 36 }}>
+                  {authen_actions.map((action) => (
+                    <Checkbox key={action.value} value={action.value}>
+                      {action.label}
                     </Checkbox>
                   ))}
                 </CheckboxGroup>
@@ -516,7 +536,8 @@ const Staff = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Add" : "Update"}
+            {modalType === "add" ? "ບັນທຶກ" 
+          : modalType === "editpass" ? "ອັບເດດລະຫັດ" : "ອັບເດດຂໍ້ມູນ"}
           </Button>
           <Button onClick={resetForm} appearance="subtle">
             Cancel

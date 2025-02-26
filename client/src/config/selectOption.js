@@ -21,7 +21,12 @@ const useFetchData = (endpoint, dependencies = []) => {
   return data;
 };
 
-// Example usage for specific hooks
+export const useAthenAtions = () =>
+  useFetchData("authen_actions").map(({ authenName, authen_id }) => ({
+    label: authenName,
+    value: authen_id,
+  }));
+
 export const useProvince = () =>
   useFetchData("province").map(({ province_name, province_id }) => ({
     label: province_name,
