@@ -123,20 +123,23 @@ router.post('/create', function (req, res) {
 });
 
 router.post('/changepass', function (req, res) {
+  const {passId, email} = req.body; // Destructure request body
 
-  const newpass = bcrypt.hashSync(req.body.password);
-  const { passId, email} = req.body;
-  const filedEdit = ` email, password`;
+  const newpass = bcrypt.hashSync(req.body.password); // Adding salt rounds for better security
+  const fieldsToUpdate = 'email, password';
   const newData = [email, newpass, passId];
   const condition = 'staff_id=?';
-  
-  db.updateData('staff', filedEdit, newData, condition, (err, results) => {
-      if (err) {
-          return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດ' });
-      }
-      res.status(200).json({ message: 'ການແກ້ໄຂລະຫັດຜ່ານສຳເລັດແລ້ວ'});
+
+  db.updateData('staff', fieldsToUpdate, newData, condition, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'ການແກ້ໄຂລະຫັດຜ່ານບໍ່ສຳເລັດ' });
+    }
+    res.status(200).json({ message: 'ການແກ້ໄຂລະຫັດຜ່ານສຳເລັດແລ້ວ' });
   });
-})
+});
+
+
 
 router.patch('/:id', function (req, res, next) {
   const id = req.params.id;

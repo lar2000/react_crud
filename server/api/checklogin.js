@@ -8,8 +8,16 @@ const app_secret = process.env.APP_SECRET || "APP_SECRET_CHECK_V01";
 
 router.post("/", (req, res) => {
     const { email, password } = req.body;
-    const table = `staff`;
-    const fields = `staff_id, staff_code, staff_name, staff_surname, email, password, staff_status`;
+    const table = `staff LEFT JOIN staff_authen_association ON staff.staff_id=staff_authen_association.staff_fk`;
+    const fields = `
+    staff_id, 
+    staff_code, 
+    staff_name, 
+    staff_surname, 
+    email, password, 
+    staff_status,
+    COALESCE(GROUP_CONCAT(DISTINCT staff_authen_association.authen_fk), '') AS authen_fk
+    `;
     const where = `state='1' AND email='${email}'`;
 
     db.fetchSingle(table, fields, where, (err, results) => {
@@ -50,6 +58,7 @@ router.post("/", (req, res) => {
                     staff_code: results.staff_code,
                     email: results.email,
                     staff_status: results.staff_status,
+                    authen_fk: results.authen_fk,
                     staffName: `${results.staff_name} ${results.staff_surname}`,
                 });
             });

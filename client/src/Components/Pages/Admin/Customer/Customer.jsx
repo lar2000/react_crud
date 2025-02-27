@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, Input } from "rsuite";
-import { Alert } from '../../../../SweetAlert2'
+import { Modal, Button, Input, Placeholder, Loader } from "rsuite";
+import { Alert, Notification } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
-import { maskEmail } from "../../../../util";
+import { maskEmail, AuthenActions } from "../../../../util";
 
 const Customer = () => {
   const api = Config.ApiURL;
@@ -16,6 +16,8 @@ const Customer = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState(""); // For status filter
   const [modalType, setModalType] = useState("add"); // Add or edit
+  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave]=useState(false)
 
   const [customerData, setCustomerData] = useState({
     cust_id: null,
@@ -28,12 +30,18 @@ const Customer = () => {
     fetchgetData();
   }, []);
 
+  const actions = AuthenActions();
+
   const fetchgetData = async () => {
+    setLoading(true)
     try {
       const res = await axios.get(`${api}/customer`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch customer data", err);
+    }
+    finally{
+      setLoading(false)
     }
   };
   const resetForm = () => {
@@ -77,6 +85,7 @@ const Customer = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingSave(true)
     try {
         await axios.post(`${api}/customer/create`, customerData);
         Alert.successData(`Customer ${customerData._id ? "updated" : "added"} successfully!`);
@@ -84,7 +93,10 @@ const Customer = () => {
         fetchgetData();
         resetForm();
     } catch {
-      Alert.errorData("Failed to submit customer data", 'Error!');
+      Notification.error('ບັນທຶກຂໍ້ມູນລົ້ມເຫຼວ!');
+    }
+    finally {
+      setLoadingSave(false)
     }
   };
   const handleDeleteClick = async (cust_id) => {
@@ -95,7 +107,7 @@ const Customer = () => {
       Alert.successData('ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!');
       fetchgetData();
     } catch {
-      Alert.errorData('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
+       Notification.error('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
     }
   }
   };
@@ -117,22 +129,7 @@ const Customer = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">Customer</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small>
-      </h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">Customer Panel</h4>
-        </div>
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -140,10 +137,10 @@ const Customer = () => {
               <div className="ms-2 mb-2">
                 <select className="form-select form-select-sm" value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="">All</option>
-                  <option value="0">Booking</option>
-                  <option value="1">In progress</option>
-                  <option value="2">Done</option>
+                  <option value="">ສະມາຊິກທັງໝົດ</option>
+                  <option value="0">ທົ່ວໄປ</option>
+                  <option value="1">ຈອງແລ້ວ</option>
+                  <option value="2">ກຳລັງດຳເນີນການ</option>
                 </select>
               </div>
             </div>
@@ -151,14 +148,16 @@ const Customer = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;" className="btn btn-sm btn-success ms-2" onClick={handleAddClick}>
+                <a href="javarscript:;" className={`btn btn-sm btn-success ms-2 ${!actions.canCreate ? "disabled" : ""}`}
+                  onClick={actions.canCreate ? () => handleAddClick() : (e) => e.preventDefault()}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
 
-          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
+          <table id="data-table-default" 
+          className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
@@ -170,7 +169,14 @@ const Customer = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((customer, index) => (
+            {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center">
+                  <Placeholder.Grid rows={5} columns={6} active />
+                  <Loader size='lg'  content="ກຳລັງໂຫລດ..." vertical />
+                  </td>
+                </tr>
+              ): paginatedData.length > 0 ? paginatedData.map((customer, index) => (
                 <tr key={customer.cust_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
@@ -179,15 +185,12 @@ const Customer = () => {
                   <td>{customer.cust_name} {customer.cust_surname}</td>
                   <td>{maskEmail(customer.email)}</td>
                   <td>
-                    {   customer.status === 3 ? (
-                        <span className="badge border border-success text-success px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Done</span>) 
-                        : customer.status === 2 ? (
+                    { customer.status === 2 ? (
                         <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>In progress</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>ກຳລັງດຳເນີນການ</span>) 
                         : customer.status === 1 ? (
                         <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Booking</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>ຈອງແລ້ວ</span>) 
                         : (
                         <span className="badge border border-secondary text-secondary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
                         <i className="fa fa-circle fs-9px fa-fw me-5px"></i>Normal
@@ -200,20 +203,25 @@ const Customer = () => {
                         <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
-                          <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(customer)}><i className="fas fa-pen-to-square"></i>
-                             Edit</a>
-                          <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(customer.cust_id)}>
-                            <i className="fas fa-trash"></i>
-                             Delete
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
+                           onClick={actions.canUpdate ? () => handleEditClick(customer) : (e) => e.preventDefault()}>
+                            <i className="fas fa-pen-to-square fa-fw"></i>
+                             ແກ້ໄຂ</a>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? "disabled" : ""}`}
+                          onClick={actions.canDelete ? () => handleDeleteClick(customer.cust_id) : (e) => e.preventDefault()}>
+                            <i className="fas fa-trash fa-fw"></i>
+                             ລຶບ
                           </a>
                         </div>
                       </div>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr className="text-center">
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນສະມາຊິກ ===============</td>
+                </tr>
+              )}
             </tbody>
           </table>
 
@@ -256,11 +264,15 @@ const Customer = () => {
             </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Add" : "Update"}
+          <Button type="submit" disabled={loadingSave} appearance="primary">
+          {loadingSave ? (<Loader content="ກຳລັງບັນທຶກ..."/>):
+          <>
+            {modalType === "add" ? "ບັນທຶກ" : "ອັບບເດດ"}
+          </>
+          }
           </Button>
-          <Button onClick={resetForm} appearance="subtle">
-            Cancel
+          <Button onClick={resetForm} color="red" appearance="primary">
+            ຍົກເລີກ
           </Button>
         </Modal.Footer>
         </form>

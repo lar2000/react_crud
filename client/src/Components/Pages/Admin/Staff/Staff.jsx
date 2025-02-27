@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import userImage from '../../../../assets/user.png';
+import { Notification, Alert } from "../../../../SweetAlert2";
 import { 
   Modal, 
   Text, 
@@ -12,15 +13,16 @@ import {
   RadioGroup, 
   Badge,
   Checkbox, 
-  CheckboxGroup 
+  CheckboxGroup ,
+  Placeholder,
+  Loader
 } 
 from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
-//import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { maskEmail, maskPhone } from "../../../../util";
+import { maskEmail, maskPhone, AuthenActions } from "../../../../util";
 import { useProvince, useDistrict, useAthenAtions } from "../../../../config/selectOption"; // Assuming hooks are in this location
 
 const Staff = () => {
@@ -38,6 +40,8 @@ const Staff = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave]=useState(false)
 
   const [staffData, setStaffData] = useState({
     staff_id: null,
@@ -60,7 +64,8 @@ const Staff = () => {
   const staff_status = [
     {label: 'Normal', value: 0},
     {label: 'Admin', value: 1}, 
-  ]
+  ];
+  const actions = AuthenActions();
 
   useEffect(() => {
     fetchgetData();
@@ -68,11 +73,17 @@ const Staff = () => {
 
   const fetchgetData = async () => {
     try {
+      setLoading(true)
       const res = await axios.get(`${api}/staff`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch staff data", err);
     }
+
+    finally{
+      setLoading(false)
+    }
+
   };
   const resetForm = () => {
     setStaffData({
@@ -147,17 +158,16 @@ const Staff = () => {
   };
   const handleChangePass = (item) => {
     setModalType("editpass");
-    handleOpen()
+    handleOpen();
     setStaffData({
       passId: item.staff_id,
-      authen_fk: item.authen_fk.map(id => Number(id)), 
       email: item.email,
-      password: '',
-  });
-  }
+      password: "",
+    });
+  };
+  
 
   const handleChange = (name, value) => {
-    setVisible(!visible);
     setStaffData({
       ...staffData,
       [name]: value,
@@ -195,55 +205,71 @@ const Staff = () => {
       [field]: event,
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (staffData.password !== confirmPassword) {
-      setPasswordError(true);
-      return;
+    setLoadingSave(true)
+    if(staffData.staff_status === 1) {
+  
+      if (staffData.password !== confirmPassword) {
+        setPasswordError(true);
+        return;
+      }
+      setPasswordError(false);
     }
-    setPasswordError(false); 
-   
+  
     const formData = new FormData();
+    
     for (const key in staffData) {
       if (Array.isArray(staffData[key])) {
         staffData[key].forEach((item, index) => {
           formData.append(`${key}[${index}]`, item);
         });
-      } else {
+      } else if (staffData[key] !== null && staffData[key] !== "") {
         formData.append(key, staffData[key]);
       }
     }
-    
-    try {
-        await axios.post(`${api}/staff/create`, formData, {
-          headers: {'Content-Type': 'multipart/form-data'},
-        });
-        if (staffData.passId) {
-          await axios.post(`${api}/changepass`, {
-              passId: staffData.staff_id, // Assuming staff_id exists
-              email: staffData.email,
-              password: staffData.password,
-          });
 
-          alert('Password updated successfully!');
+    try {
+
+      if (staffData.passId) {
+        await axios.post(`${api}/staff/changepass`, {
+          passId: staffData.passId,    // Send staff ID
+          email: staffData.email,      // Send staff email
+          password: staffData.password // Send the new password
+        });
+        Alert.successData('ອັບເດດລະຫັດຜ່ານສຳເລັດແລ້ວ!');
+      } else {
+        await axios.post(`${api}/staff/create`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        Alert.successData(`${staffData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
       }
-        alert(`Staff ${staffData._id ? "updated" : "added"} successfully!`);
-        handleClose();
-        fetchgetData();
-        resetForm();
+      handleClose();
+      fetchgetData();
+      resetForm();
+
     } catch (err) {
       console.error("Failed to submit staff data", err);
-      alert('Failed to submit staff data')
+      Notification.error('ບັນທຶກຂໍ້ມູນລົ້ມເຫຼວ');
     }
-  };
+    finally {
+      setLoadingSave(false)
+    }
+};
+
+
   const handleDeleteClick = async (id) => {
-    try {
-      await axios.patch(`${api}/staff/${id}`);
-      alert("Staff member soft deleted successfully!");
-      fetchgetData();
-    } catch (err) {
-      console.error("Failed to delete staff", err);
+    const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
+    if (isConfirmed) {
+      try {
+        await axios.patch(`${api}/staff/${id}`);
+        Alert.successData("ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!");
+        fetchgetData();
+      } catch (err) {
+        console.error("Failed to delete staff", err);
+        Notification.error('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
+      }
     }
   };
   
@@ -265,23 +291,7 @@ const Staff = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">Staff</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small>
-      </h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">Staff Panel</h4>
-        </div>
-
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -289,17 +299,17 @@ const Staff = () => {
               <div className="ms-2 mb-2">
                 <select className="form-select form-select-sm" value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}>
-                  <option value="">All</option>
-                  <option value="0">normal</option>
-                  <option value="1">admin</option>
-                  <option value="2">superadmin</option>
+                  <option value="">ພະນັກງານທັງໝົດ</option>
+                  <option value="0">ພະນັກງານທົ່ວໄປ</option>
+                  <option value="1">ແອັດມິນ</option>
                 </select>
               </div>
             </div>
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;" className="btn btn-sm btn-success ms-2" onClick={handleAddClick}>
+                <a href="javascript:;" className={`btn btn-sm btn-success ms-2 ${!actions.canCreate ? 'disabled' : ''}`} 
+                  onClick={actions.canCreate ? () => handleAddClick() : (e) => e.preventDefault()}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
@@ -307,7 +317,7 @@ const Staff = () => {
           </div>
 
           <table id="data-table-default"
-            className="table table-striped table-bordered align-middle text-nowrap">
+            className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
@@ -321,11 +331,16 @@ const Staff = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((staff, index) => (
-                <tr key={staff.id}>
-                  <td width="1%" className="fw-bold">
-                    {startIndex + index + 1}
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center">
+                  <Placeholder.Grid rows={5} columns={6} active />
+                  <Loader size='lg'  content="ກຳລັງໂຫລດ..." vertical />
                   </td>
+                </tr>
+              ): paginatedData.length > 0 ? paginatedData.map((staff, index) => (
+                <tr key={staff.id}>
+                  <td width="1%" className="fw-bold">{startIndex + index + 1}</td>
                   <td width="1%" className="with-img">
                     {staff.profile && (
                       <img className="rounded h-30px my-n1 mx-n1" alt="profile"
@@ -339,10 +354,8 @@ const Staff = () => {
                   <td> {staff.village}, {staff.district_name}, {staff.province_name}
                   </td>
                   <td>
-                  <Badge 
-                    color={staff.staff_status === 1 ? "green" : ""} 
-                    content={staff.staff_status === 1 ? "admin" : ""} 
-                  />
+                  <Badge color={staff.staff_status === 1 ? "green" : ""} 
+                    content={staff.staff_status === 1 ? "admin" : ""}/>
                 </td>
 
                   <td>
@@ -353,24 +366,35 @@ const Staff = () => {
                         </a>
                         <div className="dropdown-menu dropdown-menu-end">
                         {staff.staff_status !== 0 && (
-                          <a href="javascript:;" className="dropdown-item" onClick={() => handleChangePass(staff)}>
-                            <i className="fas fa-lock fa-fw"></i> ChangePassword
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? 'disabled' : ''}`}
+                          onClick={actions.canUpdate ? () => handleChangePass(staff) : (e) => e.preventDefault()}>
+                            <i className="fas fa-lock fa-fw"></i> ປ່ຽນລະຫັດຜ່ານ
                           </a>
                         )}
-                          <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(staff)}><i className="fas fa-pen-to-square fa-fw"></i>
-                             Edit</a>
-                          <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(staff.staff_id)}>
-                            <i className="fas fa-trash fa-fw"></i>
-                             Delete
-                          </a>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? 'disabled' : ''}`}
+                             onClick={actions.canUpdate ? () => handleEditClick(staff) : (e) => e.preventDefault()}>
+                              <i className="fas fa-pen-to-square fa-fw"></i>
+                             ແກ້ໄຂ</a>
+                             <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? 'disabled' : ''}`}
+                                onClick={actions.canDelete ? () => handleDeleteClick(staff.staff_id) : (e) => e.preventDefault()}>
+                                <i className="fas fa-trash fa-fw"></i> ລຶບ
+                              </a>
+                              {/*------------- Not Showing ---------*/}
+                              {/* {actions.canDelete && (<a href="javascript:;" className="dropdown-item"
+                                  onClick={() => handleDeleteClick(staff.staff_id)}>
+                                  <i className="fas fa-trash fa-fw"></i> ລຶບ
+                                </a>
+                              )} */}
                         </div>
                       </div>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )):(
+                <tr className="text-center">
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນພະນັກງານ ===============</td>
+                </tr>
+              )}
             </tbody>
           </table>
 
@@ -398,10 +422,11 @@ const Staff = () => {
           <>
             <div className="col-md-12">
               <label className="form-label">ອີເມວ໌</label>
-              <Input className="form-label" name="email" value={staffData.email}/>
+              <Input className="form-label" name="email" value={staffData.email}
+              onChange={(value) => handleChange("email", value)}/>
             </div>
             <div className="col-md-12">
-              <label className="form-label">Password</label>
+              <label className="form-label">ລະຫັດຜ່ານ</label>
               <InputGroup inside block>
                 <Input type={visible ? 'text' : 'password'} value={staffData.password || ""}
                   onChange={(value) => handleChange("password", value)} required />
@@ -412,7 +437,7 @@ const Staff = () => {
               </InputGroup>
             </div>
             <div className="col-md-12">
-              <label className="form-label">Confirm Password</label>
+              <label className="form-label">ຢືນຢັນລະຫັດຜ່ານ</label>
               <InputGroup>
               <Input type="password" onChange={(value) => setConfirmPassword(value)} 
               required/>
@@ -492,10 +517,10 @@ const Staff = () => {
                     <label className="form-label">ອີເມວ໌</label>
                     <Input className="form-label" name="email" value={staffData.email}
                      onChange={(value) => handleChange("email", value)}
-                      placeholder="ອີເມວ໌..." readOnly/>
+                      placeholder="ອີເມວ໌..."/>
                   </div>
               <div className="col-md-12">
-                  <label className="form-label">Password</label>
+                  <label className="form-label">ລະຫັດຜ່ານ</label>
                   <InputGroup inside block>
                     <Input type={visible ? 'text' : 'password'} value={staffData.password || ""}
                       onChange={(value) => handleChange("password", value)} required />
@@ -506,7 +531,7 @@ const Staff = () => {
                   </InputGroup>
                 </div>
                 <div className="col-md-12">
-                    <label className="form-label">Confirmpassword</label>
+                    <label className="form-label">ຢືນຢັນລະຫັດຜ່ານ</label>
                     <InputGroup>
                     <Input type="password" onChange={(value) => setConfirmPassword(value)} 
                       required/>
@@ -514,11 +539,11 @@ const Staff = () => {
                     {passwordError && (<span className="text-danger">Passwords do not match!</span>)}
                 </div>
                 </div>
-                <div className="col-md-4 mt-2">
+                <div className="col-md-4">
                 <Checkbox
                   indeterminate={checked.length > 0 && checked.length < authen_actions.length}
                   checked={checked.length === authen_actions.length} onChange={handleCheckAll}>
-                  All
+                  ເລືອກທັງໝົດ
                 </Checkbox>
 
                 <CheckboxGroup data={authen_actions} value={staffData.authen_fk} 
@@ -535,11 +560,15 @@ const Staff = () => {
             </div>)}
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit"  appearance="primary">
+          <Button type="submit" disabled={loadingSave}  appearance="primary">
+            {loadingSave ? (<Loader content="ກຳລັງບັນທຶກ..."/>):
+            <>
             {modalType === "add" ? "ບັນທຶກ" 
           : modalType === "editpass" ? "ອັບເດດລະຫັດ" : "ອັບເດດຂໍ້ມູນ"}
+          </>
+            }
           </Button>
-          <Button onClick={resetForm} appearance="subtle">
+          <Button onClick={resetForm} color='red' appearance="primary">
             Cancel
           </Button>
         </Modal.Footer>

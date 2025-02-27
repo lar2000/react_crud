@@ -167,7 +167,7 @@ const Package = () => {
                   <td>{pkg.pk_code}</td>
                   <td>{pkg.pk_name}</td>
                   <td>{pkg.service_names}</td>
-                  {/* <td>{formatDuration(pkg.total_duration)}</td> */}
+                  <td>{formatDuration(pkg.total_duration)}</td>
                   <td>{pkg.total_price}</td>
                   <td>
                     <div className="panel-heading">

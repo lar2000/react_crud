@@ -15,7 +15,7 @@ const Header = () => {
   return (
 		<div id="header" className="app-header">
 			<div className="navbar-header">
-				<a href="index.html" className="navbar-brand"><span className="navbar-logo"></span> <b className="me-3px">Color</b> Admin</a>
+				<a href="index.html" className="navbar-brand"><span className="navbar-logo"></span> <b className="me-3px">PLC</b> ລະບົບຮ້ານສະປາ</a>
 				<button type="button" className="navbar-mobile-toggler" data-toggle="app-sidebar-mobile">
 					<span className="icon-bar"></span>
 					<span className="icon-bar"></span>

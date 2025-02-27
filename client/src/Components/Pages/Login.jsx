@@ -34,12 +34,13 @@ const handleSubmit = async (event) => {
       const res = await axios.post(`${api}/checklogin/`, values);
  
       if (res.status === 200) {
-        const { staff_id,staff_code, staffName, email,staff_status, token} = res.data; 
+        const { staff_id,staff_code, staffName, email, staff_status, authen_fk, token} = res.data; 
 		localStorage.setItem('staff_id', staff_id);
 		localStorage.setItem('staff_code', staff_code);
         localStorage.setItem('staffName', staffName);
         localStorage.setItem('email', email);
         localStorage.setItem('staff_status', staff_status);
+        localStorage.setItem('authen_fk', authen_fk);
         localStorage.setItem('token', token);
         // navigate('/home');
         window.location.href = "/home";
@@ -89,6 +90,7 @@ const handleSubmit = async (event) => {
 						<div className="d-flex align-items-center"><b>ຮ້ານນວດ</b>ແຜນບູຮານ
 						</div>
                         <small>ຍິນດີຕ້ອນຮັບເຂົ້າສູ່ລະບົບ 👋laryang.2000@gmail.com</small>
+                        <small>admin1@gmail.com</small>
 					</div>
 					<div className="icon">
 						<i className="fa fa-lock"></i>
