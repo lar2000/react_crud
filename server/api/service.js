@@ -3,7 +3,7 @@ const db = require('../controller/controller.connection');
 const router = express.Router();
 
 router.post('/create', function (req, res) {
-  const { _id, servicetype_id_fk, set_id_fk, service_name, service_duration, price } = req.body;
+  const { _id, servicetype_id_fk, service_name} = req.body;
   const table = 'service';
 
   // Auto-generate service_code if it doesn't exist
@@ -11,8 +11,8 @@ router.post('/create', function (req, res) {
     db.autoId(table, 'service_id', (err, id) => {
       const code = id.toString().slice(-4).padStart(4, '0');
       const serviceCode = 'SV-' + code;
-      const fields = 'service_id, service_code, servicetype_id_fk, set_id_fk, service_name, service_duration, price';
-      const dataValue = [id, serviceCode, servicetype_id_fk, set_id_fk, service_name, service_duration, price];
+      const fields = 'service_id, service_code, servicetype_id_fk, service_name';
+      const dataValue = [id, serviceCode, servicetype_id_fk, service_name];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -24,7 +24,6 @@ router.post('/create', function (req, res) {
       });
     });
   } else {
-    // Update existing service
     const where = `service_id = '${_id}'`;
 
     db.selectWhere(table, '*', where, (err, results) => {
@@ -33,8 +32,8 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch service data.' });
       }
 
-      const fields = 'servicetype_id_fk, set_id_fk, service_name, service_duration, price';
-      const newData = [servicetype_id_fk, set_id_fk, service_name, service_duration, price,  _id];
+      const fields = 'servicetype_id_fk, service_name';
+      const newData = [servicetype_id_fk, service_name, _id];
       const condition = 'service_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -71,20 +70,42 @@ router.get("/single/:id", function (req, res) {
   });
 });
 
+router.get("/ByTypeId", function (req, res) {
+  const tables = `service
+       LEFT JOIN service_type ON service.servicetype_id_fk = service_type.servicetype_id`;
+
+  const fields = `
+      service.servicetype_id_fk, 
+      service_type.servicetype_name, 
+      GROUP_CONCAT(service.service_id) AS service_ids,
+      GROUP_CONCAT(service.service_name) AS service_names`;
+
+  // Add GROUP BY clause to group by servicetype_id_fk
+  const groupBy = `GROUP BY service.servicetype_id_fk, service_type.servicetype_name`;
+
+  db.selectData(`${tables} ${groupBy}`, fields, (err, results) => {
+    if (err) {
+      return res.status(400).send();
+    }
+    // Convert service_ids and service_names from comma-separated strings to arrays
+    results.forEach(result => {
+      result.service_ids = result.service_ids.split(',').map(Number); // Convert service_ids to an array of numbers
+      result.service_names = result.service_names.split(','); // Convert service_names to an array of strings
+    });
+    res.status(200).json(results);
+  });
+});
+
+
 router.get("/", function (req, res) {
   const tables = `service
-       LEFT JOIN set_product ON service.set_id_fk = set_product.set_id
        LEFT JOIN service_type ON service.servicetype_id_fk = service_type.servicetype_id`;
 
   const fields = `
       service.service_id,
       service.service_code,
       service.servicetype_id_fk, 
-      service.set_id_fk, 
       service.service_name, 
-      service.service_duration,  
-      service.price, 
-      set_product.set_name,
       service_type.servicetype_name`;
 
   db.selectData(tables, fields, (err, results) => {

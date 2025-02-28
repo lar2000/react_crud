@@ -47,7 +47,7 @@ router.post("/", (req, res) => {
             jwt.sign(payload, app_secret, { expiresIn: '12h' }, (signErr, token) => {
                 if (signErr) return res.status(500).json({ 
                     status: "500", 
-                    message: "Server Error" 
+                    message: "Server Error"
                 });
 
                 res.status(200).json({

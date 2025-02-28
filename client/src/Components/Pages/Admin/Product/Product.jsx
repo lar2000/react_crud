@@ -174,23 +174,7 @@ const Product = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">product</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small>
-      </h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">product Panel</h4>
-        </div>
-
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -198,11 +182,6 @@ const Product = () => {
             </div>
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
-              {/* <div className="actions mb-2">
-                <Link to="/importproduct" className="btn btn-sm btn-success ms-2">
-                  <i className="fas fa-upload"></i> ນຳເຂົ້າ
-                </Link>
-              </div> */}
               <div className="actions mb-2">
                 <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
                   onClick={handleAddClick}>
@@ -261,11 +240,11 @@ const Product = () => {
                         <div className="dropdown-menu dropdown-menu-end">
                           <a href="javascript:;" className="dropdown-item"
                             onClick={() => handleEditClick(product)}><i className="fas fa-pen-to-square"></i>
-                             Edit</a>
+                             ແກ້ໄຂ</a>
                           <a href="javascript:;" className="dropdown-item"
                           onClick={() => handleDeleteClick(product.id)}>
                             <i className="fas fa-trash"></i>
-                             Delete
+                             ລຶບ
                           </a>
                         </div>
                       </div>

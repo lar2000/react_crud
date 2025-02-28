@@ -6,7 +6,7 @@ import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
-import { useServiceType, useSetProduct } from "../../../../config/selectOption";
+import { useServiceType } from "../../../../config/selectOption";
 import { AuthenActions } from "../../../../util";
 
 const Service = () => {
@@ -20,16 +20,12 @@ const Service = () => {
   const [loadingSave, setLoadingSave]=useState(false)
 
   const serviceType = useServiceType();
-  const setProducts = useSetProduct();
   const actions = AuthenActions();
 
   const [serviceData, setserviceData] = useState({
     service_id: null,
     service_name: "",
     servicetype_id_fk: "",
-    service_duration: "",
-    set_id_fk: "",
-    price: "",
   });
 
   useEffect(() => {
@@ -52,10 +48,7 @@ const Service = () => {
     setserviceData({
       service_id: null,
         service_name: "",
-        servicetype_id_fk: "",
-        service_duration: "",
-        set_id_fk: "",
-        price: "",
+        servicetype_id_fk: ""
     });
     setOpen(false);
   };
@@ -79,9 +72,6 @@ const Service = () => {
       _id: data.service_id,
       service_name: data.service_name,
       servicetype_id_fk: data.servicetype_id_fk,
-      service_duration: data.service_duration,
-      set_id_fk: data.set_id_fk,
-      price: data.price,
     });
   };
 
@@ -167,9 +157,6 @@ const Service = () => {
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ບໍລິການ</th>
                 <th className="text-nowrap">ປະເພດ</th>
-                <th className="text-nowrap">ໄລຍະເວລາ</th>
-                <th className="text-nowrap">ລາຄາ</th>
-                <th className="text-nowrap">ເຊັດສິນຄ້າ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
@@ -189,9 +176,6 @@ const Service = () => {
                   <td>{service.service_code}</td>
                   <td>{service.service_name}</td>
                   <td>{service.servicetype_name}</td>
-                  <td>{service.price}</td>
-                  <td>{service.service_duration}</td>
-                  <td>{service.set_name}</td>
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
@@ -214,7 +198,7 @@ const Service = () => {
                 </tr>
               )): (
                 <tr className="text-center">
-                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນປະເພດບໍລິການ ===============</td>
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນບໍລິການ ===============</td>
                 </tr>
               )}
             </tbody>
@@ -251,24 +235,6 @@ const Service = () => {
               <SelectPicker className="form-label" data={serviceType} value={serviceData.servicetype_id_fk}
                 onChange={(value) => handleSelectChange(value, "servicetype_id_fk")}
                 placeholder="ເລືອກປະເພດ" required block/>
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ເວລາ</label>
-              <Input className="form-label" name="service_duration" value={serviceData.service_duration} 
-              onChange={(value) => handleChange("service_duration", value)}
-              placeholder="ເວລາ..." required />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ລາຄາ</label>
-              <Input className="form-label" name="price" value={serviceData.price} 
-              onChange={(value) => handleChange("price", value.replace(/[^0-9]/g, ""))}
-              placeholder="ລາຄາ..." required />
-            </div>
-            <div className="col-md-12">
-              <label className="form-label">ເຊັດສິນຄ້າ</label>
-              <SelectPicker className="form-label" data={setProducts} value={serviceData.set_id_fk}
-                onChange={(value) => handleSelectChange(value, "set_id_fk")}
-                placeholder="ເລືອກເຊັດສິນຄ້າ..." required/>
             </div>
             </div>
         </Modal.Body>

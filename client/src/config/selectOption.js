@@ -65,12 +65,32 @@ export const useServiceType = () =>
   }));
 
   export const useService = () =>
-    useFetchData("service").map(({ service_name, service_id, price }) => ({
+    useFetchData("service/ByTypeId").map(({ service_name, service_id, servicetype_id_fk }) => ({
       label: service_name,
       value: service_id,
-      price
+      servicetype_id_fk
     }));
-
+  // export const useService = () =>
+  //   useFetchData("service/ByTypeId").map(({ servicetype_name, servicetype_id_fk, service_ids, service_names }) => ({
+  //     label: servicetype_name,
+  //     value: servicetype_id_fk, // Convert to string if necessary
+  //     children: service_ids.map((service_id, index) => ({
+  //       label: service_names[index],
+  //       value: service_id,// Convert to string if necessary
+  //     }))
+  //   }));
+    // export const useService = () => {
+    //   useFetchData("service/ByTypeId").map(({ servicetype_name, servicetype_id_fk, service_ids, service_names }) => ({
+    //     label: servicetype_name,
+    //     value: servicetype_id_fk, // Ensure this is in the desired type
+    //     children: service_ids.map((service_id, index) => ({
+    //       label: service_names[index],
+    //       value: service_id, // Ensure this is in the desired type
+    //     }))
+    //   }));
+    // };
+    
+  
     export const usePackage = () =>
       useFetchData("package").map(({ pk_name, pk_id, total_price }) => ({
         label: pk_name,
