@@ -79,9 +79,8 @@ router.get("/ByTypeId", function (req, res) {
       service_type.servicetype_name, 
       GROUP_CONCAT(service.service_id) AS service_ids,
       GROUP_CONCAT(service.service_name) AS service_names`;
-
-  // Add GROUP BY clause to group by servicetype_id_fk
-  const groupBy = `GROUP BY service.servicetype_id_fk, service_type.servicetype_name`;
+      
+  const groupBy = `GROUP BY service.servicetype_id_fk`;
 
   db.selectData(`${tables} ${groupBy}`, fields, (err, results) => {
     if (err) {

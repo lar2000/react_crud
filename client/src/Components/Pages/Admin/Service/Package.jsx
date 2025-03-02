@@ -4,8 +4,8 @@ import proImage from '../../../../assets/imges.jpg';
 import { Modal, 
   Button, Input, 
   CheckPicker,
-  CheckTreePicker, 
   SelectPicker, 
+  Popover, Whisper,
   Loader, 
   Placeholder 
 } from "rsuite";
@@ -15,8 +15,8 @@ import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config, Urlimage } from "../../../../config/connection";
-import { useService, useSetProduct } from "../../../../config/selectOption";
-import { AuthenActions } from "../../../../util";
+import { useService, useSetProduct} from "../../../../config/selectOption";
+import { AuthenActions, formatDuration} from "../../../../util";
 
 const Package = () => {
   const api = Config.ApiURL;
@@ -36,48 +36,23 @@ const Package = () => {
     association_service_fk: [],
     pk_code: "",
     pk_name: "",
+    pk_duration: "",
     pk_price: "",
     set_id_fk: null,
     pk_images: null,
   });
-  const setProducts = useSetProduct();
-  // const options = [ 
-  //   { 
-  //     "label": "Madhya Pradesh", 
-  //     "value": 1, 
-  //     "children": [ 
-  //       { 
-  //         "label": "Mhow", 
-  //         "value": 2 
-  //       }, 
-  //       { 
-  //         "label": "Mhow", 
-  //         "value": 3 
-  //       }, 
-  //     ] 
-  //   },
-  //   {
-  //     "label": "Indore", 
-  //     "value": 4, 
-  //     "children": [ 
-  //       { 
-  //         "label": "Vijay Nagar", 
-  //         "value": 5 
-  //       }, 
-  //       { 
-  //         "label": "Rajiv Gandhi Square", 
-  //         "value": 6 
-  //       }, 
-  //       { 
-  //         "label": "MR 10", 
-  //         "value": 7 
-  //       }, 
-  //     ] 
-  //   },  
-  // ]; 
 
+  const setProducts = useSetProduct();
   const services = useService();
   const actions = AuthenActions();
+  const renderPopover = (pkg) => (
+    <Popover title='ບໍລິການທີໄດ້ຮັບ:'> {pkg.service_names ? (
+        pkg.service_names.split(',').map((name, index) => (
+          <div key={index}>🔸{name}</div>
+        ))) : "No Services"}
+        {/* <a href="/service" size="xs">ໄປທີບໍລິການ<i className="fas fa-angles-right"></i></a> */}
+    </Popover>
+  );
 
   useEffect(() => {
     fetchgetData();
@@ -101,6 +76,7 @@ const Package = () => {
         association_service_fk: [],
         pk_code: "",
         pk_name: "",
+        pk_duration: "",
         pk_price: "",
         set_id_fk: "",
         pk_images: null,
@@ -130,6 +106,7 @@ const Package = () => {
       association_service_fk: data.association_service_fk.map(id => Number(id)),
       pk_code: data.pk_code,
       pk_name: data.pk_name,
+      pk_duration: data.pk_duration,
       pk_price: data.pk_price,
       set_id_fk: data.set_id_fk,
       pk_images: null,
@@ -150,11 +127,11 @@ const Package = () => {
       [field]: event,
     });
   };
-  const handleCheck = (name, value) => {
-    alert("Selected Value: " + JSON.stringify(value)); // Debugging
-    setPackageData((prev) => ({
-      ...prev,
-      [name]: value // Dynamically update the state by field name
+  const handleCheck = (value) => {
+    alert(value)
+    setPackageData((prevData) => ({
+      ...prevData,
+      association_service_fk: value,
     }));
   };
 
@@ -268,8 +245,7 @@ const Package = () => {
                 <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ແພັກເກດ</th>
-                <th className="text-nowrap">ບໍລິການທີໄດ້ຮັບ</th>
-                {/* <th className="text-nowrap">ໄລຍະເວລາ</th> */}
+                <th className="text-nowrap">ໄລຍະເວລາ</th>
                 <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">ເຊັດອຸປະກອນ</th>
                 <th className="text-nowrap">Actions</th>
@@ -295,10 +271,10 @@ const Package = () => {
                     )}
                   </td>
                   <td>{pkg.pk_code}</td>
-                  <td>{pkg.pk_name}</td>
-                  <td>{pkg.service_names ? ( pkg.service_names.split(',').map((name, index) => (
-                          <span key={index}>🔸{name}<br /></span>))) : ""}</td>
-                  {/* <td>{formatDuration(pkg.total_duration)}</td> */}
+                  <Whisper placement="top" trigger="hover" enterable={true} speaker={renderPopover(pkg)}>
+                <td style={{ cursor: 'pointer' }}>{pkg.pk_name}</td>
+              </Whisper>
+                  <td>{formatDuration(pkg.pk_duration)}</td>
                   <td>{pkg.pk_price} ກີບ</td>
                   <td>{pkg.set_name}</td>
                   <td>
@@ -349,50 +325,50 @@ const Package = () => {
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
-          <div className="mb-3 d-flex justify-content-center align-items-center">
-            <label role='button'>
+          <div className="col-md-4 d-flex align-items-center justify-content-center position-relative" style={{ minHeight: "200px" }}>
+            <div className="col-md-12">
+            <label role='button' className="d-flex flex-column align-items-center justify-content-center">
               <input type="file" id="fileInput" accept="image/*" className='hide' onChange={handleFileChange}/>
-                <img src={imageUrl} className="w-150px rounded-3" />
+                <img src={imageUrl} className="w-150px h-150px rounded-3"/>
             </label>
             {selectedFile && ( 
               <span role='button' onClick={handleClearImage} 
-              className=" d-flex align-items-center justify-content-center badge bg-danger text-white position-absolute end-40 top-0 rounded-pill mt-n2 me-n5">
+              className="d-flex align-items-center justify-content-center badge bg-danger text-white position-absolute end-30 top-0 rounded-pill mt-n0 me-n5">
                 <i className="fa-solid fa-xmark"></i></span>
             )}
             </div>
-            <div className="col-md-6">
+          </div>
+            <div className="col-md-8">
+            <div className="col-md-12">
               <label className="form-label">ຊື່ແພັກເກດ</label>
               <Input className="form-label" name="pk_name" value={PackageData.pk_name} 
               onChange={(value) => handleChange("pk_name", value)}
               placeholder="ຊື່..." required />
             </div>
-            <div className="col-md-6">
+            <div className="col-md-12">
             <label className="form-label">ເລຶອກບໍລິການ</label>
-            <CheckPicker placement="auto" className="form-label" data={services} 
-            value={PackageData.association_service_fk}
-                onChange={(value) => handleChange("association_service_fk", value)}  
-                placeholder="ເລືອກສິນຄ້າ" required block/>
-                {/* <CheckTreePicker
-  className="form-label"
-  data={services}  
-  value={PackageData.association_service_fk}
-  onChange={(value) => handleCheck("association_service_fk", value)}
-  placeholder="ເລືອກສິນຄ້າ"
-  block
-/> */}
-
+            <CheckPicker data={services} className="form-label" groupBy="servicetype_name" labelKey="label"
+              valueKey="value" value={PackageData.association_service_fk}
+              onChange={handleCheck} required block/>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-12">
+              <label className="form-label">ໄລຍະເວລາ(Min)</label>
+              <Input className="form-label" name="duration" value={PackageData.pk_duration} 
+              onChange={(value) => handleChange("pk_duration", value.replace(/[^0-9]/g, ""))}
+              placeholder="0" required />
+            </div>
+            <div className="col-md-12">
               <label className="form-label">ລາຄາ</label>
               <Input name="price" className="form-label" value={PackageData.pk_price} 
               onChange={(value) => handleChange("pk_price", value.replace(/[^0-9]/g, ""))}
              placeholder="ລາຄາ..." required/>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-12">
               <label className="form-label">ເຊັດສິນຄ້າ</label>
               <SelectPicker placement="auto" className="form-label" data={setProducts} value={PackageData.set_id_fk}
                 onChange={(value) => handleSelectChange(value, "set_id_fk")}
                 placeholder="ເລືອກເຊັດສິນຄ້າ..." required block/>
+            </div>
             </div>
             </div>
         </Modal.Body>
