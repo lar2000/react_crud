@@ -1,12 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, Tabs, InlineEdit } 
+import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, InlineEdit } 
 from 'rsuite';
-import { useService, useCustomer, usePackage }
+import { useCustomer, usePackage }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
-  const services = useService();
   const packages = usePackage();
   const customers = useCustomer();
   const [step, setStep] = useState(0);
@@ -18,21 +17,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     } else if (modalType === 'edit') {
       setStep(0);
     }
-    const { group_size, sv_fk, pk_fk } = bookData;
+    const { group_size, pk_fk } = bookData;
 
-    const selectedServices = services.filter((s) => sv_fk.includes(s.value));
     const selectedPackages = packages.filter((pk) => pk_fk.includes(pk.value));
   
-    const servicePrice = selectedServices.reduce((sum, s) => sum + Number(s.price), 0);
-    const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.total_price), 0);
+    const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.pk_price), 0);
   
-    const totalPrice = group_size * (servicePrice + packagePrice);
+    const totalPrice = group_size * packagePrice;
   
     setBookData((prev) => ({
       ...prev,
       calculation: totalPrice,
     }));
-  }, [modalType, open, bookData.sv_fk, bookData.pk_fk, bookData.group_size]);
+  }, [modalType, open, bookData.pk_fk, bookData.group_size]);
 
   const onChange = (nextStep) => {
     setStep(nextStep < 0 ? 0 : nextStep > 3 ? 3 : nextStep);
@@ -41,7 +38,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     if (step === 0) {
       return bookData.group_size && 
       bookData.date && 
-      bookData.sv_fk || bookData.pk_fk &&
+      bookData.pk_fk &&
       bookData.cust_id_fk && 
       bookData.tell;
     }
@@ -107,21 +104,12 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
               <Panel>
                 <div className="row mb-3">
                   <div className="col-md-6">
-                  <Tabs defaultActiveKey="1" appearance="subtle">
-                      <Tabs.Tab eventKey="1" title="ທົ່ວໄປ">
-                      <CheckPicker className="form-label" data={services}
-                        value={bookData.sv_fk || []} 
-                        onChange={(value) => handleSelectChange(value, "sv_fk")}
-                        placeholder="ບໍລິການທົ່ວໄປ..." required block />
-                      </Tabs.Tab>
-                      <Tabs.Tab eventKey="2" title="ແພັກເກດ">
+                  <label className="form-label">ເລຶອກບໍລິການທີຕ້ອງການ</label>
                     <CheckPicker className="form-label" data={packages}
                       value={bookData.pk_fk || []} onChange={(value) => handleSelectChange(value, "pk_fk")}
                       placeholder="ແພັກເກດ..." required block />
-                      </Tabs.Tab>
-                    </Tabs>
                   </div>
-                  <div className="col-md-6 mt-4">
+                  <div className="col-md-6">
                     <label className="form-label">ຈຳນວນຄົນ</label>
                     <Input className="form-label" name="amount" value={bookData.group_size}
                       onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
@@ -187,7 +175,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                    <h5 className="title">ຮັບເງິນ:</h5>
                     <div className="col-6 d-md-flex justify-content-between dt-layout-end">
                       <InlineEdit size="lg" placeholder="ປ້ອນຈຳນວນເງິນ..." style={{ width: 180, textAlign: 'right' }}
-                      defaultValue={bookData.get_money}
+                      defaultValue={bookData.get_money || 0}
                       onChange={(value) => handleAmountChange(value, "get_money")}/>
                     </div>
                  </div>

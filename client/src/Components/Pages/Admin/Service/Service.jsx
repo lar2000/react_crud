@@ -47,8 +47,8 @@ const Service = () => {
   const resetForm = () => {
     setserviceData({
       service_id: null,
-        service_name: "",
-        servicetype_id_fk: ""
+      service_name: "",
+      servicetype_id_fk: ""
     });
     setOpen(false);
   };
@@ -107,7 +107,7 @@ const Service = () => {
   };
   const handleDeleteClick = async (id) => {
     const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
-        if (isConfirmed) {
+    if (isConfirmed) {
     try {
       await axios.delete(`${api}/service/${id}`);
       Alert.successData("ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!");
@@ -138,7 +138,6 @@ const Service = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
             </div>
-
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
@@ -149,6 +148,7 @@ const Service = () => {
               </div>
             </div>
           </div>
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
           <table id="data-table-default" 
           className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
@@ -182,10 +182,10 @@ const Service = () => {
                       <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
-                            onClick={actions.canUpdate ? () => handleEditClick(service) : (e) => e.preventDefault()}>
-                              <i className="fas fa-pen-to-square fa-fw"></i>
-                             ແກ້ໄຂ</a>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
+                              onClick={actions.canUpdate ? () => handleEditClick(service) : (e) => e.preventDefault()}>
+                                <i className="fas fa-pen-to-square fa-fw"></i>
+                              ແກ້ໄຂ</a>
                           <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? "disabled" : ""}`}
                             onClick={actions.canDelete ? () => handleDeleteClick(service.service_id) : (e) => e.preventDefault()}>
                             <i className="fas fa-trash fa-fw"></i>
@@ -203,7 +203,7 @@ const Service = () => {
               )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}

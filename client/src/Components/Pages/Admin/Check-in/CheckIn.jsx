@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { format } from 'date-fns';
-import {Text} from "rsuite";
+import {Text, Tabs} from "rsuite";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
+import { useServiceType} from "../../../../config/selectOption";
 
 const CheckIn = () => {
   const api = Config.ApiURL;
@@ -15,6 +16,7 @@ const CheckIn = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelected, setIsSelected] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [activeTab, setActiveTab] = useState();
 
   const [getCheckInData, setCheckInData] = useState({
 	book_fk: null,
@@ -22,8 +24,7 @@ const CheckIn = () => {
 	date_checkout: "",
   status: null,
   });
-
-  //const handleCheck = () => {};
+ const servicesType = useServiceType();
 
   const handleClick = (book_id) => {
     if (isSelected !== book_id) {  // Only update selection if the clicked table is different
@@ -106,6 +107,12 @@ const CheckIn = () => {
     <div id="content" className="app-content">
       <div className="panel panel-inverse">
         <div className="panel-body">
+        <Tabs defaultActiveKey={activeTab} onChange={setActiveTab} appearance="subtle">
+          {servicesType.map(({ label, value }) => (
+            <Tabs.Tab key={value} eventKey={value} title={label}>
+            </Tabs.Tab>
+          ))}
+        </Tabs>
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength}/>
@@ -121,7 +128,7 @@ const CheckIn = () => {
 					<div className="pos-content-container">
 						<div className="d-md-flex align-items-center mb-4">
 							<div className="pos-booking-title flex-1">
-								<div className="fs-24px mb-1">Check Table (13/20)</div>
+								<div className="fs-24px mb-1">ຈັດການບໍລິການ</div>
 								<div className="mb-2 mb-md-0 d-flex">
 									<div className="d-flex align-items-center me-3">
 										<i className="fa fa-circle fa-fw text-gray-500 fs-9px me-1"></i> ລໍຖ້າ
@@ -147,7 +154,6 @@ const CheckIn = () => {
 									    <div className="pos-table-name">
 										<div className="name">Table {index + 1}</div>
 										<div className="no">{booking.book_code}</div>
-										{/* <div className="no">{checkin.date_checkin}</div> */}
 										<div className="order"><span>{booking.group_size} ຄົນ</span></div>
 									</div>
 									<div className="pos-table-info-row">
@@ -225,17 +231,6 @@ const CheckIn = () => {
                   </div>
                 </div>
                     <div className="pos-sidebar-footer">
-                      {/* <div className="d-flex align-items-center mb-2">
-                        <div>ວັນ~ເວລາ</div>
-                         <div className="flex-1 text-end h6 mb-0">
-                          <DatePicker placement="autoVerticalEnd" style={{ width: "78%"}} 
-                          format="MM/dd/yyyy hh:mm aa" showMeridiem /></div>
-                      </div> 
-                      <div className="d-flex align-items-center">
-                        <div>ເວລາ</div>
-                        <div className="flex-1 text-end h6 mb-0">$3.90</div>
-                      </div>
-                        <hr className="opacity-1 my-10px"></hr> */}
                         <div className="d-flex align-items-center mb-2">
                           <div>ຈຳນວນຄັ້ງ</div>
                           <div className="flex-1 text-end h4 mb-0">

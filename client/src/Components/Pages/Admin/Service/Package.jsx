@@ -40,6 +40,7 @@ const Package = () => {
     pk_price: "",
     set_id_fk: null,
     pk_images: null,
+    pk_details: '',
   });
 
   const setProducts = useSetProduct();
@@ -49,8 +50,12 @@ const Package = () => {
     <Popover title='ບໍລິການທີໄດ້ຮັບ:'> {pkg.service_names ? (
         pkg.service_names.split(',').map((name, index) => (
           <div key={index}>🔸{name}</div>
-        ))) : "No Services"}
-        {/* <a href="/service" size="xs">ໄປທີບໍລິການ<i className="fas fa-angles-right"></i></a> */}
+        ))) : "ບໍ່ມີຂໍ້ມູນ"}
+    </Popover>
+  );
+  const TimePopover = (pkg) => (
+    <Popover title='ລາຍລະອຽດ:'>
+      {pkg.pk_details ? pkg.pk_details : "ບໍ່ມີຂໍ້ມູນ"}
     </Popover>
   );
 
@@ -80,6 +85,7 @@ const Package = () => {
         pk_price: "",
         set_id_fk: "",
         pk_images: null,
+        pk_details: '',
     });
     setOpen(false);
     setImageUrl(proImage); // Reset image URL
@@ -110,6 +116,7 @@ const Package = () => {
       pk_price: data.pk_price,
       set_id_fk: data.set_id_fk,
       pk_images: null,
+      pk_details: data.pk_details,
     });
     setImageUrl(data.pk_images ? `${img}${data.pk_images}` : proImage);
   };
@@ -237,6 +244,7 @@ const Package = () => {
               </div>
             </div>
           </div>
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
           <table id="data-table-default" 
           className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
@@ -274,7 +282,9 @@ const Package = () => {
                   <Whisper placement="top" trigger="hover" enterable={true} speaker={renderPopover(pkg)}>
                 <td style={{ cursor: 'pointer' }}>{pkg.pk_name}</td>
               </Whisper>
-                  <td>{formatDuration(pkg.pk_duration)}</td>
+                  <Whisper placement="top" trigger="hover" enterable={true} speaker={TimePopover(pkg)}>
+                <td style={{ cursor: 'pointer' }}>{formatDuration(pkg.pk_duration)}</td>
+              </Whisper>
                   <td>{pkg.pk_price} ກີບ</td>
                   <td>{pkg.set_name}</td>
                   <td>
@@ -304,7 +314,7 @@ const Package = () => {
               )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}
@@ -368,6 +378,12 @@ const Package = () => {
               <SelectPicker placement="auto" className="form-label" data={setProducts} value={PackageData.set_id_fk}
                 onChange={(value) => handleSelectChange(value, "set_id_fk")}
                 placeholder="ເລືອກເຊັດສິນຄ້າ..." required block/>
+            </div>
+            <div className="col-md-12">
+              <label className="form-label">ລາຍລະອຽດ</label>
+              <Input as="textarea" rows={3} name="textarea" className="form-label" 
+              value={PackageData.pk_details} onChange={(value) => handleChange("pk_details", value)}
+                placeholder="ລາຍລະອຽດ..."/>
             </div>
             </div>
             </div>

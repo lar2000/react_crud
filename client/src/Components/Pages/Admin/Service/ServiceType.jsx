@@ -140,6 +140,7 @@ const ServiceType = () => {
               </div>
             </div>
           </div>
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
           <table id="data-table-default" 
           className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
@@ -194,7 +195,7 @@ const ServiceType = () => {
               )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}

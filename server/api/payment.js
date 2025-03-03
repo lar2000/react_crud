@@ -61,11 +61,11 @@ router.post('/create', function (req, res) {
   }
 });
 
-router.patch('/:book_id', function (req, res, next) {
-  const book_id = req.params.book_id;
+router.patch('/:pay_fk', function (req, res, next) {
+  const pay_fk = req.params.pay_fk;
   const fields = 'state';
   const newData = [0];
-  const condition = `book_id_fk='${book_id}'`;
+  const condition = `pay_id='${pay_fk}'`;
 
   db.updateData('payment', fields, newData, condition, (err, results) => {
     if (err) {
@@ -75,9 +75,9 @@ router.patch('/:book_id', function (req, res, next) {
   });
 });
 
-router.delete("/:pay_id", function (req, res, next) {
-  const pay_id = req.params.pay_id;
-  const where = `pay_id='${pay_id}'`;
+router.delete("/:pay_fk", function (req, res, next) {
+  const pay_fk = req.params.pay_fk;
+  const where = `pay_id='${pay_fk}'`;
 
   db.deleteData('payment', where, (err, results) => {
     if (err) {

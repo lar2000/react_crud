@@ -139,7 +139,8 @@ router.get('/single/:checkin_id', function (req, res) {
 router.get('/', function (req, res) {
   const tables = `checkin 
   LEFT JOIN booking ON checkin.book_fk = booking.book_id
-  LEFT JOIN service ON booking.service_id_fk = service.service_id 
+  LEFT JOIN bps_association ON checkin.book_fk = bps_association.book_association_fk 
+  LEFT JOIN package ON package.pk_id = bps_association.pk_association_fk
   LEFT JOIN customer ON booking.cust_id_fk = customer.cust_id
   `;
 
@@ -154,8 +155,7 @@ router.get('/', function (req, res) {
       booking.group_size,  
       customer.cust_id,
       customer.cust_name, 
-      customer.cust_surname,
-      service.service_name
+      customer.cust_surname
       `;
   const where = `checkin.state = 1`;
 

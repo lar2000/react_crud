@@ -20,7 +20,7 @@ router.post('/create', function (req, res) {
     const upload = multer({ storage }).single('pk_images');
 
     upload(req, res, function (err) {
-    const { _id, association_service_fk = [], set_id_fk, pk_name, pk_duration, pk_price} = req.body;
+    const { _id, association_service_fk = [], set_id_fk, pk_name, pk_duration, pk_details, pk_price} = req.body;
     const table = 'package';
 
       if (!Array.isArray(association_service_fk)) {
@@ -36,8 +36,8 @@ router.post('/create', function (req, res) {
 
         const code = id.toString().slice(-4).padStart(4, '0');
         const pkCode = 'PK-' + code; // Changed pk_id to pk_code
-        const fields = 'pk_id, pk_code, pk_name, pk_duration, pk_price, set_id_fk, pk_images'; // Changed pk_id to pk_code
-        const dataValue = [id, pkCode, pk_name, pk_duration, pk_price, set_id_fk, pk_images];
+        const fields = 'pk_id, pk_code, pk_name, pk_duration, pk_price, set_id_fk, pk_images, pk_details'; // Changed pk_id to pk_code
+        const dataValue = [id, pkCode, pk_name, pk_duration, pk_price, set_id_fk, pk_images, pk_details];
 
         db.insertData(table, fields, dataValue, (err, results) => {
           if (err) {
@@ -80,8 +80,8 @@ router.post('/create', function (req, res) {
               }
       
           const updatedimage = pk_images || results[0].pk_images;
-          const fields = 'pk_name, pk_duration, pk_price, set_id_fk, pk_images';
-          const newData = [pk_name, pk_duration, pk_price, set_id_fk, updatedimage, _id];
+          const fields = 'pk_name, pk_duration, pk_price, set_id_fk, pk_images, pk_details';
+          const newData = [pk_name, pk_duration, pk_price, set_id_fk, updatedimage, pk_details, _id];
           const condition = 'pk_id=?'; // Changed id to pk_id
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -204,6 +204,7 @@ router.get('/', function (req, res, next) {
       package.pk_price, 
       package.set_id_fk,
       package.pk_images,
+      package.pk_details,
       pk_service_association.association_id,
       pk_service_association.association_pk_fk,
       set_product.set_name,

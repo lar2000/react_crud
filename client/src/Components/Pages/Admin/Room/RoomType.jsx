@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal, Button, Input } from "rsuite";
-//import { Notification, Alert } from '../../../../SweetAlert2'
+import { Modal, Button, Input, Placeholder, Loader  } from "rsuite";
+import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
+import { AuthenActions } from "../../../../util";
 
 const RoomType = () => {
   const api = Config.ApiURL;
@@ -14,6 +15,8 @@ const RoomType = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState("add"); // Add or edit
+  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave]=useState(false)
 
   const [roomtypeData, setroomtypeData] = useState({
     roomtype_name: "",
@@ -22,16 +25,22 @@ const RoomType = () => {
     detail: "",
   });
 
+  const actions = AuthenActions();
+
   useEffect(() => {
     fetchgetData();
   }, []);
 
   const fetchgetData = async () => {
+    setLoading(true)
     try {
       const res = await axios.get(`${api}/roomtype`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch room_type data", err);
+    }
+    finally{
+      setLoading(false)
     }
   };
   const resetForm = () => {
@@ -76,25 +85,34 @@ const RoomType = () => {
     });
   };
   const handleSubmit = async (e) => {
+    setLoadingSave(true)
     e.preventDefault();
     try {
         console.log(roomtypeData)
         await axios.post(`${api}/roomtype/create`, roomtypeData);
-        alert(`room_type ${roomtypeData.roomtype_id ? "updated" : "added"} successfully!`);
+        Alert.successData(`${roomtypeData.roomtype_id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
         handleClose();
         fetchgetData();
         resetForm();
     } catch (err) {
       console.error("Failed to submit room_type data", err);
+      Notification.error('ບັນທຶກຂໍ້ມູນລົ້ມເຫຼວ!');
+    }
+    finally {
+      setLoadingSave(false)
     }
   };
   const handleDeleteClick = async (roomtype_id) => {
-    try {
-      await axios.delete(`${api}/roomtype/${roomtype_id}`);
-      alert("room_type member soft deleted successfully!");
-      fetchgetData();
-    } catch (err) {
-      console.error("Failed to delete room_type", err);
+    const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
+    if (isConfirmed) {
+      try {
+        await axios.delete(`${api}/roomtype/${roomtype_id}`);
+        Alert.successData("ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!");
+        fetchgetData();
+      } catch (err) {
+        console.error("Failed to delete room_type", err);
+        Notification.error('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
+      }
     }
   };
   
@@ -111,22 +129,7 @@ const RoomType = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">room_type</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small>
-      </h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">room_type Panel</h4>
-        </div>
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -136,27 +139,35 @@ const RoomType = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;" className="btn btn-sm btn-success ms-2" onClick={handleAddClick}>
+              <a href="javarscript:;" className={`btn btn-sm btn-success ms-2 ${!actions.canCreate ? "disabled" : ""}`}
+                  onClick={actions.canCreate ? () => handleAddClick() : (e) => e.preventDefault()}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
-
-          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
+          <table id="data-table-default" 
+            className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ຊື່ປະເພດຫ້ອງ</th>
                 <th className="text-nowrap">ລາຄາ</th>
-                <th className="text-nowrap">ຈຳນວນ</th>
                 <th className="text-nowrap">ລາຍລະອຽດ</th>
                 <th className="text-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((room_type, index) => (
+            {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center">
+                  <Placeholder.Grid rows={5} columns={6} active />
+                  <Loader size='lg'  content="ກຳລັງໂຫລດ..." vertical />
+                  </td>
+                </tr>
+              ): paginatedData.length > 0 ? paginatedData.map((room_type, index) => (
                 <tr key={room_type.roomtype_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
@@ -164,7 +175,6 @@ const RoomType = () => {
                   <td>{room_type.roomtype_code}</td>
                   <td>{room_type.roomtype_name}</td>
                   <td>{room_type.room_price}</td>
-                  <td>{room_type.room_amount} ຫ້ອງ</td>
                   <td>{room_type.detail}</td>
                   <td>
                     <div className="panel-heading">
@@ -172,23 +182,28 @@ const RoomType = () => {
                         <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
-                          <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(room_type)}><i className="fas fa-pen-to-square"></i>
-                             Edit</a>
-                          <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(room_type.roomtype_id)}>
-                            <i className="fas fa-trash"></i>
-                             Delete
+                        <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
+                              onClick={actions.canUpdate ? () => handleEditClick(room_type) : (e) => e.preventDefault()}>
+                                <i className="fas fa-pen-to-square fa-fw"></i>
+                              ແກ້ໄຂ</a>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? "disabled" : ""}`}
+                            onClick={actions.canDelete ? () => handleDeleteClick(room_type.roomtype_id) : (e) => e.preventDefault()}>
+                            <i className="fas fa-trash fa-fw"></i>
+                             ລຶບ
                           </a>
                         </div>
                       </div>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )): (
+                <tr className="text-center">
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນປະເພດຫ້ອງ ===============</td>
+                </tr>
+              )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}
@@ -222,12 +237,6 @@ const RoomType = () => {
               placeholder="0" required />
             </div>
             <div className="col-md-12">
-              <label className="form-label">ຈຳນວນ</label>
-              <Input className="form-label" name="amount" value={roomtypeData.room_amount}
-               onChange={(value) => handleChange("room_amount", value.replace(/[^0-9]/g, ""))}
-              placeholder="0" required />
-            </div>
-            <div className="col-md-12">
               <label className="form-label">ລາຍລະອຽດ</label>
               <Input as="textarea" rows={3} name="textarea" className="form-label" value={roomtypeData.detail}
                onChange={(value) => handleChange("detail", value)}
@@ -236,11 +245,13 @@ const RoomType = () => {
             </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "ບັນທຶກ" : "Update"}
+        <Button type="submit" disabled={loadingSave} appearance="primary">
+          {loadingSave ? (<Loader content="ກຳລັງບັນທຶກ..."/>):
+          <>{modalType === "add" ? "ບັນທຶກ" : "ອັບບເດດ"}</>
+          }
           </Button>
-          <Button onClick={resetForm} appearance="subtle">
-            Cancel
+          <Button onClick={resetForm} color="red" appearance="primary">
+            ຍົກເລີກ
           </Button>
         </Modal.Footer>
         </form>

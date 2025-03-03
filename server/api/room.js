@@ -80,8 +80,8 @@ router.get("/", function (req, res) {
       room.room_number,
       room.roomtype_fk,
       room.status,
-      room_type.roomtype_name, 
-      room_type.room_price`;
+      room_type.roomtype_name
+      `;
 
   db.selectData(tables, fields, (err, results) => {
     if (err) {

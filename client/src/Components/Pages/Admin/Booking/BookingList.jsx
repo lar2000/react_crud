@@ -27,7 +27,6 @@ const Booking = () => {
     cust_id_fk: null,
     pay_fk: null,
     date: null,
-    sv_fk: [],
     pk_fk: [],
     group_size: "",
     email: "",
@@ -60,7 +59,6 @@ const Booking = () => {
       date: null,
       cust_id_fk: null,
       pay_fk: null,
-      sv_fk: [],
       pk_fk: [],
       group_size: "",
       email: "",
@@ -104,7 +102,6 @@ const Booking = () => {
       date: new Date(data.date),
       cust_id_fk: data.cust_id_fk,
       pay_fk: data.pay_fk,
-      sv_fk: data.sv_fk.map(id => Number(id)),
       pk_fk: data.pk_fk.map(id => Number(id)),
       group_size: data.group_size,
       email: data.email,
@@ -120,14 +117,13 @@ const Booking = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     // Prepare booking data
     const bookingData = {
       book_id: bookData.book_id,
       cust_id_fk: bookData.cust_id_fk,
       pay_fk: bookData.pay_fk,
       date: bookData.date,
-      sv_fk: bookData.sv_fk,
       pk_fk: bookData.pk_fk,
       group_size: bookData.group_size,
       email: bookData.email,
@@ -137,50 +133,62 @@ const Booking = () => {
   
     // Prepare payment data
     const paymentData = {
-      pay_id: bookData.pay_id || null, // If pay_id is null, it will be auto-generated
-      pay_date: new Date(bookData.pay_date),
+      pay_id: bookData.pay_id || null,
+      pay_date: bookData.pay_date ? new Date(bookData.pay_date) : null,
       calculation: bookData.calculation,
       get_money: bookData.get_money,
     };
   
     try {
-      // alert(`Payment Data: ${JSON.stringify(paymentData, null, 2)}`);
       const payResponse = await axios.post(`${api}/payment/create`, paymentData);
-      alert(`Payment ${paymentData.pay_id  ? "updated" : "added"} successfully!`);
       const createdPay = payResponse.data;
-      
-      if (createdPay && createdPay.payment) {
-        const pay_id = createdPay.payment[0] || paymentData.pay_id;
+  
+      if (createdPay && createdPay.payment && createdPay.payment.length > 0) {
+        const pay_id = createdPay.payment[0];
         bookingData.pay_fk = pay_id;
-        const bookResponse = await axios.post(`${api}/booking/create`, bookingData);
-        alert(`Payment and Booking ${bookData.book_id  ? "updated" : "added"} successfully!`);
-        
-        if (bookResponse.data && bookResponse.data.booking) {
-          alert(`Payment and Booking ${bookData.book_id  ? "updated" : "added"} successfully!`);
-          handleClose();
-          fetchgetData()
-        } else {
-          throw new Error("Failed to create booking.");
-        }
+      } else if (paymentData.pay_id) {
+        bookingData.pay_fk = paymentData.pay_id;
       } else {
-        throw new Error("Failed to create payment.");
+        alert("Failed to process payment.");
+        return;
       }
+      alert(`Payment ${paymentData.pay_id ? "updated" : "added"} successfully!`);
+  
+      await axios.post(`${api}/booking/create`, bookingData);
+  
+      alert(`Booking ${bookData.book_id ? "updated" : "added"} successfully!`);
+      handleClose();
+      fetchgetData();
+
     } catch (error) {
       console.error("Error occurred:", error);
       alert("An error occurred. Please try again.");
     }
   };  
   
-  const handleDeleteClick = async (book_id, cust_id_fk) => {
+  const handleDeleteClick = async (book_id, cust_id_fk, pay_fk) => {
     try {
-      await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk }); // Send cust_id_fk
-      await axios.patch(`${api}/payment/${book_id}`); // Send cust_id_fk
-      alert("Booking member soft deleted successfully!");
-      fetchgetData();
+      // First request to delete booking
+      const bookingResponse = await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk });
+  
+      if (bookingResponse.status === 200) {
+        try {
+          await axios.patch(`${api}/payment/${pay_fk}`);
+          alert("Booking member soft deleted successfully!");
+          fetchgetData();
+        } catch (paymentErr) {
+          console.error("Failed to delete payment", paymentErr);
+          alert("Booking deleted, but payment deletion failed!");
+        }
+      } else {
+        alert("Failed to delete booking!");
+      }
     } catch (err) {
       console.error("Failed to delete booking", err);
+      alert("Failed to delete booking!");
     }
-  };  
+  };
+  
     
   const filteredData = getData.filter((booking) => {
     const searchDateMatch =
@@ -202,24 +210,12 @@ const Booking = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item"><a href="javascript:;">Home</a>
-        </li><li className="breadcrumb-item"><a href="javascript:;">Page Options</a>
-        </li><li className="breadcrumb-item active">booking</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small></h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">booking Panel</h4>
-        </div>
-
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
               <Length setLength={setLength} />
             </div>
-
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="mb-2 ms-2">
@@ -268,19 +264,16 @@ const Booking = () => {
                   </td>
                   <td> {booking.pk_names ? (booking.pk_names.split(',').map((name, index) => (
                         <span key={index}>🔹{name}<br /></span>))) : ""}
-                  <Text>{booking.service_names ? ( booking.service_names.split(',').map((name, index) => (
-                          <span key={index}>🔸{name}<br /></span>))) : ""}
-                      </Text>
                     </td>
                   <td> { booking.pay_status === 2 ? (
                         <span className="badge border border-primary text-primary px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>paied</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>ຊຳລະແລ້ວ</span>) 
                         : booking.pay_status === 1 ? (
                         <span className="badge border border-warning text-warning px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>deposit(ມັດຈຳ)</span>) 
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>ມັດຈຳ</span>) 
                         : (
                         <span className="badge border border-danger text-danger px-2 pt-5px pb-5px rounded fs-12px d-inline-flex align-items-center">
-                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>unpaied
+                        <i className="fa fa-circle fs-9px fa-fw me-5px"></i>ຍັງບໍ່ຊຳລະ
                         </span>
                     )}</td>
                   <td>{booking.note}</td>
@@ -297,7 +290,7 @@ const Booking = () => {
                           <a href="javascript:;" className="dropdown-item"
                             onClick={() => handleEditClick(booking)}><i className="fas fa-pen-to-square"></i></a>
                           <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(booking.book_id, booking.cust_id_fk)}>
+                          onClick={() => handleDeleteClick(booking.book_id, booking.cust_id_fk, booking.pay_fk)}>
                             <i className="fas fa-trash"></i></a>
                         </div>
                       </div>

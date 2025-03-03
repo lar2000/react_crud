@@ -3,7 +3,7 @@ const db = require('../controller/controller.connection');
 const router = express.Router();
 
 router.post('/create', function (req, res) {
-  const { roomtype_id, roomtype_name, room_price, room_amount, detail } = req.body;
+  const { roomtype_id, roomtype_name, room_price, detail } = req.body;
   const table = 'room_type';
 
   // Auto-generate room_type ID if it doesn't exist
@@ -16,8 +16,8 @@ router.post('/create', function (req, res) {
 
       const code = id.toString().slice(-4).padStart(4, '0');
       const roomtypeCode = 'RT-' + code;
-      const fields = 'roomtype_id, roomtype_code, roomtype_name, room_price, room_amount, detail';
-      const dataValue = [id, roomtypeCode, roomtype_name, room_price, room_amount, detail];
+      const fields = 'roomtype_id, roomtype_code, roomtype_name, room_price, detail';
+      const dataValue = [id, roomtypeCode, roomtype_name, room_price, detail];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -38,8 +38,8 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch room_type data.' });
       }
 
-      const fields = 'roomtype_name, room_price, room_amount, detail';
-      const newData = [roomtype_name, room_price, room_amount, detail, roomtype_id];
+      const fields = 'roomtype_name, room_price, detail';
+      const newData = [roomtype_name, room_price, detail, roomtype_id];
       const condition = 'roomtype_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {

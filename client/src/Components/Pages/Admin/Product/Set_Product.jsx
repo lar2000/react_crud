@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {Text, Modal, Button, Input, CheckPicker } from "rsuite";
-//import { Notification, Alert } from '../../../../SweetAlert2'
+import {Text, Modal, Button, Input, CheckPicker, Placeholder, Loader  } from "rsuite";
+import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { Config} from "../../../../config/connection";
 import { useProduct } from "../../../../config/selectOption";
+import { AuthenActions } from "../../../../util";
 
 const Set_Product = () => {
   const api = Config.ApiURL;
@@ -15,6 +16,8 @@ const Set_Product = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState("add"); // Add or edit
+  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave]=useState(false)
 
   const [productData, setProductData] = useState({
     set_id: null,
@@ -25,17 +28,22 @@ const Set_Product = () => {
   });
 
   const products = useProduct();
+  const actions = AuthenActions();
 
   useEffect(() => {
     fetchgetData();
   }, []);
 
   const fetchgetData = async () => {
+    setLoading(true)
     try {
       const res = await axios.get(`${api}/set_product`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch set_product data", err);
+    }
+    finally{
+      setLoading(false)
     }
   };
   const resetForm = () => {
@@ -82,23 +90,32 @@ const Set_Product = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingSave(true)
     try {
         await axios.post(`${api}/set_product/create`, productData);
-        alert(`set_product ${productData._id ? "updated" : "added"} successfully!`);
+        Alert.successData(`${productData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
         handleClose();
         fetchgetData();
     } catch (err) {
       console.error("Failed to submit set_product data", err);
+      Notification.error('ບັນທຶກຂໍ້ມູນລົ້ມເຫຼວ!');
+    }
+    finally {
+      setLoadingSave(false)
     }
   };
   const handleDeleteClick = async (id) => {
-    try {
-      await axios.delete(`${api}/set_product/${id}`);
-      alert("set_product member soft deleted successfully!");
-      fetchgetData();
-    } catch (err) {
-      console.error("Failed to delete set_product", err);
-    }
+    const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
+      if (isConfirmed) {
+        try {
+          await axios.delete(`${api}/set_product/${id}`);
+          Alert.successData("ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!");
+          fetchgetData();
+        } catch (err) {
+          console.error("Failed to delete set_product", err);
+          Notification.error('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
+          }
+      }
   };
   
   const filteredData = getData.filter((set_product) => {
@@ -114,22 +131,7 @@ const Set_Product = () => {
 
   return (
     <div id="content" className="app-content">
-      <ol className="breadcrumb float-xl-end">
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Home</a>
-        </li>
-        <li className="breadcrumb-item">
-          <a href="javascript:;">Page Options</a>
-        </li>
-        <li className="breadcrumb-item active">set_product</li>
-      </ol>
-      <h1 className="page-header"><small>header small text goes here...</small>
-      </h1>
-
       <div className="panel panel-inverse">
-        <div className="panel-heading">
-          <h4 className="panel-title">set_product Panel </h4>
-        </div>
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
             <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
@@ -139,14 +141,16 @@ const Set_Product = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;" className="btn btn-sm btn-success ms-2" onClick={handleAddClick}>
+              <a href="javarscript:;" className={`btn btn-sm btn-success ms-2 ${!actions.canCreate ? "disabled" : ""}`}
+                  onClick={actions.canCreate ? () => handleAddClick() : (e) => e.preventDefault()}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
-
-          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
+          <table id="data-table-default"
+           className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
@@ -157,7 +161,14 @@ const Set_Product = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((set_product, index) => (
+            {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center">
+                  <Placeholder.Grid rows={4} columns={6} active />
+                  <Loader size='lg'  content="ກຳລັງໂຫລດ..." vertical />
+                  </td>
+                </tr>
+              ): paginatedData.length > 0 ? paginatedData.map((set_product, index) => (
                 <tr key={set_product.set_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
@@ -173,23 +184,28 @@ const Set_Product = () => {
                         <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle"data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i></a>
                         <div className="dropdown-menu dropdown-menu-end">
-                          <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(set_product)}><i className="fas fa-pen-to-square"></i>
-                             Edit</a>
-                          <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(set_product.set_id)}>
-                            <i className="fas fa-trash"></i>
-                             Delete
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
+                            onClick={actions.canUpdate ? () => handleEditClick(set_product) : (e) => e.preventDefault()}>
+                              <i className="fas fa-pen-to-square fa-fw"></i>
+                             ແກ້ໄຂ</a>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? "disabled" : ""}`}
+                            onClick={actions.canDelete ? () => handleDeleteClick(set_product.set_id) : (e) => e.preventDefault()}>
+                            <i className="fas fa-trash fa-fw"></i>
+                             ລຶບ
                           </a>
                         </div>
                       </div>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )): (
+                <tr className="text-center">
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນ ===============</td>
+                </tr>
+              )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}
@@ -230,11 +246,13 @@ const Set_Product = () => {
             </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "Add" : "Update"}
+        <Button type="submit" disabled={loadingSave} appearance="primary">
+          {loadingSave ? (<Loader content="ກຳລັງບັນທຶກ..."/>):
+          <>{modalType === "add" ? "ບັນທຶກ" : "ອັບບເດດ"}</>
+          }
           </Button>
-          <Button onClick={resetForm} appearance="subtle">
-            Cancel
+          <Button onClick={resetForm} color="red" appearance="primary">
+            ຍົກເລີກ
           </Button>
         </Modal.Footer>
         </form>

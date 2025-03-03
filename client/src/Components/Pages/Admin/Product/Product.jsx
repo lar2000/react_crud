@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-//import { Link } from "react-router-dom";
 import axios from "axios";
 import proImage from '../../../../assets/imges.jpg';
-import { Modal, Button, SelectPicker, Input } from "rsuite";
+import { Modal, Button, SelectPicker, Input, Placeholder, Loader  } from "rsuite";
 import { Config, Urlimage } from "../../../../config/connection";
-//import { Notification, Alert } from '../../../../SweetAlert2'
+import { Notification, Alert } from '../../../../SweetAlert2'
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
 import { useProduct_Type, useUnit} from "../../../../config/selectOption";
+import { AuthenActions } from "../../../../util";
 
 const Product = () => {
   const api = Config.ApiURL;
@@ -20,6 +20,8 @@ const Product = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState(proImage);
+  const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave]=useState(false)
 
   const [productData, setProductData] = useState({
     pro_id: null,
@@ -35,17 +37,22 @@ const Product = () => {
 
   const prodtypes = useProduct_Type();
   const unit = useUnit();
+  const actions = AuthenActions();
 
   useEffect(() => {
     fetchgetData();
   }, []);
 
   const fetchgetData = async () => {
+    setLoading(true)
     try {
       const res = await axios.get(`${api}/product`);
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch product data", err);
+    }
+    finally{
+      setLoading(false)
     }
   };
   const resetForm = () => {
@@ -134,7 +141,7 @@ const Product = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   
+    setLoadingSave(true)
     const formData = new FormData();
 
     for (const key in productData) {
@@ -146,20 +153,28 @@ const Product = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        alert(`product ${productData._id ? "updated" : "added"} successfully!`);
+        Alert.successData(`${productData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
         handleClose();
         fetchgetData();
     } catch (err) {
       console.error("Failed to submit product data", err);
+      Notification.error('ບັນທຶກຂໍ້ມູນລົ້ມເຫຼວ!');
+    }
+    finally {
+      setLoadingSave(false)
     }
   };
   const handleDeleteClick = async (pro_id) => {
-    try {
-      await axios.delete(`${api}/product/${pro_id}`);
-      alert("product member soft deleted successfully!");
-      fetchgetData();
-    } catch (err) {
-      console.error("Failed to delete product", err);
+    const isConfirmed = await Alert.confirm("ຕ້ອງການລຶບຂໍ້ມູນນີ້ແທ້ບໍ່?");
+    if (isConfirmed) {
+      try {
+        await axios.delete(`${api}/product/${pro_id}`);
+        Alert.successData("ລຶບຂໍ້ມູນສຳເລັດແລ້ວ!");
+        fetchgetData();
+      } catch (err) {
+        console.error("Failed to delete product", err);
+        Notification.error('ລຶບຂໍ້ມູນລົ້ມເຫຼວ');
+      }
     }
   };
   
@@ -183,15 +198,16 @@ const Product = () => {
             <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="actions mb-2">
-                <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
-                  onClick={handleAddClick}>
+              <a href="javarscript:;" className={`btn btn-sm btn-success ms-2 ${!actions.canCreate ? "disabled" : ""}`}
+                  onClick={actions.canCreate ? () => handleAddClick() : (e) => e.preventDefault()}>
                   <i className="fas fa-user-plus"></i>
                 </a>
               </div>
             </div>
           </div>
-
-          <table id="data-table-default" className="table table-striped table-bordered align-middle text-nowrap">
+          <div style={{ overflowX: 'auto', overflowY:'auto' }}>
+          <table id="data-table-default"
+            className={`table ${!loading && 'table-striped'} table-bordered align-middle text-nowrap`}>
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
@@ -207,7 +223,14 @@ const Product = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((product, index) => (
+            {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center">
+                  <Placeholder.Grid rows={5} columns={6} active />
+                  <Loader size='lg'  content="ກຳລັງໂຫລດ..." vertical />
+                  </td>
+                </tr>
+              ): paginatedData.length > 0 ? paginatedData.map((product, index) => (
                 <tr key={product.pro_id}>
                   <td width="1%" className="fw-bold">
                     {startIndex + index + 1}
@@ -230,20 +253,17 @@ const Product = () => {
                   <td>
                     <div className="panel-heading">
                       <div className="btn-group my-n1">
-                        <a
-                          href="javascript:;"
-                          className="btn-primary btn-sm dropdown-toggle"
-                          data-bs-toggle="dropdown"
-                        >
+                        <a href="javascript:;" className="btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                           <i className="fas fa-ellipsis"></i>
                         </a>
                         <div className="dropdown-menu dropdown-menu-end">
-                          <a href="javascript:;" className="dropdown-item"
-                            onClick={() => handleEditClick(product)}><i className="fas fa-pen-to-square"></i>
+                        <a href="javascript:;" className={`dropdown-item ${!actions.canUpdate ? "disabled" : ""}`}
+                            onClick={actions.canUpdate ? () => handleEditClick(product) : (e) => e.preventDefault()}>
+                              <i className="fas fa-pen-to-square fa-fw"></i>
                              ແກ້ໄຂ</a>
-                          <a href="javascript:;" className="dropdown-item"
-                          onClick={() => handleDeleteClick(product.id)}>
-                            <i className="fas fa-trash"></i>
+                          <a href="javascript:;" className={`dropdown-item ${!actions.canDelete ? "disabled" : ""}`}
+                            onClick={actions.canDelete ? () => handleDeleteClick(product.id) : (e) => e.preventDefault()}>
+                            <i className="fas fa-trash fa-fw"></i>
                              ລຶບ
                           </a>
                         </div>
@@ -251,10 +271,14 @@ const Product = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )): (
+                <tr className="text-center">
+                  <td colSpan={8} className="text-red">================ ບໍມີຂໍ້ມູນສິນຄ້າ ===============</td>
+                </tr>
+              )}
             </tbody>
           </table>
-
+          </div>
           <Pagination
             total={filteredData.length}
             length={length}
@@ -325,8 +349,10 @@ const Product = () => {
             </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button type="submit"  appearance="primary">
-            {modalType === "add" ? "ບັນທຶກ" : "ອັບເດດ"}
+        <Button type="submit" disabled={loadingSave} appearance="primary">
+          {loadingSave ? (<Loader content="ກຳລັງບັນທຶກ..."/>):
+          <>{modalType === "add" ? "ບັນທຶກ" : "ອັບບເດດ"}</>
+          }
           </Button>
           <Button onClick={resetForm} appearance="primary" color="red">
             ຍົກເລີກ
