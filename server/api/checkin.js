@@ -155,7 +155,9 @@ router.get('/', function (req, res) {
       booking.group_size,  
       customer.cust_id,
       customer.cust_name, 
-      customer.cust_surname
+      customer.cust_surname,
+      package.pk_id,
+      package.pk_name
       `;
   const where = `checkin.state = 1`;
 

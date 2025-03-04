@@ -10564,6 +10564,12 @@ fieldset:disabled .btn {
 .ms-5 {
   margin-left: 2.8125rem !important;
 }
+.ms-6{
+  margin-left: 5.624rem !important;
+}
+.ms-7{
+  margin-left: 7.424rem !important;
+}
 .ms-auto {
   margin-left: auto !important;
 }
@@ -10700,6 +10706,13 @@ fieldset:disabled .btn {
 .p-5 {
   padding: 2.8125rem !important;
 }
+.p-top-5 {
+  padding-top: 2.8125rem !important;
+}
+.p-top-6 {
+  padding-top: 3.5rem !important;
+}
+
 .px-0 {
   padding-right: 0 !important;
   padding-left: 0 !important;
@@ -16218,7 +16231,7 @@ fieldset:disabled .btn {
   --bs-component-hover-color: #20252a;
   --bs-component-hover-border-color: #ced4da;
   --bs-component-focus-border-color: #67abe9;
-  --bs-component-disabled-bg: #e9ecef;
+  --bs-component-disabled-bg: #cfd0d1;
   --bs-component-disabled-color: #adb5bd;
   --bs-component-disabled-border-color: #ced4da;
   --bs-component-table-border-color: #ced4da;
@@ -23986,7 +23999,7 @@ a:focus {
 }
 @media (min-width: 992px) {
   .pos.pos-with-menu {
-    padding-left: 10rem;
+    padding-left: 5.5rem;
   }
 }
 @media (max-width: 991.98px) {
@@ -23996,7 +24009,7 @@ a:focus {
 }
 @media (min-width: 992px) {
   .pos.pos-with-sidebar {
-    padding-right: 22.5rem;
+    padding-right: 21.5rem;
   }
 }
 .pos.pos-with-header {
@@ -24040,7 +24053,7 @@ a:focus {
     flex-direction: column;
     bottom: 0;
     left: 0;
-    padding-left: 0.9375rem;
+    padding-left: 3.2rem;
   }
 }
 @media (max-width: 991.98px) {
@@ -25104,7 +25117,7 @@ a:focus {
   border-top: 1px solid #2d353c;
 }
 .pos .pos-table-row {
-  margin: -1.8rem;
+  margin: -0.8rem;
   margin-top: -1rem;
   display: flex;
   flex-wrap: wrap;
@@ -25115,6 +25128,7 @@ a:focus {
   height: 100%;
   width: auto;
   flex: 0 0 25%;
+  color: #007aff;
 }
 @media (max-width: 1199.98px) {
   .pos .pos-table-row .pos-table {

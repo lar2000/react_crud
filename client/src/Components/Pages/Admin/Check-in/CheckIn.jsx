@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { format } from 'date-fns';
-import {Text, Tabs} from "rsuite";
+import {Text, DatePicker, Dropdown} from "rsuite";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
@@ -16,7 +16,7 @@ const CheckIn = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isSelected, setIsSelected] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [activeTab, setActiveTab] = useState();
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const [getCheckInData, setCheckInData] = useState({
 	book_fk: null,
@@ -32,6 +32,10 @@ const CheckIn = () => {
       const booking = getBookData.find((b) => b.book_id === book_id);
       setSelectedBooking(booking || null);
   }
+};
+const handleAddClick = () => {
+  // handleOpen();
+  // setModalType("add");
 };
 
   useEffect(() => {
@@ -103,32 +107,24 @@ const CheckIn = () => {
   };
   
   return (
-    
-    <div id="content" className="app-content">
-      <div className="panel panel-inverse">
-        <div className="panel-body">
-        <Tabs defaultActiveKey={activeTab} onChange={setActiveTab} appearance="subtle">
-          {servicesType.map(({ label, value }) => (
-            <Tabs.Tab key={value} eventKey={value} title={label}>
-            </Tabs.Tab>
-          ))}
-        </Tabs>
-          <div className="row mt-2 justify-content-between">
-            <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+    <div id="content" className="app-content p-0">
+    <div className="pos pos-with-sidebar" id="pos">
+      <div className="pos-content">
+      <div className="row mt-2 justify-content-between">
+            <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto ms-4">
               <Length setLength={setLength}/>
-              <div className="search mb-2">
-                <div className="d-flex justify-content-center ms-2 mt-2">
-                <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
-                </div>
+              <div className="actions mb-2 ms-2">
+                <select className="form-select form-select-sm" value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}>
+                  <option value="">ທັງໝົດ</option>
+                  <option value="0">ນວດ</option>
+                  <option value="1">ຄວາມງາມ</option>
+                  <option value="2">ບຳບັດ</option>
+                  <option value="ໂ">ສະປາເລັບ</option>
+                </select>
               </div>
-            </div>
-          </div>
-			<div className="pos pos-with-header pos-with-sidebar" id="pos">
-				<div className="pos-content">
-					<div className="pos-content-container">
-						<div className="d-md-flex align-items-center mb-4">
+              <div className="d-md-flex align-items-center ms-4">
 							<div className="pos-booking-title flex-1">
-								<div className="fs-24px mb-1">ຈັດການບໍລິການ</div>
 								<div className="mb-2 mb-md-0 d-flex">
 									<div className="d-flex align-items-center me-3">
 										<i className="fa fa-circle fa-fw text-gray-500 fs-9px me-1"></i> ລໍຖ້າ
@@ -136,24 +132,33 @@ const CheckIn = () => {
 									<div className="d-flex align-items-center me-3">
 										<i className="fa fa-circle fa-fw text-warning fs-9px me-1"></i> ກຳລັງດຳເນີນການ
 									</div>
-									<div className="d-flex align-items-center me-3">
-										<i className="fa fa-circle fa-fw text-theme fs-9px me-1"></i> ສຳເລັດແລ້ວ
-									</div>
 								</div>
 							</div>
 						 </div>
-						 <div className="pos-table-row">
-              {paginatedData.map((booking, index) => (
+            </div>
+            <div className="d-md-flex justify-content-between align-items-end dt-layout-end col-md-auto me-3">
+                <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+              <div className="actions mb-2">
+                <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
+                  onClick={handleAddClick}> <i className="fas fa-plus"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        <div className="pos-content-container h-100">
+          <div className="pos-table-row">
+          {paginatedData.map((booking, index) => (
 						  <div key={booking.book_id} 
-                className={`pos-table in-use ${isSelected === booking.book_id ? "selected" : ""}`}
-						      onClick={() => handleClick(booking.book_id)}>
-							      <a href="javascript:;" className="pos-table-container" data-toggle="select-table">
-                      <div className={`pos-table-status ${getCheckInIndex(booking.book_id) < 1 ? "" 
-                        : getCheckInIndex(booking.book_id) === booking.duration ? "success" : "warning"}`}>
-                      </div>
-									    <div className="pos-table-name">
+              className={`pos-table in-use ${isSelected === booking.book_id ? "selected" : ""}`}
+						  onClick={() => handleClick(booking.book_id)}>
+							<a href="javascript:;" className="pos-table-container" data-toggle="select-table">
+                <div className={`pos-table-status ${getCheckInIndex(booking.book_id) < 1 ? "" 
+                  : getCheckInIndex(booking.book_id) === booking.duration ? "success" : "warning"}`}>
+                </div>
+									<div className="pos-table-name">
 										<div className="name">Table {index + 1}</div>
 										<div className="no">{booking.book_code}</div>
+										{/* <div className="no">{checkin.date_checkin}</div> */}
 										<div className="order"><span>{booking.group_size} ຄົນ</span></div>
 									</div>
 									<div className="pos-table-info-row">
@@ -166,37 +171,44 @@ const CheckIn = () => {
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
 												<span className="icon opacity-50"><i className="far fa-clock"></i></span>
-												<span className="text">{booking?.book_id ? getCheckInTimeLatest(booking.book_id) : "00:00"}
-                        </span>
+												<span className="text">09:30</span>
 											</div>
 										</div>
 									</div>
 									<div className="pos-table-info-row">
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-40"><i className="fa fa-clock"></i></span>
-												<span className="text">{booking.time_per_day}</span>
-                        <span className="text ms-1">ນາທີ</span>
+												<span className="icon opacity-50"><i className="fa fa-clock"></i></span>
+												<span className="text">11:20</span>
 											</div>
 										</div>
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-50"><i className="fa fa-circle-check"></i></span>
-												<span className="text">{booking?.book_id ? getCheckOutTimeLatest(booking.book_id) : "00:00"}
-                        </span>
+												<span className="icon opacity-50"><i className="fa fa-clipboard-check"></i></span>
+												<span className="text">11:20</span>
 											</div>
 										</div>
 									</div>
 								</a>
 							</div>
               ))}
-              <div className="pos-sidebar">
+							</div>
+        </div>
+      </div>
+      {/* <!-- END pos-content -->
+      
+      <!-- BEGIN pos-sidebar --> */}
+       <div className="pos-sidebar">
                 {selectedBooking ? (
                   <>
-                    <div className="pos-sidebar-header">
+                    <div className="pos-sidebar-header p-top-5">
                       <div className="icon"><i className="fa fa-spa"></i></div>
-                      <div className="title">ID: {selectedBooking.book_id}</div>
-                      <div className="order"><b>{selectedBooking.book_code}</b></div>
+                      <div className="title">{selectedBooking.book_code}</div>
+                        <Dropdown noCaret title={<i className="fas fa-ellipsis"></i>}
+                         placement="bottomEnd">
+                          <Dropdown.Item>ເພີ່ມ</Dropdown.Item>
+                          <Dropdown.Item>ແກ້ໄຂ</Dropdown.Item>
+                        </Dropdown>
                     </div>
                     <div className="pos-sidebar-body">
                   <div className="pos-table" data-id="pos-table-info">
@@ -208,8 +220,8 @@ const CheckIn = () => {
                           <div className="col-8">
                             <div className="pos-product-thumb">
                               <div className="info">
-                                <Text weight="bold" size="lg">{checkIn.service_name || "N/A"}</Text>
-                                <Text weight="regular" size="lg">{checkIn.cust_name} {checkIn.cust_surname || "N/A"}</Text>
+                                <Text weight="bold" size="lg">{checkIn.pk_name || "ບໍມີຂໍ້ມູນ"}</Text>
+                                <Text weight="regular" size="lg">{checkIn.cust_name} {checkIn.cust_surname || "ບໍມີຂໍ້ມູນ"}</Text>
                                 <Text weight="regular" size="Small">ວັນທີ: 
                                   {format(new Date(checkIn.date_checkin), "  dd-MM-yyyy")} ~ {format(new Date(checkIn.date_checkout), "dd-MM-yyyy") || "N/A"}
                                 </Text>
@@ -231,8 +243,15 @@ const CheckIn = () => {
                   </div>
                 </div>
                     <div className="pos-sidebar-footer">
+                      <div className="d-flex align-items-center mb-2">
+                        <div>ວັນ~ເວລາ</div>
+                        <div className="flex-1 text-end h6 mb-0">
+                          <DatePicker placement="autoVerticalEnd" style={{ width: "78%"}} 
+                          format="MM/dd/yyyy hh:mm aa" showMeridiem /></div>
+                      </div>
+                        <hr className="opacity-1 my-10px"></hr>
                         <div className="d-flex align-items-center mb-2">
-                          <div>ຈຳນວນຄັ້ງ</div>
+                          <div>ຈຳນວນ</div>
                           <div className="flex-1 text-end h4 mb-0">
                           {getCheckInIndex(selectedBooking.book_id)} / {selectedBooking.duration}
                             </div>
@@ -256,18 +275,8 @@ const CheckIn = () => {
                   </div>
                 )}
               </div>
-              {/* <SideCheck /> */}
-						</div>
-					</div>
-				</div>
-			</div>
-      <div className="d-flex justify-content-center mt-3">
-        <Pagination total={filteredData.length} length={length}
-          currentPage={currentPage} setCurrentPage={setCurrentPage}/>
-      </div>
+           </div>
         </div>
-      </div>
-    </div>
   );
 };
 
