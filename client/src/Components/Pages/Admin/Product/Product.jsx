@@ -142,6 +142,7 @@ const Product = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSave(true)
+    
     const formData = new FormData();
 
     for (const key in productData) {
@@ -236,8 +237,7 @@ const Product = () => {
                     {startIndex + index + 1}
                   </td>
                   <td width="1%" className="with-img">
-                    {product.image && (
-                      <img src={`${img}${product.image}`}
+                    {product.image && (<img src={`${img}${product.image}`}
                         className="rounded h-30px my-n1 mx-n1" alt="image"/>
                     )}
                   </td>

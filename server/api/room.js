@@ -1,18 +1,33 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../controller/controller.connection');
 const router = express.Router();
 
 router.post('/create', function (req, res) {
+  let image = null;
+    const storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, './uploads/roomIMG');
+      },
+      filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        image = `R-${Date.now()}${ext}`;
+        cb(null, image);
+      }
+    });
+    const upload = multer({ storage }).single('image');
+  
+    upload(req, res, function (err) {
   const { _id, room_number, roomtype_fk } = req.body;
   const table = 'room';
 
   // Auto-generate room_code if it doesn't exist
   if (!_id) {
     db.autoId(table, 'room_id', (err, id) => {
-    //   const code = id.toString().slice(-4).padStart(4, '0');
-    //   const roomCode = 'SV-' + code;
-      const fields = 'room_id, room_number, roomtype_fk, status';
-      const dataValue = [id, room_number, roomtype_fk, 0];
+      const fields = 'room_id, room_number, roomtype_fk, status, room_img';
+      const dataValue = [id, room_number, roomtype_fk, 0, image];
 
       db.insertData(table, fields, dataValue, (err, results) => {
         if (err) {
@@ -33,8 +48,17 @@ router.post('/create', function (req, res) {
         return res.status(500).json({ error: 'Failed to fetch room data.' });
       }
 
-      const fields = 'room_number, roomtype_fk';
-      const newData = [room_number, roomtype_fk, _id];
+      if (results[0].image && image) {
+        const filePath = path.resolve('./uploads/roomIMG', results[0].image);
+          fs.unlink(filePath, (err) => {
+            if (err) {
+               console.error('Error deleting old file:', err);
+            }
+          });
+      }
+      const updatedimage = image || results[0].image;
+      const fields = 'room_number, roomtype_fk, room_img';
+      const newData = [room_number, roomtype_fk, updatedimage, _id];
       const condition = 'room_id=?';
 
       db.updateData(table, fields, newData, condition, (err, results) => {
@@ -46,6 +70,7 @@ router.post('/create', function (req, res) {
       });
     });
   }
+});
 });
 
 router.delete("/:id", function (req, res) {
@@ -80,6 +105,7 @@ router.get("/", function (req, res) {
       room.room_number,
       room.roomtype_fk,
       room.status,
+      room.room_img,
       room_type.roomtype_name
       `;
 

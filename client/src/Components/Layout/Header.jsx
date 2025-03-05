@@ -23,14 +23,14 @@ const Header = () => {
 				</button>
 			</div>
 			<div className="navbar-nav">
-				<div className="navbar-item navbar-form">
+				{/* <div className="navbar-item navbar-form">
 					<form action="" method="POST" name="search">
 						<div className="form-group">
 							<input type="text" className="form-control" placeholder="Enter keyword" />
 							<button type="submit" className="btn btn-search"><i className="fa fa-search"></i></button>
 						</div>
 					</form>
-				</div>
+				</div> */}
 				<div className="navbar-item dropdown">
 					<a href="#" data-bs-toggle="dropdown" className="navbar-link dropdown-toggle icon">
 						<i className="fa fa-bell"></i>

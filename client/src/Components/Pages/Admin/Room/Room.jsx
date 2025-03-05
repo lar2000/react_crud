@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Modal, Button, Input, SelectPicker, Placeholder, Loader } from "rsuite";
 import { Notification, Alert } from '../../../../SweetAlert2'
+import proImage from '../../../../assets/imges.jpg';
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
-import { Config} from "../../../../config/connection";
+import { Config, Urlimage} from "../../../../config/connection";
 import { useRoomType } from "../../../../config/selectOption";
 import { AuthenActions } from "../../../../util";
 
 const Room = () => {
   const api = Config.ApiURL;
+  const img = `${Urlimage.ImgURL}/images/`;
   const [getData, setData] = useState([]);
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +21,8 @@ const Room = () => {
   const [modalType, setModalType] = useState("add"); // Add or edit
   const [loading, setLoading] = useState(false);
   const [loadingSave, setLoadingSave]=useState(false)
+  const [imageUrl, setImageUrl] = useState(proImage);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const roomType = useRoomType();
   const actions = AuthenActions();
@@ -27,6 +31,7 @@ const Room = () => {
     room_id: null,
     room_number: "",
     roomtype_fk: "",
+    room_img: null,
   });
 
   useEffect(() => {
@@ -50,8 +55,11 @@ const Room = () => {
         room_id: null,
         room_number: "",
         roomtype_fk: "",
+        room_img: "",
     });
     setOpen(false);
+        setImageUrl(proImage); // Reset image URL
+        setSelectedFile(null); // Reset selected file
   };
 
   const [open, setOpen] = useState(false);
@@ -74,6 +82,7 @@ const Room = () => {
       room_number: data.room_number,
       roomtype_fk: data.roomtype_fk,
     });
+    setImageUrl(data.room_img ? `${img}${data.room_img}` : proImage);
   };
 
   const handleChange = (name, value) => {
@@ -82,19 +91,53 @@ const Room = () => {
       [name]: value,
     });
   };
+    const handleClearImage = () => {
+      setSelectedFile(null);
+      document.getElementById('fileInput').value = '';
+      setroomData({
+        ...roomData, room_img: null
+      })
+      setImageUrl(proImage)
+    };
   const handleSelectChange = (event, field) => {
     setroomData({
       ...roomData,
       [field]: event,
     });
   };
+    const handleFileChange = (e) => {
+      alert(roomData.room_img)
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setImageUrl(event.target.result);
+        };
+        setroomData({
+          ...roomData, room_img:file
+        })
+        reader.readAsDataURL(file);
+      } else {
+      setImageUrl(proImage);
+      }
+    };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSave(true)
+    const formData = new FormData();
+
+    for (const key in roomData) {
+      formData.append(key, roomData[key]);
+    }
     try {
-        await axios.post(`${api}/room/create`, roomData);
-        Alert.successData(`${roomData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
+        await axios.post(`${api}/room/create`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        Alert.successData(`${formData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
         handleClose();
         fetchgetData();
         resetForm();
@@ -167,6 +210,7 @@ const Room = () => {
             <thead>
               <tr>
                 <th className="text-nowrap">ລ/ດ</th>
+                <th width="1%" data-orderable="false">#</th>
                 <th className="text-nowrap">ເບີຫ້ອງ</th>
                 <th className="text-nowrap">ປະເພດຫ້ອງ</th>
                 <th className="text-nowrap">ສະຖານະ</th>
@@ -187,6 +231,11 @@ const Room = () => {
                     {startIndex + index + 1}
                   </td>
                   <td>{room.room_number}</td>
+                  <td width="1%" className="with-img">
+                    {room.room_img && (<img src={`${img}${room.room_img}`}
+                        className="rounded h-30px my-n1 mx-n1" alt="image"/>
+                    )}
+                  </td>
                   <td>{room.roomtype_name}</td>
                   <td>
                     {   room.status === 2 ? (
@@ -247,18 +296,23 @@ const Room = () => {
         <form  onSubmit={handleSubmit}>
         <Modal.Body>
           <div className="row mb-3">
+          <div className="mb-3 d-flex justify-content-center align-items-center">
+            <label role='button'>
+              <input type="file" id="fileInput" accept="image/*" className='hide' onChange={handleFileChange}/>
+                <img src={imageUrl} className="w-150px rounded-3" />
+            </label>
+            {selectedFile && ( 
+              <span role='button' onClick={handleClearImage} 
+              className=" d-flex align-items-center justify-content-center badge bg-danger text-white position-absolute end-40 top-0 rounded-pill mt-n2 me-n5">
+                <i className="fa-solid fa-xmark"></i></span>
+            )}
+            </div>
           <div className="col-md-12">
               <label className="form-label">ເບີຫ້ອງ</label>
               <Input className="form-label" name="room_number" value={roomData.room_number} 
               onChange={(value) => handleChange("room_number", value)}
               placeholder="ເບີຫ້ອງ..." required />
             </div>
-            {/* <div className="col-md-12">
-              <label className="form-label">ຊື່ຫ້ອງ</label>
-              <Input className="form-label" name="name" value={roomData.room_name} 
-              onChange={(value) => handleChange("room_name", value)}
-              placeholder="ຊື່..." required />
-            </div> */}
             <div className="col-md-12">
               <label className="form-label">ປະເພດຫ້ອງ</label>
               <SelectPicker className="form-label" data={roomType} value={roomData.roomtype_fk}

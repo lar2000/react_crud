@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { format } from 'date-fns';
-import {Text, DatePicker, Dropdown} from "rsuite";
+import {Text, DatePicker, Dropdown, Input} from "rsuite";
 import Length from "../../../Feature/Length";
 import SearchQuery from "../../../Feature/searchQuery";
 import Pagination from "../../../Feature/Pagination";
@@ -117,10 +117,8 @@ const handleAddClick = () => {
                 <select className="form-select form-select-sm" value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}>
                   <option value="">ທັງໝົດ</option>
-                  <option value="0">ນວດ</option>
-                  <option value="1">ຄວາມງາມ</option>
-                  <option value="2">ບຳບັດ</option>
-                  <option value="ໂ">ສະປາເລັບ</option>
+                  <option value="0">ລໍຖ້າ</option>
+                  <option value="1">ກຳລັງດຳເນີນການ</option>
                 </select>
               </div>
               <div className="d-md-flex align-items-center ms-4">
@@ -178,14 +176,14 @@ const handleAddClick = () => {
 									<div className="pos-table-info-row">
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-50"><i className="fa fa-clock"></i></span>
-												<span className="text">11:20</span>
+												<span className="icon opacity-50"><i className="fa fa-kip-sign"></i></span>
+												<span className="text">110000</span>
 											</div>
 										</div>
 										<div className="pos-table-info-col">
 											<div className="pos-table-info-container">
-												<span className="icon opacity-50"><i className="fa fa-clipboard-check"></i></span>
-												<span className="text">11:20</span>
+												<span className="icon opacity-50"><i className="fa fa-receipt"></i></span>
+												<span className="text">ຈ່າຍແລ້ວ</span>
 											</div>
 										</div>
 									</div>
@@ -244,10 +242,10 @@ const handleAddClick = () => {
                 </div>
                     <div className="pos-sidebar-footer">
                       <div className="d-flex align-items-center mb-2">
-                        <div>ວັນ~ເວລາ</div>
+                        <div>ຈຳນວນເງິນ</div>
                         <div className="flex-1 text-end h6 mb-0">
-                          <DatePicker placement="autoVerticalEnd" style={{ width: "78%"}} 
-                          format="MM/dd/yyyy hh:mm aa" showMeridiem /></div>
+                          <Input style={{ width: "78%"}} 
+                          format="MM/dd/yyyy hh:mm aa" showMeridiem /></div>  
                       </div>
                         <hr className="opacity-1 my-10px"></hr>
                         <div className="d-flex align-items-center mb-2">

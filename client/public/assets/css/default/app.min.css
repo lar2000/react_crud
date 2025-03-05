@@ -228,15 +228,15 @@
 }
 @font-face {
     font-family: "laos-OT";
-    src: url("../fonts/PhetsarathOT.ttf");
-    font-weight: 700;
+    src: url("../fonts/NotoSerifLao.ttf");
+    font-weight: 500;
     font-style: normal;
   }
 
   @font-face {
     font-family: "laos-bold";
-    src: url("../fonts/phetsarath-bold.ttf");
-    font-weight: 700;
+    src: url("../fonts/NotoSerifLao.ttf");
+    font-weight: 600;
     font-style: normal;
   }
 
@@ -17370,7 +17370,7 @@ a:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url(../../img/logo/acount3.avif);
+  background-image: url(../../img/logo/spa_bg.jpg);
   background-repeat: no-repeat;
   background-size: cover;
 }
