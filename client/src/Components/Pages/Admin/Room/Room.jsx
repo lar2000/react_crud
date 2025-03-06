@@ -12,7 +12,7 @@ import { AuthenActions } from "../../../../util";
 
 const Room = () => {
   const api = Config.ApiURL;
-  const img = `${Urlimage.ImgURL}/images/`;
+  const img = `${Urlimage.ImgURL}/room_img/`;
   const [getData, setData] = useState([]);
   const [length, setLength] = useState(10); // Default to 10 items per page
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,7 +106,6 @@ const Room = () => {
     });
   };
     const handleFileChange = (e) => {
-      alert(roomData.room_img)
       const file = e.target.files[0];
       setSelectedFile(file);
       if (file) {
@@ -131,13 +130,14 @@ const Room = () => {
     for (const key in roomData) {
       formData.append(key, roomData[key]);
     }
+
     try {
         await axios.post(`${api}/room/create`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        Alert.successData(`${formData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
+        Alert.successData(`${roomData._id ? "ອັບເດດ" : "ບັນທຶກ"} ຂໍ້ມູນສຳເລັດແລ້ວ!`);
         handleClose();
         fetchgetData();
         resetForm();
@@ -214,7 +214,7 @@ const Room = () => {
                 <th className="text-nowrap">ເບີຫ້ອງ</th>
                 <th className="text-nowrap">ປະເພດຫ້ອງ</th>
                 <th className="text-nowrap">ສະຖານະ</th>
-                <th className="text-nowrap">Actions</th>
+                <th className="text-nowrap">ຈັດການ</th>
               </tr>
             </thead>
             <tbody>
@@ -227,15 +227,13 @@ const Room = () => {
                 </tr>
               ): paginatedData.length > 0 ? paginatedData.map((room, index) => (
                 <tr key={room.room_id}>
-                  <td width="1%" className="fw-bold">
-                    {startIndex + index + 1}
-                  </td>
-                  <td>{room.room_number}</td>
+                  <td width="1%" className="fw-bold">{startIndex + index + 1}</td>
                   <td width="1%" className="with-img">
                     {room.room_img && (<img src={`${img}${room.room_img}`}
                         className="rounded h-30px my-n1 mx-n1" alt="image"/>
                     )}
                   </td>
+                  <td>{room.room_number}</td>
                   <td>{room.roomtype_name}</td>
                   <td>
                     {   room.status === 2 ? (

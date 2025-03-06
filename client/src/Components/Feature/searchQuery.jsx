@@ -9,7 +9,7 @@ const SearchQuery = ({ searchTerm, setSearchTerm }) => {
         <input
           type="search"
           className="form-control form-control-sm"
-          placeholder="Search ID, Name or Surname..."
+          placeholder="ຄົ້ນຫາລະຫັດ,ຊື່..."
           value={searchTerm}
           onChange={handleChange}
         />

@@ -28,6 +28,7 @@ const Booking = () => {
     pay_fk: null,
     date: null,
     pk_fk: [],
+    room_fk: [],
     group_size: "",
     email: "",
     tell: "",
@@ -60,6 +61,7 @@ const Booking = () => {
       cust_id_fk: null,
       pay_fk: null,
       pk_fk: [],
+      room_fk: [],
       group_size: "",
       email: "",
       tell: "",
@@ -103,6 +105,7 @@ const Booking = () => {
       cust_id_fk: data.cust_id_fk,
       pay_fk: data.pay_fk,
       pk_fk: data.pk_fk.map(id => Number(id)),
+      room_fk: data.room_fk.map(id => Number(id)),
       group_size: data.group_size,
       email: data.email,
       tell: data.tell,
@@ -125,6 +128,7 @@ const Booking = () => {
       pay_fk: bookData.pay_fk,
       date: bookData.date,
       pk_fk: bookData.pk_fk,
+      room_fk: bookData.room_fk,
       group_size: bookData.group_size,
       email: bookData.email,
       tell: bookData.tell,
@@ -166,10 +170,10 @@ const Booking = () => {
     }
   };  
   
-  const handleDeleteClick = async (book_id, cust_id_fk, pay_fk) => {
+  const handleDeleteClick = async (book_id, cust_id_fk, pay_fk, room_fk) => {
     try {
       // First request to delete booking
-      const bookingResponse = await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk });
+      const bookingResponse = await axios.patch(`${api}/booking/${book_id}`, { cust_id_fk }, {room_fk});
   
       if (bookingResponse.status === 200) {
         try {
@@ -220,7 +224,7 @@ const Booking = () => {
               <SearchQuery searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
               <div className="mb-2 ms-2">
               <DatePicker size="sm" format="yyyy-MM-dd" value={searchDate}  style={{ width: 180 }}
-                onChange={handleDateSearch} placeholder="Select Date"/>
+                onChange={handleDateSearch} placeholder="ຄົ້ນຫາວັນທີ..."/>
               </div>
               <div className="actions mb-2">
                 <a href="javarscript:;" className="btn btn-sm btn-success ms-2"
@@ -237,12 +241,13 @@ const Booking = () => {
                 <th className="text-nowrap">ລ/ດ</th>
                 <th className="text-nowrap">ລະຫັດ</th>
                 <th className="text-nowrap">ປະເພດຈອງ</th>
+                <th className="text-nowrap">ຫ້ອງ(ພະນັກງານ)</th>
                 <th className="text-nowrap">ວັນນັດໝາຍ</th>
                 <th className="text-nowrap">ຊື່ ແລະ ນາມສະກຸນ</th>
                 <th className="text-nowrap">ບໍລິການທີເລຶອກ</th>
-                <th className="text-nowrap">status</th>
+                <th className="text-nowrap">ສະຖານະ</th>
                 <th className="text-nowrap">ໝາຍເຫດ</th>
-                <th className="text-nowrap">Actions</th>
+                <th className="text-nowrap">ຈັດການ</th>
               </tr>
             </thead>
             <tbody>
@@ -255,6 +260,7 @@ const Booking = () => {
                   <td>{booking.group_type}
                     <Text color="blue" weight="semibold">({booking.group_size} ຄົນ)</Text>
                   </td>
+                  <td>{booking.room_numbers}</td>
                   <td>{format(new Date(booking.date), "dd-MM-yyyy")}
                     <Text>{format(new Date(booking.date), "HH:mm")}</Text>
                   </td>

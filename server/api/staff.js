@@ -195,6 +195,17 @@ router.get("/single/:id", function (req, res, next) {
   });
 });
 
+router.get("/freetime", function (req, res, next) {
+  const where = `staff.state = 1 AND stafftime=${booking.date} + ${package.pk_duration}`
+  const tables = `staff`;
+  db.singleAll(tables, where, (err, results) => {
+      if (err) {
+          return res.status(400).send();
+      }
+      res.status(200).json(results);
+  });
+});
+
 router.get("/", function (req, res, next) {
   const tables = `staff
        LEFT JOIN staff_authen_association ON staff.staff_id=staff_authen_association.staff_fk

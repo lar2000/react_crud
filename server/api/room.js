@@ -9,7 +9,7 @@ router.post('/create', function (req, res) {
   let image = null;
     const storage = multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, './uploads/roomIMG');
+        cb(null, './uploads/room_img');
       },
       filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
@@ -17,7 +17,7 @@ router.post('/create', function (req, res) {
         cb(null, image);
       }
     });
-    const upload = multer({ storage }).single('image');
+    const upload = multer({ storage }).single('room_img');
   
     upload(req, res, function (err) {
   const { _id, room_number, roomtype_fk } = req.body;

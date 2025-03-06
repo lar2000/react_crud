@@ -38,6 +38,7 @@ const Detail = ({ data, open, onClose }) => {
           {[
             { label: "ລະຫັດຈອງ :", value: data.book_code },
             { label: "ຈອງເປັນ :", value: `${data.group_type}(${data.group_size}ຄົນ)` },
+            { label: "ຫ້ອງ :", value: data.room_numbers},
             { label: "ຊື່ ແລະ ນາມສະກຸນ :", value: `(${data.cust_code}) ${data.cust_name} ${data.cust_surname}`},
             { label: "ເບີໂທ :", value: data.tell },
             { label: "ອີເມວ໌ :", value: data.email },
@@ -50,7 +51,7 @@ const Detail = ({ data, open, onClose }) => {
               </>
           ) },
             { label: "ລາຄາທັງໝົດ :", value: data.calculation },
-            { label: data.pay_status === 0 ? 'ຊຳລະ :' : 
+            { label: data.pay_status === 0 ? 'ຍັງບໍ່ຊຳລະ :' : 
               data.pay_status === 1 ? 'ມັດຈຳ :' :
               data.pay_status === 2 ? 'ຈ່າຍແລ້ວ :'
               : '', 

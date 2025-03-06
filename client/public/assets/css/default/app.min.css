@@ -16685,7 +16685,6 @@ a:focus {
   }
 }
 .app-footer {
-  margin-left: 220px;
   padding: 0.9375rem 30px;
   border-top: 1px solid var(--bs-component-border-color);
   font-weight: 600;

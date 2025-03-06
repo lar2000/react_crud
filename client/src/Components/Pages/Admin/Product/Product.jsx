@@ -220,7 +220,7 @@ const Product = () => {
                 <th className="text-nowrap">ລາຄາຊື້</th>
                 <th className="text-nowrap">ລາຄາລວມ</th>
                 <th className="text-nowrap">ປະເພດ</th>
-                <th className="text-nowrap">Actions</th>
+                <th className="text-nowrap">ຈັດການ</th>
               </tr>
             </thead>
             <tbody>

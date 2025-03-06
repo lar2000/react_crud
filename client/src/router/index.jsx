@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import LogIn from '../Components/Pages/Login';
 import Booking from '../Components/Pages/Admin/Booking/BookingList';
 import CheckIn from '../Components/Pages/Admin/Check-in/CheckIn';
-import Staff from '../Components/Pages/Admin/Staff/Staff';
+import Staff from '../Components/Pages/Admin/Staff/staffSetup';
 import Customer from '../Components/Pages/Admin/Customer/Customer';
 import ImportProd from '../Components/Pages/Admin/Product/ImportProduct';
 import Product from '../Components/Pages/Admin/Product/Product';

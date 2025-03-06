@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, InlineEdit } 
 from 'rsuite';
-import { useCustomer, usePackage }
+import { useCustomer, usePackage, useRoom, useStaff }
  from "../../../../config/selectOption";
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const packages = usePackage();
+  const rooms = useRoom();
+  const staffs = useStaff();
   const customers = useCustomer();
   const [step, setStep] = useState(0);
   const [changeAmount, setChangeAmount] = useState(0);
@@ -73,6 +75,12 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       [field]: event,
     });
   };
+  const handleCheck = (value) => {
+    setBookData((prevData) => ({
+      ...prevData,
+      room_fk: value,
+    }));
+  };
   const handleAmountChange = (value) => {
     const received = Number(value) || 0;
     const total = Number(bookData.calculation) || 0;
@@ -115,6 +123,17 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
                       required />
                   </div>
+                  <div className="col-md-12">
+                    <label className="form-label">ເລຶອກຫ້ອງ</label>
+                    <CheckPicker data={rooms} className="form-label" groupBy="roomtype_name" labelKey="label"
+                      valueKey="value" value={bookData.room_fk}
+                      onChange={handleCheck} required block/>
+                    </div>
+                    <div className="col-md-12">
+                    <label className="form-label">ເລຶອກພະນັກງານ</label>
+                    <CheckPicker data={staffs} className="form-label" value={bookData.room_fk}
+                      onChange={handleCheck} required block/>
+                    </div>
                   <div className="col-md-6">
                     <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
                     <SelectPicker className="form-label" data={customers}
@@ -128,19 +147,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                     required block/>
                     </div>
                   <div className="col-md-6">
-                    <label className="form-label">Phone</label>
+                    <label className="form-label">ເບີໂທລະສັບ</label>
                     <Input className="form-label" name="tell" value={bookData.tell}
                       onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
                       required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Email</label>
+                    <label className="form-label">ອີເມວ</label>
                     <Input className="form-label" name="email"
                       value={bookData.email}
                       onChange={(value) => setBookData({ ...bookData, email: value })} />
                   </div>
                   <div className="col-md-12">
-                    <label className="form-label">Notes</label>
+                    <label className="form-label">ໝາຍເຫດ</label>
                     <Input as="textarea" rows={3} name="textarea"
                       className="form-label" value={bookData.note}
                       onChange={(value) => setBookData({ ...bookData, note: value })} />
@@ -195,15 +214,17 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={onPrevious} disabled={step === 0}>Previous</Button>
+          <Button onClick={onPrevious} disabled={step === 0}>
+            <i className="fas fa-angle-left fa-fw"></i>ກັບຄືນ</Button>
           {step !== 1 && (
-            <Button onClick={onNext} disabled={!validateStep()}>Next</Button>
+            <Button onClick={onNext} disabled={!validateStep()}>
+              ຖັດໄປ<i className="fas fa-angle-right fa-fw"></i></Button>
           )}
           <Button type="submit" appearance="primary" disabled={step !== 1}
           onClick={handleSubmit}>
-            {modalType === "add" ? "Book Now" : "Update"}
+            {modalType === "add" ? "ຈອງຕອນນີ້" : "ອັບເດດ"}
           </Button>
-          <Button onClick={onClose} appearance="subtle">Cancel</Button>
+          <Button onClick={onClose} color='red' appearance="primary">ຍົກເລີກ</Button>
         </Modal.Footer>
       </form>
     </Modal>

@@ -57,6 +57,13 @@ export const useSetProduct = () =>
     label: set_name,
     value: set_id,
   }));
+  
+  export const useRoom = () =>
+    useFetchData("room").map(({ room_number, room_id, roomtype_name }) => ({
+      label: room_number,
+      value: room_id,
+      roomtype_name,
+    }));
 
 export const useServiceType = () =>
   useFetchData("service_type").map(({ servicetype_name, servicetype_id }) => ({
@@ -95,6 +102,12 @@ export const useUnit = () =>
     label: `${cust_name} ${cust_surname}`,
     value: cust_id,
   }));
+
+  export const useStaff = () =>
+    useFetchData("staff").map(({ staff_name, staff_surname, staff_id }) => ({
+      label: `${staff_name} ${staff_surname}`,
+      value: staff_id,
+    }));
 
   export const usePayType = () =>
     useFetchData("payment/paytype").map(({ paytype_name, paytype_id }) => ({

@@ -156,7 +156,7 @@ const RoomType = () => {
                 <th className="text-nowrap">ຊື່ປະເພດຫ້ອງ</th>
                 <th className="text-nowrap">ລາຄາ</th>
                 <th className="text-nowrap">ລາຍລະອຽດ</th>
-                <th className="text-nowrap">Actions</th>
+                <th className="text-nowrap">ຈັດການ</th>
               </tr>
             </thead>
             <tbody>
