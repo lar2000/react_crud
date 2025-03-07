@@ -33,12 +33,30 @@
 
   export const formatDuration = (time) => {
     if (time < 60) {
-      return `${time} Min`;
+      return `${time} ນາທີ`;
     } else {
       const hours = Math.floor(time / 60);
       const minutes = time % 60;
-      return `${hours} H${minutes > 0 ? ` : ${minutes} Min` : ''}`;
+      return `${hours} ຊົ່ວໂມງ${minutes > 0 ? ` : ${minutes} ນາທີ` : ''}`;
     }
   };
+  // export const TodoList = ({ date }) => {
+  //   const list = getTodoList(date);
+  
+  //   if (!list.length) {
+  //     return null;
+  //   }
+  
+  //   return (
+  //     <List style={{ flex: 1 }} bordered>
+  //       {list.map(item => (
+  //         <List.Item key={item.time} index={item.time}>
+  //           <div>{item.time}</div>
+  //           <div>{item.title}</div>
+  //         </List.Item>
+  //       ))}
+  //     </List>
+  //   );
+  // };
 
   

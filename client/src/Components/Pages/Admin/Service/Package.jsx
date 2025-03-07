@@ -7,7 +7,8 @@ import { Modal,
   SelectPicker, 
   Popover, Whisper,
   Loader, 
-  Placeholder 
+  Placeholder, 
+  InputNumber
 } from "rsuite";
 
 import { Notification, Alert } from '../../../../SweetAlert2'
@@ -36,6 +37,7 @@ const Package = () => {
     association_service_fk: [],
     pk_code: "",
     pk_name: "",
+    pk_day: "",
     pk_duration: "",
     pk_price: "",
     set_id_fk: null,
@@ -53,11 +55,11 @@ const Package = () => {
         ))) : "ບໍ່ມີຂໍ້ມູນ"}
     </Popover>
   );
-  const TimePopover = (pkg) => (
-    <Popover title='ລາຍລະອຽດ:'>
-      {pkg.pk_details ? pkg.pk_details : "ບໍ່ມີຂໍ້ມູນ"}
-    </Popover>
-  );
+  // const TimePopover = (pkg) => (
+  //   <Popover title='ລາຍລະອຽດ:'>
+  //     {pkg.pk_details ? pkg.pk_details : "ບໍ່ມີຂໍ້ມູນ"}
+  //   </Popover>
+  // );
 
   useEffect(() => {
     fetchgetData();
@@ -81,6 +83,7 @@ const Package = () => {
         association_service_fk: [],
         pk_code: "",
         pk_name: "",
+        pk_day: "",
         pk_duration: "",
         pk_price: "",
         set_id_fk: "",
@@ -112,6 +115,7 @@ const Package = () => {
       association_service_fk: data.association_service_fk.map(id => Number(id)),
       pk_code: data.pk_code,
       pk_name: data.pk_name,
+      pk_day: data.pk_day,
       pk_duration: data.pk_duration,
       pk_price: data.pk_price,
       set_id_fk: data.set_id_fk,
@@ -282,9 +286,7 @@ const Package = () => {
                   <Whisper placement="top" trigger="hover" enterable={true} speaker={renderPopover(pkg)}>
                 <td style={{ cursor: 'pointer' }}>{pkg.pk_name}</td>
               </Whisper>
-                  <Whisper placement="top" trigger="hover" enterable={true} speaker={TimePopover(pkg)}>
-                <td style={{ cursor: 'pointer' }}>{formatDuration(pkg.pk_duration)}</td>
-              </Whisper>
+                <td>{pkg.pk_day} ມື້ ({formatDuration(pkg.pk_duration)}/ມື້)</td>
                   <td>{pkg.pk_price} ກີບ</td>
                   <td>{pkg.set_name}</td>
                   <td>
@@ -361,11 +363,19 @@ const Package = () => {
               valueKey="value" value={PackageData.association_service_fk}
               onChange={handleCheck} required block/>
             </div>
-            <div className="col-md-12">
-              <label className="form-label">ໄລຍະເວລາ(Min)</label>
+            <div className="row">
+            <div className="col-md-6">
+              <label className="form-label">ໄລຍະເວລາ(ມື້)</label>
+              <InputNumber className="form-label" name="day" value={PackageData.pk_day} 
+              onChange={(value) => handleChange("pk_day", value)}
+              placeholder="0" required />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">ໄລຍະເວລາ( ນາທີ/ມື້ )</label>
               <Input className="form-label" name="duration" value={PackageData.pk_duration} 
               onChange={(value) => handleChange("pk_duration", value.replace(/[^0-9]/g, ""))}
               placeholder="0" required />
+            </div>
             </div>
             <div className="col-md-12">
               <label className="form-label">ລາຄາ</label>

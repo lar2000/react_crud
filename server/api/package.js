@@ -200,6 +200,7 @@ router.get('/', function (req, res, next) {
       package.pk_id,
       package.pk_code,
       package.pk_name,
+      package.pk_day,
       package.pk_duration,
       package.pk_price, 
       package.set_id_fk,

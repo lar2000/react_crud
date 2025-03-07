@@ -1,9 +1,76 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
-import { Modal, Button, Steps, Panel, Input, SelectPicker, CheckPicker, DatePicker, InlineEdit } 
-from 'rsuite';
-import { useCustomer, usePackage, useRoom, useStaff }
- from "../../../../config/selectOption";
+import { 
+  Modal, Button, Steps, 
+  Panel,PanelGroup, Input, 
+  SelectPicker, 
+  Calendar, Badge, HStack,Card,CardGroup,
+  CheckPicker, DatePicker, 
+  InlineEdit, InputNumber ,
+  ButtonGroup,Tabs
+  } from 'rsuite';
+import { useCustomer, usePackage, useRoom, useStaff } from "../../../../config/selectOption";
+
+ function getTodoList(date) {
+  if (!date) {
+    return [];
+  }
+  const day = date.getDate();
+
+  switch (day) {
+    case 10:
+      return [
+        { time: '10:30 AM'},
+        { time: '12:00 PM'}
+      ];
+    case 15:
+      return [
+        { time: '08:30 AM'},
+        { time: '09:30 AM'},
+        { time: '12:30 PM'},
+        { time: '14:00 PM'},
+        { time: '15:00 PM'}
+      ];
+      case 17:
+        return [
+          { time: '09:30 AM'},
+          { time: '12:30 PM'},
+          { time: '14:00 PM'},
+          { time: '15:00 PM'},
+          { time: '18:00 PM'}
+        ];
+    default:
+      return [];
+  }
+}
+
+function renderCell(date) {
+  const list = getTodoList(date);
+
+  if (list.length) {
+    return <Badge className="calendar-todo-item-badge"/>;
+  }
+
+  return null;
+}
+const TodoList = ({ date }) => {
+  const list = getTodoList(date);
+
+  if (!list.length) {
+    return null;
+  }
+
+  return (
+    <CardGroup style={{ flex: 1 }} spacing={2}>
+    {list.map(item => (
+        <Card key={item.time} index={item.time}>
+          <div className='m-2' style={{ fontSize: '12px' }}>{item.time}</div>
+      </Card>
+       ))}
+      </CardGroup>
+  );
+};
+
 
 const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleSubmit }) => {
   const packages = usePackage();
@@ -12,6 +79,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   const customers = useCustomer();
   const [step, setStep] = useState(0);
   const [changeAmount, setChangeAmount] = useState(0);
+  const [activeKey, setActiveKey] = useState(1);
 
   useEffect(() => {
     if (modalType === 'add') {
@@ -22,7 +90,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     const { group_size, pk_fk } = bookData;
 
     const selectedPackages = packages.filter((pk) => pk_fk.includes(pk.value));
-  
     const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.pk_price), 0);
   
     const totalPrice = group_size * packagePrice;
@@ -31,7 +98,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       ...prev,
       calculation: totalPrice,
     }));
-  }, [modalType, open, bookData.pk_fk, bookData.group_size]);
+  }, [modalType, open, bookData.pk_fk, bookData.group_size, bookData, packages, setBookData]);
 
   const onChange = (nextStep) => {
     setStep(nextStep < 0 ? 0 : nextStep > 3 ? 3 : nextStep);
@@ -40,7 +107,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     if (step === 0) {
       return bookData.group_size && 
       bookData.date && 
-      bookData.pk_fk &&
+      bookData.pk_fk.length > 0 &&
       bookData.cust_id_fk && 
       bookData.tell;
     }
@@ -51,11 +118,24 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     }
     return true;
   };
+  const validateTabFields = (key) => {
+    // Validate fields for the specific tab based on the active key
+    if (key === 1) {
+      return bookData.pk_fk.length > 0 && 
+             bookData.room_fk.length > 0 && 
+             bookData.cust_id_fk && 
+             bookData.tell && 
+             bookData.date;
+    }
+    // Add more conditions for other keys if needed
+    return true;
+  };
 
   const onPrevious = () => onChange(step - 1);
   const onNext = () => {
-    if (!validateStep()) {
+    if (!validateStep() || !validateTabFields(activeKey)) {
       alert("Please fill in all required fields.");
+
       return;
     }
   
@@ -68,6 +148,22 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   
     onChange(step + 1); // Continue to the next step
   };
+
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const handleSelectDate = date => {
+    setSelectedDate(date);
+  };
+
+  const handleGroupSizeChange = (value) => {
+    setBookData((prevState) => ({
+      ...prevState,
+      group_size: value,
+    }));
+    if (value < activeKey) {
+      setActiveKey(value);
+    }
+  }
 
   const handleSelectChange = (event, field) => {
     setBookData({
@@ -94,7 +190,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     }));
   };
   return (
-    <Modal size={step === 1 ? "xs" : "sm"} open={open} onClose={onClose}>
+    <Modal size={step === 1 ? "xs" : "md"} open={open} onClose={onClose}>
         <Modal.Title className="title text-center mt-2">
         </Modal.Title>
       <form onSubmit={handleSubmit}>
@@ -111,59 +207,88 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
             {step === 0 && (
               <Panel>
                 <div className="row mb-3">
-                  <div className="col-md-6">
-                  <label className="form-label">ເລຶອກບໍລິການທີຕ້ອງການ</label>
-                    <CheckPicker className="form-label" data={packages}
-                      value={bookData.pk_fk || []} onChange={(value) => handleSelectChange(value, "pk_fk")}
-                      placeholder="ແພັກເກດ..." required block />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ຈຳນວນຄົນ</label>
-                    <Input className="form-label" name="amount" value={bookData.group_size}
-                      onChange={(value) => setBookData({ ...bookData, group_size: value.replace(/[^0-9]/g, "") })}
-                      required />
-                  </div>
-                  <div className="col-md-12">
-                    <label className="form-label">ເລຶອກຫ້ອງ</label>
-                    <CheckPicker data={rooms} className="form-label" groupBy="roomtype_name" labelKey="label"
-                      valueKey="value" value={bookData.room_fk}
-                      onChange={handleCheck} required block/>
+                <div className="col-md-12">
+                  <label className="form-label">ຈຳນວນຄົນ</label>
+                  <InputNumber className="form-label" name="amount" value={bookData.group_size}
+                    onChange={(value) => handleGroupSizeChange(value)} required/>
+                  <ButtonGroup>
+                  {Array.from({ length: bookData.group_size }, (_, index) => index + 1).map((key) => (
+                    <Button key={key} active={key === activeKey} onClick={() => setActiveKey(key)}>
+                      {key === 1 ? 'ສະເພາະທ່ານ':`ທ່ານທີ ${key}`}</Button>
+                  ))}
+                  </ButtonGroup>
+                  <Tabs activeKey={activeKey} onSelect={setActiveKey} appearance="false">
+                    {Array.from({ length: bookData.group_size }, (_, index) => index + 1).map((key) => (
+                      <Tabs.Tab eventKey={key} key={key}>
+                        <div className='row'>
+                    <div className="col-md-12">
+                    <label className="form-label">ເລຶອກບໍລິການທີຕ້ອງການ</label>
+                      <CheckPicker className="form-label" data={packages}
+                        value={bookData.pk_fk || []} onChange={(value) => handleSelectChange(value, "pk_fk")}
+                        placeholder="ແພັກເກດ..." required block />
+                    </div>
+
+                      <PanelGroup accordion defaultActiveKey={1} bordered>
+                        <Panel header={`ເລຶອກຫ້ອງ ${bookData.room_fk ? rooms.find(r => r.value === bookData.room_fk)?.label : ''}`} eventKey={1}>
+                        <div className="col-md-12">
+                      <SelectPicker data={rooms} className="form-label" groupBy="roomtype_name" labelKey="label"
+                        valueKey="value" value={bookData.room_fk}
+                        onChange={handleCheck} required block/>
+                      </div>
+                        {bookData.room_fk && (
+                          <div className="col-md-12">
+                            <HStack spacing={10} style={{ height: 320 }} alignItems="flex-start" wrap>
+                              <Calendar compact renderCell={renderCell} onSelect={handleSelectDate} style={{ width: 320 }}/>
+                              <TodoList date={selectedDate} />
+                            </HStack>
+                          </div>
+                        )}
+                        </Panel>
+                        <Panel header="ເລຶອກພະນັກງານ" eventKey={2}>
+                        <div className="col-md-12">
+                      <SelectPicker data={staffs} className="form-label" value={bookData.room_fk}
+                        onChange={handleCheck} required block/>
+                      </div>
+                        </Panel>
+                        <Panel header="Panel 3" eventKey={3}>
+                          <h2>Panel3</h2>
+                        </Panel>
+                      </PanelGroup>
+                    <div className="col-md-6">
+                      <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
+                      <SelectPicker className="form-label" data={customers}
+                        value={bookData.cust_id_fk}
+                        onChange={(value) => setBookData({...bookData, cust_id_fk: value})} required block />
+                    </div>
+                    <div className="col-md-6">
+                    <label className="form-label">ເວລານັດໝາຍ</label>
+                    <DatePicker oneTap format="dd/MM/yyyy HH:mm" className="form-label" placement='auto' 
+                    value={bookData.date} onChange={(value) =>  setBookData({ ...bookData, date: value })}
+                      required block/>
+                      </div>
+                    <div className="col-md-6">
+                      <label className="form-label">ເບີໂທລະສັບ</label>
+                      <Input className="form-label" name="tell" value={bookData.tell}
+                        onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
+                        required />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">ອີເມວ</label>
+                      <Input className="form-label" name="email"
+                        value={bookData.email}
+                        onChange={(value) => setBookData({ ...bookData, email: value })} />
                     </div>
                     <div className="col-md-12">
-                    <label className="form-label">ເລຶອກພະນັກງານ</label>
-                    <CheckPicker data={staffs} className="form-label" value={bookData.room_fk}
-                      onChange={handleCheck} required block/>
+                      <label className="form-label">ໝາຍເຫດ</label>
+                      <Input as="textarea" rows={3} name="textarea"
+                        className="form-label" value={bookData.note}
+                        onChange={(value) => setBookData({ ...bookData, note: value })} />
                     </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ຊື່ ແລະ ນາມລະກຸນ</label>
-                    <SelectPicker className="form-label" data={customers}
-                      value={bookData.cust_id_fk}
-                      onChange={(value) => setBookData({...bookData, cust_id_fk: value})} required block />
                   </div>
-                  <div className="col-md-6">
-                  <label className="form-label">ເວລານັດໝາຍ</label>
-                  <DatePicker oneTap format="dd/MM/yyyy HH:mm" className="form-label" placement='auto' 
-                   value={bookData.date} onChange={(value) =>  setBookData({ ...bookData, date: value })}
-                    required block/>
-                    </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ເບີໂທລະສັບ</label>
-                    <Input className="form-label" name="tell" value={bookData.tell}
-                      onChange={(value) => setBookData({ ...bookData, tell: value.replace(/[^0-9]/g, "") })}
-                      required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ອີເມວ</label>
-                    <Input className="form-label" name="email"
-                      value={bookData.email}
-                      onChange={(value) => setBookData({ ...bookData, email: value })} />
-                  </div>
-                  <div className="col-md-12">
-                    <label className="form-label">ໝາຍເຫດ</label>
-                    <Input as="textarea" rows={3} name="textarea"
-                      className="form-label" value={bookData.note}
-                      onChange={(value) => setBookData({ ...bookData, note: value })} />
-                  </div>
+                      </Tabs.Tab>
+                    ))}
+                  </Tabs>
+                </div>
                 </div>
               </Panel>
             )}
@@ -198,9 +323,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                       onChange={(value) => handleAmountChange(value, "get_money")}/>
                     </div>
                  </div>
-           
                  <hr style={{ height: "2px", backgroundColor: "#333" }} />
-           
                  <div className="header d-md-flex justify-content-between dt-layout-end">
                    <h5 className="title">ເງິນທອນ:</h5>
                    <div className="col-6 d-md-flex justify-content-between dt-layout-end">
@@ -230,5 +353,4 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
     </Modal>
   );
 };
-
 export default BookingModal;
