@@ -1,13 +1,13 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
 import { 
-  Modal, Button, Steps, 
+  Modal, Button, Steps, Text,
   Panel,PanelGroup, Input, 
   SelectPicker, 
-  Calendar, Badge, HStack,Card,CardGroup,
+  Calendar, Badge, HStack, CardGroup,
   CheckPicker, DatePicker, 
   InlineEdit, InputNumber ,
-  ButtonGroup,Tabs
+  Stack,Tabs
   } from 'rsuite';
 import { useCustomer, usePackage, useRoom, useStaff } from "../../../../config/selectOption";
 
@@ -31,6 +31,11 @@ import { useCustomer, usePackage, useRoom, useStaff } from "../../../../config/s
         { time: '14:00 PM'},
         { time: '15:00 PM'}
       ];
+      case 16:
+        return [
+          { time: '08:30 AM'},
+          { time: '09:30 AM'},
+        ];
       case 17:
         return [
           { time: '09:30 AM'},
@@ -39,6 +44,13 @@ import { useCustomer, usePackage, useRoom, useStaff } from "../../../../config/s
           { time: '15:00 PM'},
           { time: '18:00 PM'}
         ];
+        case 27:
+          return [
+            { time: '12:30 PM'},
+            { time: '14:00 PM'},
+            { time: '15:00 PM'},
+            { time: '18:00 PM'}
+          ];
     default:
       return [];
   }
@@ -55,19 +67,46 @@ function renderCell(date) {
 }
 const TodoList = ({ date }) => {
   const list = getTodoList(date);
+  if (!list.length) return null;
+  const morningItems = list.filter(item => parseInt(item.time.split(":")[0]) < 12);
+  const afternoonItems = list.filter(item => parseInt(item.time.split(":")[0]) >= 12);
 
-  if (!list.length) {
-    return null;
-  }
+  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 
   return (
-    <CardGroup style={{ flex: 1 }} spacing={2}>
-    {list.map(item => (
-        <Card key={item.time} index={item.time}>
-          <div className='m-2' style={{ fontSize: '12px' }}>{item.time}</div>
-      </Card>
-       ))}
-      </CardGroup>
+    <>
+      <div className="text-center" style={{fontWeight: "bold"}}>{formattedDate}</div>
+    <CardGroup style={{ flex: 1, maxHeight: "320px", overflowY: "auto" }} spacing={3}>
+      {morningItems.length > 0 && (
+        <div>
+          <div>
+          <h4 style={{ fontWeight: "bold" }}>☀️ ຕອນເຊົ້າ</h4>
+          </div>
+          {morningItems.map(item => (
+            <Button color="cyan" appearance="ghost" key={item.time}>
+              <div style={{ fontSize: "12px", textAlign: "center" }}>{item.time}</div>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {afternoonItems.length > 0 && (
+        <div>
+          <div>
+          <h4 style={{ fontWeight: "bold" }}>🌙 ຕອນບ່າຍ-ຕອນແລງ</h4></div>
+          {afternoonItems.map(item => (
+            <Button color="cyan" appearance="ghost" key={item.time}>
+              <div style={{ fontSize: "12px", textAlign: "center" }}>{item.time}</div>
+            </Button>
+          ))}
+        </div>
+      )}
+    </CardGroup>
+    </>
   );
 };
 
@@ -81,6 +120,8 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
   const [changeAmount, setChangeAmount] = useState(0);
   const [activeKey, setActiveKey] = useState(1);
 
+  const [roomChecked, setRoomChecked] = useState(false); 
+
   useEffect(() => {
     if (modalType === 'add') {
       setStep(0); // Reset to step 0 when "Add New" is clicked
@@ -91,7 +132,6 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
 
     const selectedPackages = packages.filter((pk) => pk_fk.includes(pk.value));
     const packagePrice = selectedPackages.reduce((sum, pk) => sum + Number(pk.pk_price), 0);
-  
     const totalPrice = group_size * packagePrice;
   
     setBookData((prev) => ({
@@ -108,6 +148,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       return bookData.group_size && 
       bookData.date && 
       bookData.pk_fk.length > 0 &&
+      bookData.room_fk &&
       bookData.cust_id_fk && 
       bookData.tell;
     }
@@ -176,6 +217,7 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
       ...prevData,
       room_fk: value,
     }));
+    setRoomChecked(true);
   };
   const handleAmountChange = (value) => {
     const received = Number(value) || 0;
@@ -211,12 +253,12 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                   <label className="form-label">ຈຳນວນຄົນ</label>
                   <InputNumber className="form-label" name="amount" value={bookData.group_size}
                     onChange={(value) => handleGroupSizeChange(value)} required/>
-                  <ButtonGroup>
+                  <Stack wrap spacing={2} direction={'row'} alignItems={'flex-start'} justifyContent={'flex-start'}>
                   {Array.from({ length: bookData.group_size }, (_, index) => index + 1).map((key) => (
                     <Button key={key} active={key === activeKey} onClick={() => setActiveKey(key)}>
-                      {key === 1 ? 'ສະເພາະທ່ານ':`ທ່ານທີ ${key}`}</Button>
+                      {key === 1 ? 'ສະເພາະແຂກ 1 ທ່ານ':`ແຂກທ່ານທີ ${key}`}</Button>
                   ))}
-                  </ButtonGroup>
+                  </Stack>
                   <Tabs activeKey={activeKey} onSelect={setActiveKey} appearance="false">
                     {Array.from({ length: bookData.group_size }, (_, index) => index + 1).map((key) => (
                       <Tabs.Tab eventKey={key} key={key}>
@@ -228,18 +270,19 @@ const BookingModal = ({ open, onClose, modalType, bookData, setBookData, handleS
                         placeholder="ແພັກເກດ..." required block />
                     </div>
 
-                      <PanelGroup accordion defaultActiveKey={1} bordered>
-                        <Panel header={`ເລຶອກຫ້ອງ ${bookData.room_fk ? rooms.find(r => r.value === bookData.room_fk)?.label : ''}`} eventKey={1}>
+                      <PanelGroup accordion bordered>
+                        <Panel header={`ເລຶອກຫ້ອງ ${bookData.room_fk ? rooms.find(r => r.value === bookData.room_fk)?.label : ''}`}
+                         eventKey={1}>
                         <div className="col-md-12">
                       <SelectPicker data={rooms} className="form-label" groupBy="roomtype_name" labelKey="label"
                         valueKey="value" value={bookData.room_fk}
-                        onChange={handleCheck} required block/>
+                        onChange={handleCheck} placeholder="ເລືອກຫ້ອງ..." required block/>
                       </div>
-                        {bookData.room_fk && (
+                        { bookData.room_fk && roomChecked  && (
                           <div className="col-md-12">
                             <HStack spacing={10} style={{ height: 320 }} alignItems="flex-start" wrap>
-                              <Calendar compact renderCell={renderCell} onSelect={handleSelectDate} style={{ width: 320 }}/>
-                              <TodoList date={selectedDate} />
+                              <Calendar isoWeek bordered compact renderCell={renderCell} onSelect={handleSelectDate} style={{ width: 320 }}/>
+                              <TodoList date={selectedDate}/>
                             </HStack>
                           </div>
                         )}

@@ -60,10 +60,12 @@ function App() {
         <Content />
       ) : (
         <div ref={resizeRef} id="app" className="app app-header-fixed app-sidebar-fixed">
+          <div id="content" className="app-content d-flex flex-column p-0">
           <Header />
           <MenuSidebar minified={minified} />
           <Content />
           <Footer />
+          </div>
         </div>
       )}
     </>

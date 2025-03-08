@@ -28,7 +28,7 @@ const Booking = () => {
     pay_fk: null,
     date: null,
     pk_fk: [],
-    room_fk: [],
+    room_fk: null,
     group_size: "",
     email: "",
     tell: "",
@@ -61,7 +61,7 @@ const Booking = () => {
       cust_id_fk: null,
       pay_fk: null,
       pk_fk: [],
-      room_fk: [],
+      room_fk: null,
       group_size: "",
       email: "",
       tell: "",
@@ -213,7 +213,7 @@ const Booking = () => {
   const paginatedData = filteredData.slice(startIndex, startIndex + length);
 
   return (
-    <div id="content" className="app-content">
+    <>
       <div className="panel panel-inverse">
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
@@ -318,7 +318,7 @@ const Booking = () => {
 
       <BookingModal open={open} onClose={handleClose} modalType={modalType}
         bookData={bookData} setBookData={setbookData} handleSubmit={handleSubmit} />
-    </div>
+    </>
   );
 };
 

@@ -107,7 +107,7 @@ const handleAddClick = () => {
   };
   
   return (
-    <div id="content" className="app-content p-0">
+    <>
     <div className="pos pos-with-sidebar" id="pos">
       <div className="pos-content">
       <div className="row mt-2 justify-content-between">
@@ -274,7 +274,7 @@ const handleAddClick = () => {
                 )}
               </div>
            </div>
-        </div>
+        </>
   );
 };
 

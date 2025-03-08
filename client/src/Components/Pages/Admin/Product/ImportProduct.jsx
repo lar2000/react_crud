@@ -156,7 +156,7 @@ const Importproduct = () => {
   const paginatedData = filteredData.slice(startIndex, startIndex + length);
 
   return (
-    <div id="content" className="app-content">
+    <>
       <div className="panel panel-inverse">
         <div className="panel-body">
           <div className="row mt-2 justify-content-between">
@@ -301,7 +301,7 @@ const Importproduct = () => {
         </Modal.Footer>
         </form>
       </Modal>
-    </div>
+    </>
   );
 };
 
