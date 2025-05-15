@@ -3,7 +3,8 @@ import ChartHome from './Chart'
 export default function HomePage() {
 
   return (
-    <div id="content" className="app-content ">
+    <div className="panel panel-inverse">
+      <div className="panel-body">
       <div className="row">
         <div className="col-xl-3 col-md-6">
           <div className="widget text-dark widget-stats bg-bps rounded-4">
@@ -194,6 +195,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

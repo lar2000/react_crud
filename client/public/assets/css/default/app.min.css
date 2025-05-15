@@ -21870,7 +21870,7 @@ a:focus {
 .widget {
   overflow: hidden;
   margin-bottom: 20px;
-  background: var(--bs-component-bg);
+  background: #e1e4e5;
   color: inherit;
   padding: 0;
 }
